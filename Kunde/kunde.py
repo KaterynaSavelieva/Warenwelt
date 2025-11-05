@@ -13,7 +13,8 @@ class Kunde:
         self.adresse=Validator.f_validate_adresse(adresse)
         self.email=Validator.f_validate_email(email)
         self.telefon=Validator.f_validate_telefon(telefon)
-        self.password=Validator.f_validate_password(password)
+        self.__password=Validator.f_validate_password(password) #← privat
+
 
 # Einfache Getter/Setter mit Revalidierung hinzufügen
     def get_name (self):
@@ -29,18 +30,17 @@ class Kunde:
     def get_email (self):
         return self.email
     def set_email (self, email):
-        self.email=Validator.f_validate_adresse(email)
+        self.email=Validator.f_validate_email(email)
 
     def get_telefon (self):
         return self.telefon
     def set_telefon (self, telefon):
-        self.telefon=Validator.f_validate_adresse(telefon)
+        self.telefon=Validator.f_validate_telefon(telefon)
 
     def get_password (self):
-        return "*" * len(self.password)
+        return "*" * len(self.__password)
     def set_password (self, password):
-        self.password=Validator.f_validate_password(password)
+        self.__password=Validator.f_validate_password(password)
 
     def __str__(self):
-        return (f"Kunde (ID: {self.id}, Name: {self.name}, "
-                f"Email: {self.email}, Telefon: {self.telefon})")
+        return (f"Kunde (ID: {self.id}, Name: {self.name}, Email: {self.email}, Telefon: {self.telefon}), Password: {self.get_password()})")

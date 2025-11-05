@@ -1,0 +1,80 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+' <<internal>> допоміжний клас (необов’язковий в діаграмі)
+class "_Rules" <<internal>> {
+  +email: EmailStr?
+  +telefon: str?
+  +name: str?
+  +adresse: str?
+  +geburtsdatum: date?
+  +firmennummer: str?
+  +password: str?
+}
+
+class Validator <<utility>> {
+  +f_validate_email(v: EmailStr | str): str
+  +f_validate_telefon(v: str): str
+  +f_validate_name(v: str): str
+  +f_validate_adresse(v: str): str
+  +f_validate_geburtsdatum(v: date | str): date
+  +f_validate_firmennummer(v: str): str
+  +f_validate_password(v: str): str
+  -_short_err(err: ValidationError, feld: str): None
+}
+
+class Kunde {
+  -_password: str
+  -id: int
+  -name: str
+  -adresse: str
+  -email: str
+  -telefon: str
+  --
+  {static} next_id: int
+  --
+  +__init__(name: str, adresse: str, email: str, telefon: str, password: str)
+  +get_name(): str
+  +set_name(name: str): None
+  +get_adresse(): str
+  +set_adresse(adresse: str): None
+  +get_email(): str
+  +set_email(email: str): None
+  +get_telefon(): str
+  +set_telefon(telefon: str): None
+  +get_password(): str   ' повертає маску ****
+  +set_password(password: str): None
+  +__str__(): str
+}
+
+class Privatkunde {
+  -geburtsdatum: date
+  +__init__(name: str, adresse: str, email: str, telefon: str, password: str, geburtsdatum: date | str)
+  +f_berechne_alter(): int
+  +get_geburtsdatum(): date
+  +set_geburtsdatum(geburtsdatum: date | str): None
+  +__str__(): str
+}
+
+class Firmenkunde {
+  -firmennummer: str
+  +__init__(name: str, adresse: str, email: str, telefon: str, password: str, firmennummer: str)
+  +get_firmennummer(): str
+  +set_firmennummer(firmennummer: str): None
+  +__str__(): str
+}
+
+' Спадкування
+Privatkunde --|> Kunde
+Firmenkunde --|> Kunde
+
+' Використання валідатора
+Kunde ..> Validator : uses
+Privatkunde ..> Validator : uses
+Firmenkunde ..> Validator : uses
+
+' Необов’язково показати, що Validator спирається на _Rules
+Validator ..> "_Rules" : builds/validates with
+
+@enduml
+

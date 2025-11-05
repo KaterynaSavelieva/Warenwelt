@@ -14,6 +14,7 @@ class Privatkunde(Kunde):
             y -= 1
         return y
 
+    # Getter / Setter з повторною валідацією
     def get_geburtsdatum(self):
         return self.geburtsdatum
     def set_geburtsdatum(self, geburtsdatum):
@@ -22,4 +23,4 @@ class Privatkunde(Kunde):
     def __str__(self):
         return (f"Privatkunde (ID: {self.id}), Name: {self.name}, "
                 f"Email: {self.email}, Telefon: {self.telefon}, "
-                f"Alter: {self.f_berechne_alter()})")
+                f"Alter: {self.f_berechne_alter()}), Password: {self.get_password()}")

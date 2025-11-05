@@ -14,4 +14,5 @@ class Firmenkunde(Kunde):
     def __str__(self):
         return (f"Firmenkunde (ID: {self.id}, Name: {self.name}, "
                 f"Email: {self.email}, Telefon: {self.telefon}, "
-                f"Firmennummer: {self.firmennummer})")
+                f"Firmennummer: {self.firmennummer}), Password: {self.get_password()})")
+
