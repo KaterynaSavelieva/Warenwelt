@@ -1,8 +1,17 @@
 USE onlineshop;
 
-SELECT p.*, e.marke, e.garantie_jahre, k.groesse, b.autor, b.seitenanzahl
-FROM produkte p
-LEFT JOIN elektronik e ON e.produkt_id = p.produkt_id
-LEFT JOIN kleidung  k ON k.produkt_id = p.produkt_id
-LEFT JOIN buch      b ON b.produkt_id = p.produkt_id
-ORDER BY p.produkt_id;
+CREATE OR REPLACE VIEW v_tab AS
+SELECT 
+    p.*, 
+    e.brand, 
+    e.warranty_years, 
+    c.size, 
+    b.author, 
+    b.page_count
+FROM product p
+LEFT JOIN electronics e ON e.id = p.id
+LEFT JOIN clothing c     ON c.id = p.id
+LEFT JOIN books b        ON b.id = p.id
+ORDER BY p.id;
+
+SELECT * FROM v_tab;
