@@ -1,0 +1,50 @@
+# --- Python cache and compiled files ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Virtual environments ---
+.venv/
+env/
+venv/
+
+# --- Pytest and coverage ---
+.pytest_cache/
+.coverage
+.cache/
+htmlcov/
+
+# --- IDE and editor files ---
+.idea/
+.vscode/
+*.iml
+
+# --- Environment & secrets ---
+.env
+*.key
+*.pem
+
+# --- System and temp files ---
+.DS_Store
+Thumbs.db
+~$*
+*.tmp
+*.log
+
+# --- Build and packaging ---
+build/
+dist/
+*.egg-info/
+*.spec
+
+# --- Ignore optional test/output folders ---
+/tests/__pycache__/
+/notebooks/
+__MACOSX/
+
+# --- Keep documentation, SQL, UML, and Office files ---
+!*.sql
+!*.puml
+!*.dia
+!*.docx
+!*.md
