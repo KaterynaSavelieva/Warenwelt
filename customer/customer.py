@@ -64,7 +64,7 @@ class Customer:
 
     def __str__(self) -> str:
         return (
-            f"Customer(ID: {self.id}, Name: {self.name}, "
+            f"Customer(ID: {self.customer_id}, Name: {self.name}, "
             f"Email: {self.email}, Phone: {self.phone}, "
             f"Password: {self.get_password_masked()})"
         )

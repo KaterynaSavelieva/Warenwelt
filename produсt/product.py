@@ -8,7 +8,7 @@ class Product(ABC):
     """Abstract base class for all product types (matches SQL schema)."""
 
     product_id: Optional[int]  # None for new rows; DB assigns AUTO_INCREMENT
-    name: str
+    product: str
     price: float
     weight: float
 

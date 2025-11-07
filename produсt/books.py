@@ -10,11 +10,11 @@ class Book(Product):
 
     def to_row(self) -> Dict[str, Any]:
         return {
-            "id": self.product_id,
-            "name": self.name,
+            "product_id": self.product_id,
+            "product": self.product,
             "price": self.price,
             "weight": self.weight,
-            "category": "book",
+            "category": "books",
             "author": self.author,
             "page_count": self.page_count,
         }

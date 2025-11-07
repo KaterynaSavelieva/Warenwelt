@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS company_customer (
 
 CREATE TABLE IF NOT EXISTS product (
     product_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(160) NOT NULL,
+    product VARCHAR(160) NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     weight DECIMAL(10,2) NOT NULL,
     category ENUM('electronics','clothing','book') NOT NULL

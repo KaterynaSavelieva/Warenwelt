@@ -16,7 +16,7 @@ INSERT INTO company_customer (customer_id, company_number) VALUES
 (3, '987654321'),
 (4, '123456789');
 
-INSERT INTO product (name, price, weight, category) VALUES
+INSERT INTO product (product, price, weight, category) VALUES
 ('Smartphone Galaxy X', 699.99, 0.25, 'electronics'),
 ('Laptop ProBook 15', 1199.50, 1.8, 'electronics'),
 ('Winterjacke Damen', 149.90, 1.2, 'clothing'),
