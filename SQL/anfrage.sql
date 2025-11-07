@@ -9,9 +9,9 @@ SELECT
     b.author, 
     b.page_count
 FROM product p
-LEFT JOIN electronics e ON e.id = p.id
-LEFT JOIN clothing c     ON c.id = p.id
-LEFT JOIN books b        ON b.id = p.id
-ORDER BY p.id;
+LEFT JOIN electronics e ON e.product_id = p.product_id
+LEFT JOIN clothing c     ON c.product_id = p.product_id
+LEFT JOIN books b        ON b.product_id = p.product_id
+ORDER BY p.product_id;
 
 SELECT * FROM v_tab;
