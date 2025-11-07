@@ -1,5 +1,5 @@
 from datetime import date
-from pydantic import Field, EmailStr, constr, BaseModel, ValidationError, field_validator
+from pydantic import EmailStr, constr, BaseModel, ValidationError, field_validator
 from typing import Optional
 
 #E-Mail-Adressen (gültiges Format)

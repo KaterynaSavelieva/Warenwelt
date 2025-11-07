@@ -27,7 +27,7 @@ class PrivateCustomer(Customer):
 
     def __str__(self) -> str:
         return (
-            f"PrivateCustomer(ID: {self.id}, Name: {self.name}, "
+            f"PrivateCustomer(ID: {self.customer_id}, Name: {self.name}, "
             f"Email: {self.email}, Phone: {self.phone}, "
             f"Age: {self.calculate_age()}, "
             f"Password: {self.get_password_masked()})"

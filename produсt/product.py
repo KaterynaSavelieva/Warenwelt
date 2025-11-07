@@ -1,13 +1,13 @@
-from abc import ABC, abstractmethod  # ABC = Abstract Base Class
-from dataclasses import dataclass  # @dataclass automatically creates __init__, __repr__, etc.
-from typing import Optional, Dict, Any  # typing hints: Optional means “can be None”
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Optional, Dict, Any
 
 
 @dataclass
 class Product(ABC):
-    """Abstract base class for all product types."""
+    """Abstract base class for all product types (matches SQL schema)."""
 
-    id: Optional[int]  # id = None initially; MySQL will create it automatically via AUTO_INCREMENT
+    product_id: Optional[int]  # None for new rows; DB assigns AUTO_INCREMENT
     name: str
     price: float
     weight: float
@@ -15,8 +15,7 @@ class Product(ABC):
     @abstractmethod
     def to_row(self) -> Dict[str, Any]:
         """
-        Return a dictionary of all fields.
-        Must be overridden in every subclass.
-        Used later for database INSERT or UPDATE operations.
+        Return a dictionary of all fields (keys must match SQL column names),
+        e.g. include 'product_id', 'name', 'price', 'weight', 'category', ...
         """
         pass

@@ -10,7 +10,7 @@ class Electronics(Product):
 
     def to_row(self) -> Dict[str, Any]:
         return {
-            "id": self.id,
+            "id": self.product_id,
             "name": self.name,
             "price": self.price,
             "weight": self.weight,

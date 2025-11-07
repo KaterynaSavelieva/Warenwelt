@@ -1,12 +1,19 @@
 from validator import Validator
+from typing import Optional
+
+"""Verwendung von @property, weil dies der Python-typische („pythonic“) Weg ist, mit Attributen zu arbeiten.
+Dadurch können Werte validiert oder geändert werden, ohne dass sich der Zugriff im Code ändert.
+Der Code bleibt objektorientiert, sicher und besser lesbar."""
 
 class Customer:
     next_id = 10001
 
-    def __init__(self, name: str, address: str, email: str, phone: str, password: str):
-        # generate id
-        self.id = Customer.next_id
-        Customer.next_id += 1
+    def __init__(self, name: str, address: str, email: str, phone: str, password: str, customer_id: Optional[int] = None):
+        if customer_id is not None:
+            self.customer_id = int(customer_id)
+        else:
+            self.customer_id = Customer.next_id
+            Customer.next_id += 1
 
         # validate & assign
         self._name = Validator.validate_name(name)
