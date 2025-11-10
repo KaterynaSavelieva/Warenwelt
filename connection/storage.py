@@ -1,10 +1,8 @@
 from connection.db import get_conn
 from pymysql import MySQLError
 
-
-class Storage:    #Storage class for database connection and queries.
+class Storage:    # Storage class for database connection and queries.
     def __init__(self):
-        # Attributes
         self.database_name = "onlineshop"
         self.connection = None
 
@@ -26,24 +24,37 @@ class Storage:    #Storage class for database connection and queries.
             print("Connection closed.")
 
     # Methods for Queries
-    def execute(self, sql, params=None): # Execute INSERT, UPDATE, DELETE
+    def execute(self, sql: str, params=None):
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute(sql, params)
-            self.connection.commit()
-        except MySQLError as e:
+                self.connection.commit()
+                if sql.lstrip().upper().startswith("INSERT"):
+                    return cursor.lastrowid
+                return cursor.rowcount
+        except Exception as e:
             print("Error executing query:", e)
             self.connection.rollback()
+            return None
 
-    def fetch_one(self, sql, params=None): # Execute SELECT and return one record
+    def fetch_one(self, sql, params=None):
         with self.connection.cursor() as cursor:
             cursor.execute(sql, params)
             return cursor.fetchone()
 
-    def fetch_all(self, sql, params=None): # Execute SELECT and return all records
+    def fetch_all(self, sql, params=None):
         with self.connection.cursor() as cursor:
             cursor.execute(sql, params)
             return cursor.fetchall()
+
+    def insert_and_get_id(self, sql: str, params=None) -> int | None:
+        try:
+            with self.connection.cursor() as cur:
+                cur.execute(sql, params)
+                return cur.lastrowid or None
+        except Exception as e:
+            print("Error executing insert:", e)
+            return None
 
 
 # test

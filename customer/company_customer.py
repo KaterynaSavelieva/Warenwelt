@@ -1,10 +1,9 @@
 from customer import Customer
 from validator import Validator
 
-
 class CompanyCustomer(Customer):
     def __init__(self, name: str, address: str, email: str, phone: str, password: str, company_number: str):
-        super().__init__(name, address, email, phone, password)
+        super().__init__(name, address, email, phone, password, kind="company")  # ✅ додано kind
         self._company_number = Validator.validate_company_number(company_number)
 
     # --- property with re-validation ---

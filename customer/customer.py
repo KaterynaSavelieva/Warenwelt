@@ -1,14 +1,19 @@
-from validator import Validator
 from typing import Optional
-
-"""Verwendung von @property, weil dies der Python-typische („pythonic“) Weg ist, mit Attributen zu arbeiten.
-Dadurch können Werte validiert oder geändert werden, ohne dass sich der Zugriff im Code ändert.
-Der Code bleibt objektorientiert, sicher und besser lesbar."""
+from validator import Validator
 
 class Customer:
     next_id = 10001
 
-    def __init__(self, name: str, address: str, email: str, phone: str, password: str, customer_id: Optional[int] = None):
+    def __init__(
+        self,
+        name: str,
+        address: str,
+        email: str,
+        phone: str,
+        password: str,
+        kind: str,  # нове поле
+        customer_id: Optional[int] = None
+    ):
         if customer_id is not None:
             self.customer_id = int(customer_id)
         else:
@@ -20,7 +25,8 @@ class Customer:
         self._address = Validator.validate_address(address)
         self._email = Validator.validate_email(email)
         self._phone = Validator.validate_phone(phone)
-        self.__password = Validator.validate_password(password)  # private
+        self._kind = Validator.validate_kind(kind)  # new validation
+        self.__password = Validator.validate_password(password)
 
     # --- properties with re-validation ---
     @property
@@ -55,16 +61,28 @@ class Customer:
     def phone(self, value: str) -> None:
         self._phone = Validator.validate_phone(value)
 
-    # password: store privately; expose only masked
+    @property
+    def kind(self) -> str:
+        return self._kind
+
+    @kind.setter
+    def kind(self, value: str) -> None:
+        self._kind = Validator.validate_kind(value)
+
+    # --- password handling ---
     def get_password_masked(self) -> str:
         return "*" * len(self.__password)
 
     def set_password(self, value: str) -> None:
         self.__password = Validator.validate_password(value)
 
+    def get_password(self) -> str:
+        """Повертає справжній пароль (тільки якщо потрібно для збереження в БД)."""
+        return self.__password
+
     def __str__(self) -> str:
         return (
             f"Customer(ID: {self.customer_id}, Name: {self.name}, "
-            f"Email: {self.email}, Phone: {self.phone}, "
+            f"Kind: {self.kind}, Email: {self.email}, Phone: {self.phone}, "
             f"Password: {self.get_password_masked()})"
         )

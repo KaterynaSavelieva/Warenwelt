@@ -13,7 +13,7 @@ def get_conn():
             cursorclass=DictCursor,
             autocommit=False
         )
-        print("Connection successful!")   # ← message for a successful connection
+        print("Connection successful!")   # message for a successful connection
         return conn
     except pymysql.MySQLError as err:
         print(f"Connection error: {err}")
@@ -23,4 +23,8 @@ def get_conn():
 if __name__ == "__main__":   # test — runs only when the file is executed directly
     conn = get_conn()
     if conn:
+        with conn.cursor() as cur:
+            cur.execute("SHOW TABLES;")
+            for row in cur.fetchall():
+                print(row)
         conn.close()

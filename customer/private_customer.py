@@ -2,10 +2,9 @@ from datetime import date
 from customer import Customer
 from validator import Validator
 
-
 class PrivateCustomer(Customer):
     def __init__(self, name: str, address: str, email: str, phone: str, password: str, birthdate: date | str):
-        super().__init__(name, address, email, phone, password)
+        super().__init__(name, address, email, phone, password, kind="private")  # ✅ додано kind
         self._birthdate = Validator.validate_birthdate(birthdate)
 
     # --- calculate age ---

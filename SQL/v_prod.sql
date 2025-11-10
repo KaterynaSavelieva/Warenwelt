@@ -1,5 +1,4 @@
 USE onlineshop;
-
 CREATE OR REPLACE VIEW v_prod AS
 SELECT 
     pr.*, 
@@ -24,4 +23,4 @@ LEFT JOIN company_customer cus_c ON cus_c.customer_id=cus.customer_id
 LEFT JOIN private_customer cus_p ON cus_p.customer_id=cus.customer_id
 ORDER BY pr.product_id;
 
-SELECT * FROM v_alle;
+SELECT * FROM v_prod;

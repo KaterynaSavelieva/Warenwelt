@@ -1,13 +1,6 @@
 from datetime import date
 from pydantic import EmailStr, constr, BaseModel, ValidationError, field_validator
-from typing import Optional
-
-#E-Mail-Adressen (gültiges Format)
-#Telefonnummern (nur Zahlen, '+' erlaubt, 8-20 Stellen)
-#Namen (nur Buchstaben, Leerzeichen und sinnvolle Sonderzeichen)
-#Adressen (Buchstaben, Zahlen und sinnvolle Sonderzeichen
-#Geburtsdatum (gültiges Format)
-#Firmennummer (nur Zahlen, 5-15 Stellen)
+from typing import Optional, Literal  # 🔸 додано Literal
 
 # Internal Pydantic model with all rules (types + regex)
 class _Rules(BaseModel):
@@ -18,8 +11,7 @@ class _Rules(BaseModel):
     birthdate: date | None = None
     company_number: constr(pattern=r"^\d{5,15}$") | None = None
     password: Optional[str] = None
-    # Alternative (regex-only) password rule:
-    # password: constr(pattern=r"^[A-Za-z0-9@#$%^&+=!?.]{8,50}$") | None = None
+    kind: Literal["private", "company"] | None = None  # 🔸 додано
 
     @field_validator("password")
     @classmethod
@@ -43,25 +35,26 @@ class Validator:
     """Thin wrapper around _Rules with short, user-friendly error messages."""
 
     @staticmethod
-    def _short_err(err: ValidationError, field_label: str):
-        # Take the first error message
+    def f_short_err(err: ValidationError, field_label: str):
         msg = err.errors()[0].get("msg", str(err))
-
-        # Map common technical messages to friendlier text
         replacements = {
             "String should match pattern '^\\+?\\d{8,20}$'":
                 "digits only, optional leading '+', length 8–20",
+            "String should match pattern '^[A-Za-zÄÖÜäöüß' -]{2,55}$'":
+                "letters only (A–Z, a–z, ä, ö, ü, ß), spaces, apostrophe or hyphen; length 2–55",
             "value is not a valid email address":
                 "invalid email address (format: name@domain.com)",
             "String should match pattern '^\\d{5,15}$'":
                 "digits only (length 5–15)",
+            "Input should be a valid date or datetime, input is too short":
+                "invalid date (format: YYYY-MM-DD)",
             "Input should be a valid date or datetime":
                 "invalid date (format: YYYY-MM-DD)",
             "String should match pattern '^[A-Za-z0-9@#$%^&+=!?.]{8,50}$'":
                 "8–50 characters, letters/digits/safe symbols (@#$%^&+=!?.)",
+            "Input should be 'private' or 'company'":
+                "must be 'private' or 'company'",
         }
-
-        # Replace if exact match known; otherwise keep original message
         msg = replacements.get(msg, msg)
         raise ValueError(f"{field_label}: {msg}") from None
 
@@ -73,7 +66,7 @@ class Validator:
             obj = _Rules(email=v)
             return str(obj.email)
         except ValidationError as e:
-            Validator._short_err(e, "Email")
+            Validator.f_short_err(e, "Email")
 
     @staticmethod
     def validate_phone(v: str) -> str:
@@ -81,7 +74,7 @@ class Validator:
             _Rules(phone=v)
             return v
         except ValidationError as e:
-            Validator._short_err(e, "Phone")
+            Validator.f_short_err(e, "Phone")
 
     @staticmethod
     def validate_name(v: str) -> str:
@@ -89,7 +82,7 @@ class Validator:
             _Rules(name=v)
             return v
         except ValidationError as e:
-            Validator._short_err(e, "Name")
+            Validator.f_short_err(e, "Name")
 
     @staticmethod
     def validate_address(v: str) -> str:
@@ -97,15 +90,15 @@ class Validator:
             _Rules(address=v)
             return v
         except ValidationError as e:
-            Validator._short_err(e, "Address")
+            Validator.f_short_err(e, "Address")
 
     @staticmethod
     def validate_birthdate(v: date | str) -> date:
         try:
-            obj = _Rules(birthdate=v)  # Pydantic parses "YYYY-MM-DD" automatically
+            obj = _Rules(birthdate=v)
             return obj.birthdate
         except ValidationError as e:
-            Validator._short_err(e, "Birthdate")
+            Validator.f_short_err(e, "Birthdate")
 
     @staticmethod
     def validate_company_number(v: str) -> str:
@@ -113,7 +106,7 @@ class Validator:
             _Rules(company_number=v)
             return v
         except ValidationError as e:
-            Validator._short_err(e, "Company number")
+            Validator.f_short_err(e, "Company number")
 
     @staticmethod
     def validate_password(v: str) -> str:
@@ -121,7 +114,15 @@ class Validator:
             _Rules(password=v)
             return v
         except ValidationError as e:
-            Validator._short_err(e, "Password")
+            Validator.f_short_err(e, "Password")
+
+    @staticmethod
+    def validate_kind(v: str) -> str:  # 🔸 додано
+        try:
+            _Rules(kind=v)
+            return v
+        except ValidationError as e:
+            Validator.f_short_err(e, "Kind")
 
 
 # ---- Quick self-test -------------------------------------------------------
@@ -148,7 +149,12 @@ if __name__ == "__main__":
 
     for pw in ["short", "password", "secret12", "123456789", "StrongPass1"]:
         try:
-            # print masked length if valid
             print("OK (password):", "*" * len(Validator.validate_password(pw)))
         except Exception as e:
             print("Error (password):", e)
+
+    for k in ["privat", "private", "company"]:  # 🔸 приклад перевірки kind
+        try:
+            print("OK (kind):", Validator.validate_kind(k))
+        except Exception as e:
+            print("Error (kind):", e)

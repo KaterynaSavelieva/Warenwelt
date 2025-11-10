@@ -18,7 +18,7 @@ class ProductMethods:
             if row:
                 print(tabulate([row], headers="keys", tablefmt="rounded_grid"))
             else:
-                print("No product found with ID {product_id}.")
+                print (f"No product found with ID {product_id}.")
             return row
         except MySQLError as e:
             print("Error loading product:", e)
@@ -46,4 +46,5 @@ if __name__ == "__main__":
     products = ProductMethods()
     products.get_all_products()
     products.get_product(12)
+    products.get_product(1)
     products.close()

@@ -22,10 +22,12 @@ DROP TABLE  IF EXISTS produkt;
 
 CREATE TABLE IF NOT EXISTS customers (
     customer_id INT AUTO_INCREMENT PRIMARY KEY,
-    name        VARCHAR(120) NOT NULL,
-    email       VARCHAR(180) NOT NULL UNIQUE,
-    address     VARCHAR(180),
-    phone       VARCHAR(32)
+    name VARCHAR(120) NOT NULL,
+    email VARCHAR(180) NOT NULL UNIQUE,
+    address VARCHAR(180),
+    phone VARCHAR(32),
+    kind ENUM('private', 'company') NOT NULL,  
+    password VARCHAR(100) NOT NULL          
 );
 
 CREATE TABLE IF NOT EXISTS private_customer (
@@ -46,7 +48,7 @@ CREATE TABLE IF NOT EXISTS product (
     product VARCHAR(160) NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     weight DECIMAL(10,2) NOT NULL,
-    category ENUM('electronics','clothing','book') NOT NULL
+    category ENUM('electronics','clothing','books') NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS electronics (
@@ -74,7 +76,7 @@ CREATE TABLE IF NOT EXISTS review (
     review_id INT AUTO_INCREMENT PRIMARY KEY,
     customer_id INT NOT NULL,
     product_id INT NOT NULL,
-    rating INT CHECK (rating BETWEEN 1 AND 5),
+    rating FLOAT CHECK (rating BETWEEN 1 AND 5),
     comment VARCHAR(255),
     created_at DATE DEFAULT (CURRENT_DATE),
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE ON UPDATE CASCADE,
