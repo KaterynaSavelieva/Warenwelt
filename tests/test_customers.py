@@ -1,4 +1,4 @@
-from customer.customer_methods import CustomerMethods
+from customers.customer_methods import CustomerMethods
 
 cm = CustomerMethods()
 

@@ -1,5 +1,5 @@
 from pydantic import ValidationError
-from customer import Customer
+from customers import Customer
 from private_customer import PrivateCustomer
 from company_customer import CompanyCustomer
 

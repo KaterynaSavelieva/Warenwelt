@@ -1,7 +1,7 @@
 from connection.storage import Storage
 from pymysql import MySQLError
 from tabulate import tabulate
-from customer.validator import Validator
+from customers.validator import Validator
 import pymysql
 
 class CustomerMethods:
@@ -38,12 +38,12 @@ class CustomerMethods:
             # 2. Перевірка залежних полів ДО вставки в customers
             if kind == "private":
                 if not birthdate:
-                    print("Birthdate required for private customer (YYYY-MM-DD).")
+                    print("Birthdate required for private customers (YYYY-MM-DD).")
                     return None
                 birthdate = Validator.validate_birthdate(birthdate)
             elif kind == "company":
                 if not company_number:
-                    print("Company number required for company customer.")
+                    print("Company number required for company customers.")
                     return None
                 company_number = Validator.validate_company_number(company_number)
                 # 🔸 Перевіримо чи вже існує така company_number
@@ -123,12 +123,12 @@ class CustomerMethods:
 
             if kind == "private":
                 if not birthdate:
-                    print("Birthdate required for private customer (YYYY-MM-DD).")
+                    print("Birthdate required for private customers (YYYY-MM-DD).")
                     return None
                 birthdate = Validator.validate_birthdate(birthdate)
             else:  # company
                 if not company_number:
-                    print("Company number required for company customer.")
+                    print("Company number required for company customers.")
                     return None
                 company_number = Validator.validate_company_number(company_number)
 
@@ -189,17 +189,17 @@ class CustomerMethods:
 
     # ---------------- Load one ----------------
     def get_customer(self, customer_id: int) -> dict | None:
-        """Load one customer by id from the view v_cust."""
+        """Load one customers by id from the view v_cust."""
         try:
             sql = "SELECT * FROM v_cust WHERE customer_id = %s"
             row = self.storage.fetch_one(sql, (customer_id,))
             if row:
                 print(tabulate([row], headers="keys", tablefmt="rounded_grid"))
             else:
-                print("No customer found with this ID.")
+                print("No customers found with this ID.")
             return row
         except MySQLError as e:
-            print("Error loading customer:", e)
+            print("Error loading customers:", e)
             return None
 
     # ---------------- Load all ----------------
@@ -215,6 +215,68 @@ class CustomerMethods:
             return rows
         except MySQLError as e:
             print("Error loading all customers:", e)
+            return []
+
+    # ── UPDATE (name/address/phone/password) ───────────────────────────────────────
+    def update_customer(self, customer_id: int, *,
+                        name: str | None = None,
+                        address: str | None = None,
+                        phone: str | None = None,
+                        password: str | None = None) -> bool:
+        try:
+            sets, vals = [], []
+            if name:
+                sets.append("name=%s");
+                vals.append(Validator.validate_name(name))
+            if address:
+                sets.append("address=%s");
+                vals.append(Validator.validate_address(address))
+            if phone:
+                sets.append("phone=%s");
+                vals.append(Validator.validate_phone(phone))
+            if password:
+                sets.append("password=%s");
+                vals.append(Validator.validate_password(password))
+
+            if not sets:
+                print("Nothing to update.");
+                return False
+
+            sql = f"UPDATE customers SET {', '.join(sets)} WHERE customer_id=%s"
+            vals.append(customer_id)
+            ok = self.storage.execute(sql, tuple(vals))
+            self.storage.connection.commit()
+            print(f"Customer {customer_id} updated.") if ok else print("No changes.")
+            return bool(ok)
+        except Exception as e:
+            self.storage.connection.rollback();
+            print("Update error:", e);
+            return False
+
+    # ── DELETE (CASCADE прибере підтаблицю) ────────────────────────────────────────
+    def delete_customer(self, customer_id: int) -> bool:
+        try:
+            ok = self.storage.execute("DELETE FROM customers WHERE customer_id=%s", (customer_id,))
+            self.storage.connection.commit()
+            print(f"Customer {customer_id} deleted.") if ok else print("Not found.")
+            return bool(ok)
+        except Exception as e:
+            self.storage.connection.rollback();
+            print("Delete error:", e);
+            return False
+
+    # ── FIND: by kind ─────────────────────────────────────────────────────────────
+    def find_customers_by_kind(self, kind: str) -> list[dict]:
+        try:
+            kind = Validator.validate_kind(kind)
+            rows = self.storage.fetch_all("SELECT * FROM v_cust WHERE kind=%s ORDER BY customer_id", (kind,))
+            if rows:
+                from tabulate import tabulate; print(tabulate(rows, headers="keys", tablefmt="rounded_grid"))
+            else:
+                print("No customers for this kind.")
+            return rows or []
+        except Exception as e:
+            print("Find error:", e);
             return []
 
     def close(self):

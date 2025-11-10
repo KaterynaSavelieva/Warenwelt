@@ -1,4 +1,4 @@
-from customer import Customer
+from customers import Customer
 from private_customer import PrivateCustomer
 from company_customer import CompanyCustomer
 import sys
@@ -6,7 +6,7 @@ import sys
 # Disable full traceback for cleaner error output
 sys.tracebacklimit = 0
 
-print("Running customer validation tests...\n")
+print("Running customers validation tests...\n")
 
 try:
     c1 = Customer("Anna Schmidt", "Main Street 5", "anna@mail.at", "+436601234567", "StrongPass1")
