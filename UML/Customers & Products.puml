@@ -1,0 +1,62 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+' ===== Customers =====
+class Customer {
+  +customer_id: int
+  +name: str
+  +email: str
+  +address: str
+  +phone: str
+  +kind: "private|company"
+  +password: str
+}
+class PrivateCustomer {
+ +birthdate: date
+ }
+class CompanyCustomer {
+    +company_number: str
+ }
+Customer <|-- PrivateCustomer
+Customer <|-- CompanyCustomer
+
+' ===== Products =====
+abstract class Product {
+  +product_id: int
+  +product: str
+  +price: decimal
+  +weight: float
+  +category: "books|electronics|clothing"
+}
+
+class Books {
+    +author: str
+    +page_count: int
+}
+
+class Electronics {
+    +brand: str
+    +warranty_years: int
+ }
+
+class Clothing {
+    +size: str
+ }
+Product <|-- Books
+Product <|-- Electronics
+Product <|-- Clothing
+
+' ===== Reviews =====
+class Review {
+  +review_id: int
+  +customer_id: int
+  +product_id: int
+  +rating: float  ' (1..5)
+  +comment: str
+  +created_at: date
+}
+
+Customer "1" -- "0..*" Review : writes
+Product  "1" -- "0..*" Review : has
+@enduml

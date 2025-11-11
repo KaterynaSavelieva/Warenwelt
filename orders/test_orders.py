@@ -11,6 +11,7 @@ def main():
     # Add products to the cart
     #    (product_id, quantity). If quantity is omitted, default = 1.
     cart.add_product(2, 25)
+
     cart.add_product(3, 101)
 
     # Calculate total price using current DB prices

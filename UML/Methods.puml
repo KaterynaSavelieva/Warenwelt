@@ -1,0 +1,91 @@
+
+@startuml
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+' ===== Core DB layer =====
+class Storage {
+  +connect()
+  +disconnect()
+  +fetch_one(sql, params): dict|None
+  +fetch_all(sql, params): list[dict]
+  +execute(sql, params): int
+  +insert_and_get_id(sql, params): int|None
+}
+
+' ===== Validation (internal + public) =====
+class _Rules <<internal,Pydantic>> {
+  email: EmailStr|None
+  phone: str|None
+  name: str|None
+  address: str|None
+  birthdate: date|None
+  company_number: str|None
+  password: str|None
+  kind: "private"|"company"|None
+  --
+  <<field_validator>> password
+}
+
+class Validator {
+  +validate_name(v): str
+  +validate_email(v): str
+  +validate_address(v): str
+  +validate_phone(v): str
+  +validate_birthdate(v): date
+  +validate_company_number(v): str
+  +validate_password(v): str
+  +validate_kind(v): str
+  +validate_quantity(v): int
+  +validate_category(v): str
+  +validate_rating(v): float
+  +validate_comment(v): str
+  +validate_discount(v): float
+  --
+  -f_short_err(err, field_label)
+}
+
+' ===== Customers DAL =====
+class CustomerMethods {
+  +save_customer(...): int|None
+  +update_customer(...): bool
+  +delete_customer(customer_id): bool
+  +get_customer(id): dict|None
+  +get_all_customers(): list[dict]
+  +find_customers_by_kind(kind): list[dict]
+  --
+  -storage: Storage
+}
+
+' ===== Products DAL =====
+class ProductMethods {
+  +get_product(id): dict|None
+  +get_all_products(): list[dict]
+  +save_product(product_new, price, weight, category, ...): int|None
+  +update_product(product_id, ...): bool
+  +delete_product(product_id): bool
+  --
+  -storage: Storage
+}
+
+' ===== Reviews DAL =====
+class ReviewMethods {
+  +save_review(customer_id:int, product_id:int, rating:float, comment:str=""): int|None
+  +get_reviews_for_product(product_id:int): list[dict]
+  +get_reviews_for_customer(customer_id:int): list[dict]
+  +delete_review(review_id:int): bool
+  --
+  -storage: Storage
+}
+
+' ===== Relations (dependencies/uses) =====
+Validator ..> _Rules : uses (builds/validates)
+CustomerMethods --> Storage : uses
+ProductMethods --> Storage : uses
+ReviewMethods  --> Storage : uses
+
+CustomerMethods ..> Validator : validates inputs
+ProductMethods ..> Validator : validates category/qty
+ReviewMethods  ..> Validator : validates rating/comment
+
+@enduml
