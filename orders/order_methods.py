@@ -1,4 +1,5 @@
 from connection.storage import Storage
+from orders.shopping_cart import ShoppingCart
 import pymysql
 
 class OrderMethods:
@@ -7,7 +8,7 @@ class OrderMethods:
         self.storage = Storage()
         self.storage.connect()
 
-    def save_order(self, cart, is_company=False) -> int | None:
+    def save_order(self, cart: ShoppingCart, is_company=False) -> int | None:
         """
         Saves an order into two tables:
         - 'bestellung' (order header)

@@ -1,5 +1,5 @@
 USE onlineshop;
-CREATE OR REPLACE VIEW v_customer_rating AS
+CREATE OR REPLACE VIEW v_rating_summary_for_customer AS
 SELECT
     c.customer_id,
     c.name,
@@ -13,4 +13,5 @@ LEFT JOIN review AS r ON c.customer_id = r.customer_id
 GROUP BY c.customer_id, c.name
 ORDER BY avg_rating DESC;
 
-SELECT * FROM v_customer_rating;
+SELECT * FROM v_rating_summary_for_customer;
+-- drop view v_customer_rating;

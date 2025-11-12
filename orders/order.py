@@ -1,7 +1,8 @@
 from datetime import datetime
+from orders.shopping_cart import ShoppingCart
 
 class Order:
-    def __init__(self, cart, is_company: bool = False):
+    def __init__(self, cart: ShoppingCart, is_company: bool = False):
         self.order_time = datetime.now() # save orders time
         self.ordered_products = cart.products # list of products from the cart
         self.user_id = cart.customer_id # save the customer id

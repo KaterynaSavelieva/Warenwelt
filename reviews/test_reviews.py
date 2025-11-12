@@ -31,6 +31,9 @@ def main() -> None:
         assert after_prod >= before_prod + 1, "Product reviews count did not increase."
         assert after_cust >= before_cust + 1, "Customer reviews count did not increase."
 
+        rm.get_rating_summary_for_product(PRODUCT_ID)
+        rm.get_rating_summary_for_customer(CUSTOMER_ID)
+
         # 4) Delete
         assert rm.delete_review(new_id), "Delete failed."
 
