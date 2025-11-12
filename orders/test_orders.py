@@ -1,39 +1,41 @@
-from produсts.product_methods import ProductMethods
+from products.product_methods import ProductMethods
 from orders.shopping_cart import ShoppingCart
 from orders.order_methods import OrderMethods
 from orders.order import Order
 
 def main():
-    #  helpers
-    products = ProductMethods()     # gives us access to product queries
-    cart = ShoppingCart(customer_id=2)  # a new empty cart for customer #2
+    products = ProductMethods()
+    cart = ShoppingCart(customer_id=4)  # company
 
-    # Add products to the cart
-    #    (product_id, quantity). If quantity is omitted, default = 1.
-    cart.add_product(2, 25)
+    try:
+        #  Наповнюємо кошик
+        cart.add_product(2, 2)
+        cart.add_product(3, 3)
 
-    cart.add_product(3, 101)
+        # Рахуємо суму (оновлює cart.total_sum всередині)
+        total = cart.calculate_total_price(products)
+        print(f"Cart total (before discount): {total:.2f} EUR")
 
-    # Calculate total price using current DB prices
-    total = cart.calculate_total_price(products)
-    print(f"Cart total (before discount): {total:.2f} EUR")
+        # робимо "знімок" кошика ДО очищення
+        order = Order(cart, is_company=True)   # тут зчитаються products і total
 
-    # Save the order to the database (header + details)
-    orders = OrderMethods()
-    order_id = orders.save_order(cart, is_company=True)  # 5% discount for company
+        # Зберігаємо в БД
+        orders = OrderMethods()
+        order_id = orders.save_order(cart, is_company=True)  # може очищати кошик
 
-    if order_id:
-        print(f"Order saved with ID: {order_id}")
+        if order_id:
+            print(f"Order saved with ID: {order_id}")
+            order.set_order_id(order_id)                     # додали ID у знімок
+            invoice_path = order.create_invoice()            # генеруємо інвойс з даних знімка
+            print(f"Invoice created: {invoice_path}")
+        else:
+            print("Order was not saved.")
 
-        # Create a simple text invoice (auto name if you omit filename)
-        order = Order(cart, is_company=True)
-        order.create_invoice()  # e.g. invoice_2025-11-10_17-45-33.txt
-    else:
-        print("Order was not saved.")
-
-    #  Close DB connections
-    orders.close()
-    products.close()
+    finally:
+        try: orders.close()
+        except Exception: pass
+        try: products.close()
+        except Exception: pass
 
 if __name__ == "__main__":
     main()

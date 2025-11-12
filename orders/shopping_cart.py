@@ -1,4 +1,4 @@
-from produсts.product_methods import ProductMethods
+from products.product_methods import ProductMethods
 
 class ShoppingCart:
     def __init__(self, customer_id: int):

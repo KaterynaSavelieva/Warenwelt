@@ -15,3 +15,13 @@ ORDER BY avg_rating DESC;
 
 SELECT * FROM v_rating_summary_for_customer;
 -- drop view v_customer_rating;
+
+
+SELECT 
+	review.* ,
+
+    bestellung_details.*
+FROM review
+Left join bestellung on review.customer_id=bestellung.customer_id
+left join product on product.product_id=review.product_id
+left join bestellung_details on bestellung_details.product_id=review.product_id;
