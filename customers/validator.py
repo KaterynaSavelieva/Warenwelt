@@ -58,7 +58,6 @@ class Validator:
         msg = replacements.get(msg, msg)
         raise ValueError(f"{field_label}: {msg}") from None
 
-    # ---- Public single-field validators ------------------------------------
 
     @staticmethod
     def validate_email(v: EmailStr | str) -> str:
@@ -117,7 +116,7 @@ class Validator:
             Validator.f_short_err(e, "Password")
 
     @staticmethod
-    def validate_kind(v: str) -> str:  # 🔸 додано
+    def validate_kind(v: str) -> str:
         try:
             _Rules(kind=v)
             return v
@@ -125,7 +124,7 @@ class Validator:
             Validator.f_short_err(e, "Kind")
 
 
-# ---- Quick self-test -------------------------------------------------------
+# test
 if __name__ == "__main__":
     print("Test validation...\n")
 
@@ -153,7 +152,7 @@ if __name__ == "__main__":
         except Exception as e:
             print("Error (password):", e)
 
-    for k in ["privat", "private", "company"]:  # 🔸 приклад перевірки kind
+    for k in ["privat", "private", "company"]:
         try:
             print("OK (kind):", Validator.validate_kind(k))
         except Exception as e:

@@ -1,15 +1,13 @@
 from connection.storage import Storage
 from datetime import date
-
+from tabulate import tabulate
 class ReviewMethods:
-    """This class helps to manage reviews in the database."""
 
     def __init__(self):
         # Create a connection to the database
         self.storage = Storage()
         self.storage.connect()
 
-    # ---------------- SAVE REVIEW ----------------
     def save_review(self, customer_id: int, product_id: int, rating: float, comment: str = ""):
         #Save a new review into the database.
 
@@ -34,7 +32,7 @@ class ReviewMethods:
             return None
 
 
-    def get_reviews_for_product(self, product_id: int): # Get all reviews for a specific product.
+    def get_reviews_for_product(self, product_id: int) -> list[dict]:
         sql = """
         SELECT review_id, customer_id, product_id, rating, comment, created_at
         FROM review
@@ -43,13 +41,29 @@ class ReviewMethods:
         """
         try:
             rows = self.storage.fetch_all(sql, (product_id,))
+            if rows:
+                print(tabulate(rows, headers="keys", tablefmt="rounded_grid"))
+            else:
+                print(f"No reviews found for product ID {product_id}.")
             return rows
         except Exception as e:
-            print(" Error while reading reviews:", e)
+            print("Error while reading product reviews:", e)
             return []
 
+    def get_rating_summary_for_product(self, product_id: int) -> dict:
+        sql = "SELECT * FROM v_rating_summary_for_product WHERE product_id = %s"
+        try:
+            row = self.storage.fetch_one(sql, params=(product_id,))
+            if row:
+                print(tabulate([row], headers="keys", tablefmt="rounded_grid"))
+            else:
+                print(f"No rating summary found for product ID {product_id}.")
+            return row or {}
+        except Exception as e:
+            print("Error reading product rating summary:", e)
+            return {}
 
-    def get_reviews_for_customer(self, customer_id: int): #Get all reviews written by a specific customer
+    def get_reviews_for_customer(self, customer_id: int) -> list[dict]:
         sql = """
         SELECT review_id, customer_id, product_id, rating, comment, created_at
         FROM review
@@ -58,17 +72,33 @@ class ReviewMethods:
         """
         try:
             rows = self.storage.fetch_all(sql, (customer_id,))
+            if rows:
+                print(tabulate(rows, headers="keys", tablefmt="rounded_grid"))
+            else:
+                print(f"No reviews found for customer ID {customer_id}.")
             return rows
         except Exception as e:
-            print("Error while reading reviews:", e)
+            print("Error while reading customer reviews:", e)
             return []
 
+    def get_rating_summary_for_customer(self, customer_id: int) -> dict:
+        sql = "SELECT * FROM v_rating_summary_for_customer WHERE customer_id = %s"
+        try:
+            row = self.storage.fetch_one(sql, params=(customer_id,))
+            if row:
+                print(tabulate([row], headers="keys", tablefmt="rounded_grid"))
+            else:
+                print(f"No rating summary found for customer ID {customer_id}.")
+            return row or {}
+        except Exception as e:
+            print("Error reading customer rating summary:", e)
+            return {}
 
-    def delete_review(self, review_id: int):    #Delete one review by its ID."""
+    def delete_review(self, review_id: int):    #Delete one review by its ID
         sql = "DELETE FROM review WHERE review_id = %s"
         try:
             self.storage.execute(sql, (review_id,))
-            print(f"🗑️ Review {review_id} deleted.")
+            print(f"Review {review_id} deleted.")
             return True
         except Exception as e:
             print(" Error while deleting review:", e)

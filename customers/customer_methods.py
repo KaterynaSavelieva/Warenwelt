@@ -11,7 +11,6 @@ class CustomerMethods:
         self.storage = Storage()
         self.storage.connect()
 
-    # ---------------- Save ----------------
     def save_customer(
             self,
             *,
@@ -106,88 +105,7 @@ class CustomerMethods:
             print(f"Unexpected error: {e}")
             return None
 
-    def save_customer2(
-            self, *, name: str, email: str, kind: str,  # "private" | "company",
-            address: str | None = None, phone: str | None = None, password: str = "", birthdate: str | None = None, company_number: str | None = None
-    ) -> int | None:
-        try:
-            # 1) Валідація
-            name = Validator.validate_name(name)
-            email = Validator.validate_email(email)
-            if address:
-                address = Validator.validate_address(address)
-            if phone:
-                phone = Validator.validate_phone(phone)
-            kind = Validator.validate_kind(kind)
-            password = Validator.validate_password(password)
 
-            if kind == "private":
-                if not birthdate:
-                    print("Birthdate required for private customers (YYYY-MM-DD).")
-                    return None
-                birthdate = Validator.validate_birthdate(birthdate)
-            else:  # company
-                if not company_number:
-                    print("Company number required for company customers.")
-                    return None
-                company_number = Validator.validate_company_number(company_number)
-
-            # 2) Транзакція
-            self.storage.connection.begin()
-
-            # customers
-            sql_cus = """
-                INSERT INTO customers (name, email, address, phone, kind, password)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """
-            new_id = self.storage.insert_and_get_id(
-                sql_cus, (name, email, address, phone, kind, password)
-            )
-            if not new_id:
-                raise RuntimeError("Insert failed: no new ID returned.")
-
-            # дочірня таблиця
-            if kind == "private":
-                self.storage.execute(
-                    "INSERT INTO private_customer (customer_id, birthdate) VALUES (%s, %s)",
-                    (new_id, birthdate)
-                )
-            else:
-                self.storage.execute(
-                    "INSERT INTO company_customer (customer_id, company_number) VALUES (%s, %s)",
-                    (new_id, company_number)
-                )
-
-            # commit робиться всередині execute() (вдалий другий INSERT)
-            print(f"✅ Customer saved successfully with ID {new_id}.")
-            return new_id
-
-        except pymysql.err.IntegrityError as e:
-            # другий INSERT не закомітив — відкотимо перший
-            self.storage.connection.rollback()
-            code = getattr(e, "args", [None])[0]
-            msg = str(e).lower()
-            if code == 1062:
-                if "email" in msg:
-                    print("❌ This email already exists. Please use another email.")
-                elif "company_number" in msg:
-                    print("❌ This company number already exists. Please use another number.")
-                else:
-                    print("❌ Duplicate value violates a unique constraint.")
-            else:
-                print(f"❌ Database integrity error: {e}")
-            return None
-        except (ValueError, pymysql.MySQLError) as e:
-            self.storage.connection.rollback()
-            print(f"❌ Error: {e}")
-            return None
-        except Exception as e:
-            self.storage.connection.rollback()
-            print(f"❌ Unexpected error: {e}")
-            return None
-
-
-    # ---------------- Load one ----------------
     def get_customer(self, customer_id: int) -> dict | None:
         """Load one customers by id from the view v_cust."""
         try:
@@ -202,7 +120,6 @@ class CustomerMethods:
             print("Error loading customers:", e)
             return None
 
-    # ---------------- Load all ----------------
     def get_all_customers(self) -> list[dict]:
         """Load all customers from the view v_cust."""
         try:
@@ -217,7 +134,6 @@ class CustomerMethods:
             print("Error loading all customers:", e)
             return []
 
-    # ── UPDATE (name/address/phone/password) ───────────────────────────────────────
     def update_customer(self, customer_id: int, *,
                         name: str | None = None,
                         address: str | None = None,
@@ -253,7 +169,7 @@ class CustomerMethods:
             print("Update error:", e);
             return False
 
-    # ── DELETE (CASCADE прибере підтаблицю) ────────────────────────────────────────
+
     def delete_customer(self, customer_id: int) -> bool:
         try:
             ok = self.storage.execute("DELETE FROM customers WHERE customer_id=%s", (customer_id,))
@@ -265,7 +181,7 @@ class CustomerMethods:
             print("Delete error:", e);
             return False
 
-    # ── FIND: by kind ─────────────────────────────────────────────────────────────
+
     def find_customers_by_kind(self, kind: str) -> list[dict]:
         try:
             kind = Validator.validate_kind(kind)
