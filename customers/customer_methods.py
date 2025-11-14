@@ -37,35 +37,36 @@ class CustomerMethods:
             # 2. Перевірка залежних полів ДО вставки в customers
             if kind == "private":
                 if not birthdate:
-                    print("Birthdate required for private customers (YYYY-MM-DD).")
-                    return None
+                    raise ValueError("Birthdate: required for private customers (format: YYYY-MM-DD).")
                 birthdate = Validator.validate_birthdate(birthdate)
+
             elif kind == "company":
                 if not company_number:
-                    print("Company number required for company customers.")
-                    return None
+                    raise ValueError("Company number: required for company customers.")
                 company_number = Validator.validate_company_number(company_number)
-                # 🔸 Перевіримо чи вже існує така company_number
+
                 exists = self.storage.fetch_one(
                     "SELECT customer_id FROM company_customer WHERE company_number = %s",
                     (company_number,)
                 )
                 if exists:
-                    print("This company number already exists. Please use another.")
-                    return None
+                    raise ValueError("Company number: this company number already exists. Please use another.")
 
-            #  3. Тільки тепер — транзакція та вставка
+            # 3. Транзакція + вставка
             self.storage.connection.begin()
 
             sql_cus = """
                 INSERT INTO customers (name, email, address, phone, kind, password)
                 VALUES (%s, %s, %s, %s, %s, %s)
             """
-            new_id = self.storage.insert_and_get_id(sql_cus, (name, email, address, phone, kind, password))
+            new_id = self.storage.insert_and_get_id(
+                sql_cus, (name, email, address, phone, kind, password)
+            )
             if not new_id:
+                # якщо insert не повернув id – це вже технічна помилка
                 raise RuntimeError("Insert failed: no new ID returned.")
 
-            # 4. Вставка підтаблиць
+            # 4. Підтаблиці
             if kind == "private":
                 self.storage.execute(
                     "INSERT INTO private_customer (customer_id, birthdate) VALUES (%s, %s)",
@@ -82,29 +83,25 @@ class CustomerMethods:
             return new_id
 
         except pymysql.err.IntegrityError as e:
+            # 🔴 дублікати email/номер компанії → теж як помилка введення
             self.storage.connection.rollback()
             code = getattr(e, "args", [None])[0]
             msg = str(e).lower()
-            if code == 1062:
-                if "email" in msg:
-                    print("This email already exists. Please use another email.")
-                elif "company_number" in msg:
-                    print("his company number already exists. Please use another number.")
-                else:
-                    print("Duplicate value violates a unique constraint.")
-            else:
-                print(f"Database integrity error: {e}")
-            return None
-        except ValueError as e:
-            print("Validation error:", e)
-            return None
+            if code == 1062 and "email" in msg:
+                raise ValueError("Email: this email already exists. Please use another email.") from None
+            if code == 1062 and "company_number" in msg:
+                raise ValueError(
+                    "Company number: this company number already exists. Please use another number.") from None
+            # усе інше нехай летить далі
+            raise
+
         except pymysql.MySQLError as e:
+            # «серйозні» помилки БД
+            self.storage.connection.rollback()
             print(f"Database error: {e}")
             return None
-        except Exception as e:
-            print(f"Unexpected error: {e}")
-            return None
 
+        # ❌ НІЯКОГО `except Exception` тут – інакше ми знову з’їмо ValueError!
 
     def get_customer(self, customer_id: int) -> dict | None:
         """Load one customers by id from the view v_cust."""

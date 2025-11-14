@@ -30,6 +30,24 @@ class _Rules(BaseModel):
             raise ValueError("Password: " + ", ".join(problems))
         return v
 
+    @field_validator("birthdate")
+    @classmethod
+    def check_birthdate(cls, birthdate: date | None):
+        if birthdate is None:
+            return birthdate
+
+        today = date.today()
+        if birthdate > today:
+            raise ValueError("Birthdate: must not be in the future.")
+
+        # min age
+        age = today.year - birthdate.year
+        if (today.month, today.day) < (birthdate.month, birthdate.day):
+            age -= 1
+        if age < 18:
+            raise ValueError("Birthdate: customer must be at least 18 years old.")
+        return birthdate
+
 
 class Validator:
     """Thin wrapper around _Rules with short, user-friendly error messages."""

@@ -15,10 +15,10 @@ cm = CustomerMethods()
 # cm.update_customer(customer_id=2, phone="+4377777777")
 # cm.get_customer(2)
 
-cm.delete_customer(customer_id=5)
+cm.delete_customer(customer_id=i)
 
-pc=cm.find_customers_by_kind("private")
-print (pc)
-print(cm.find_customers_by_kind("company"))
+# pc=cm.find_customers_by_kind("private")
+# print (pc)
+# print(cm.find_customers_by_kind("company"))
 
 cm.close()
