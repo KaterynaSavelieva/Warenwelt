@@ -1,0 +1,9 @@
+ORDER ID: 31
+Customer ID: 30
+Date: 2025-11-14 14:59:47
+Company discount: 0%
+============================================================
+Products:
+  [4] Winterjacke Damen | Qty: 2 | Price: 129.90 EUR
+============================================================
+Total amount: 259.80 EUR

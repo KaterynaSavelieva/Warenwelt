@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<div class="page-container">
+  <h1 class="page-title">Checkout</h1>
+  <p class="page-subtitle">Bitte prüfen Sie Ihre Bestellung</p>
+
+  <div class="divider"></div>
+
+  <table class="product-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Category</th>
+        <th class="num">Preis / Stk.</th>
+        <th class="num">Menge</th>
+        <th class="num">Gesamt</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in items %}
+      <tr>
+        <td>{{ p.product_id }}</td>
+        <td>{{ p.product }}</td>
+        <td>{{ p.category }}</td>
+        <td class="num">{{ p.price|eur }} €</td>
+        <td class="num">{{ p.quantity }}</td>
+        <td class="num">{{ p.line_total|eur }} €</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="5" style="text-align:right; font-weight:600;">
+          Gesamtsumme:
+        </td>
+        <td class="num" style="font-weight:600;">
+          {{ total|eur }} €
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div style="margin-top: 20px; display:flex; gap:12px;">
+    <a href="{{ url_for('cart_view') }}" class="nav-link">
+      Zurück zum Warenkorb
+    </a>
+
+    <form method="post" action="{{ url_for('checkout') }}">
+      <!-- таблиця з items -->
+      <button type="submit" class="card-btn">
+        Bestellung abschließen
+      </button>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

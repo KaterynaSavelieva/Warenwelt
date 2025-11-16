@@ -1,0 +1,10 @@
+ORDER ID: 32
+Customer ID: 30
+Date: 2025-11-14 15:04:12
+Company discount: 0%
+============================================================
+Products:
+  [6] Kinder T-Shirt | Qty: 1 | Price: 19.99 EUR
+  [12] Pullover Wolle | Qty: 1 | Price: 89.00 EUR
+============================================================
+Total amount: 108.99 EUR

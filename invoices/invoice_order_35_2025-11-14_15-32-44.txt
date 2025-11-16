@@ -1,0 +1,9 @@
+ORDER ID: 35
+Customer ID: 30
+Date: 2025-11-14 15:32:44
+Company discount: 0%
+============================================================
+Products:
+  [2] Smartphone Samsung S24 | Qty: 1 | Price: 999.00 EUR
+============================================================
+Total amount: 999.00 EUR

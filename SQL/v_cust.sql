@@ -25,4 +25,4 @@ ORDER BY cus.customer_id;
 
 SELECT * FROM v_cust;
 
-SELECT * FROM company_customer;
+-- SELECT * FROM company_customer;

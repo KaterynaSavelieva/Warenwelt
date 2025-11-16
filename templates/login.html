@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+  <h1 class="page-title">Login</h1>
+  <p class="page-subtitle">
+    Bitte melden Sie sich mit Ihrem Kundenkonto an.
+  </p>
+
+  <div class="divider"></div>
+
+  {% if error %}
+    <div style="
+        margin-bottom:16px;
+        padding:10px 14px;
+        border-radius:8px;
+        background-color:#fee2e2;
+        color:#7f1d1d;
+        font-size:14px;">
+      {{ error }}
+    </div>
+  {% endif %}
+
+  <form method="post"
+        style="background:#ffffff; padding:20px 24px; border-radius:10px;
+               box-shadow:0 4px 16px rgba(0,0,0,0.08); max-width:420px;">
+
+    <p>
+      <label>Email:</label><br>
+      <input type="email" name="email"
+             required autocomplete="off"
+             style="width:100%; padding:6px 8px;
+                    border-radius:6px; border:1px solid #d1d5db;">
+    </p>
+
+    <p>
+      <label>Password:</label><br>
+      <input type="password" name="password"
+             required autocomplete="off"
+             style="width:100%; padding:6px 8px;
+                    border-radius:6px; border:1px solid #d1d5db;">
+    </p>
+
+    <p style="margin-top:18px;">
+      <button type="submit" class="card-btn">
+        Login
+      </button>
+    </p>
+  </form>
+
+</div>
+{% endblock %}

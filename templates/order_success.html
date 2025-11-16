@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Bestellung erfolgreich{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+  <h2>Vielen Dank für Ihre Bestellung!</h2>
+  <p class="page-subtitle">
+    Ihre Bestellung wurde erfolgreich abgeschlossen.
+  </p>
+
+  <p>
+    Bestellnummer:
+    <strong>#{{ order.order_id }}</strong>
+  </p>
+
+  <p>
+    Datum:
+    {{ order.order_date.strftime("%d.%m.%Y %H:%M") if order.order_date else "-" }}
+  </p>
+
+  <div class="divider"></div>
+
+  <h3>Bestellte Artikel</h3>
+
+  <table class="product-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Kategorie</th>
+        <th class="num">Preis</th>
+        <th class="num">Menge</th>
+        <th class="num">Gesamt</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item.product_id }}</td>
+        <td>{{ item.product }}</td>
+        <td>{{ item.category }}</td>
+        <td class="num">{{ item.price|eur }} €</td>
+        <td class="num">{{ item.quantity }}</td>
+        <td class="num">
+          {{ (item.line_total if item.line_total is defined else item.price * item.quantity)|eur }} €
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="5" class="num">Zwischensumme:</td>
+        <td class="num">{{ subtotal|eur }} €</td>
+      </tr>
+      {% if is_company %}
+      <tr>
+        <td colspan="5" class="num">Firmenrabatt (5 %):</td>
+        <td class="num">-{{ discount|eur }} €</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <td colspan="5" class="num" style="font-weight:600;">Gesamtsumme:</td>
+        <td class="num" style="font-weight:600;">{{ total|eur }} €</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <p style="margin-top:20px;">
+    <a href="{{ url_for('product_list') }}" class="nav-link">Zurück zum Shop</a>
+  </p>
+
+</div>
+{% endblock %}

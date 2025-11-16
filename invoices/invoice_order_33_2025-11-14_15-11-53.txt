@@ -1,0 +1,12 @@
+ORDER ID: 33
+Customer ID: 30
+Date: 2025-11-14 15:11:53
+Company discount: 0%
+============================================================
+Products:
+  [3] Bluetooth Kopfhörer Sony | Qty: 1 | Price: 149.99 EUR
+  [9] Notebook Acer Aspire | Qty: 1 | Price: 699.99 EUR
+  [10] Tastatur Logitech | Qty: 4 | Price: 59.99 EUR
+  [15] Smartwatch Apple SE | Qty: 2 | Price: 349.00 EUR
+============================================================
+Total amount: 1787.94 EUR

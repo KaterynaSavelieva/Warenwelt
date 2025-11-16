@@ -2,13 +2,280 @@
 {% block title %}Products{% endblock %}
 
 {% block content %}
-<h1>Onlineshop – Products</h1>
 
-<ul>
-  {% for p in products %}
-    <li>
-      {{ p.product }} – {{ p.price }} € ({{ p.category }})
-    </li>
-  {% endfor %}
-</ul>
+<div class="page-container">
+
+  <h1 class="page-title">Onlineshop</h1>
+  <p class="page-subtitle">Product list</p>
+
+  <!-- Верхня панель: зліва сума кошика, справа перемикач виду -->
+  <div class="view-bar">
+    <p class="cart-summary">
+      Warenkorb-Summe: {{ cart_total|eur }} €
+    </p>
+
+    <div class="view-toggle">
+      <a href="{{ url_for('product_list',
+                          view='table',
+                          search=search,
+                          category=category,
+                          sort=sort,
+                          dir=direction) }}"
+         class="toggle-link {% if view == 'table' %}toggle-link-active{% endif %}">
+        Table view
+      </a>
+      <a href="{{ url_for('product_list',
+                          view='cards',
+                          search=search,
+                          category=category,
+                          sort=sort,
+                          dir=direction) }}"
+         class="toggle-link {% if view == 'cards' %}toggle-link-active{% endif %}">
+        Cards view
+      </a>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Filter + search -->
+  <form method="get" class="view-toggle" style="margin-top: 10px;">
+    <input type="hidden" name="view" value="{{ view }}">
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <input type="hidden" name="dir" value="{{ direction }}">
+
+    <input type="text"
+           name="search"
+           placeholder="Suche nach Name"
+           value="{{ search }}"
+           style="padding:4px 8px; border-radius:6px; border:1px solid #d1d5db; margin-right:8px;">
+
+    <select name="category"
+            style="padding:4px 8px; border-radius:6px; border:1px solid #d1d5db; margin-right:8px;">
+      <option value="">Alle Kategorien</option>
+      <option value="electronics" {{ 'selected' if category=='electronics' else '' }}>Electronics</option>
+      <option value="clothing" {{ 'selected' if category=='clothing' else '' }}>Clothing</option>
+      <option value="books" {{ 'selected' if category=='books' else '' }}>Books</option>
+    </select>
+
+    <button type="submit" class="card-btn" style="font-size:13px;">
+      Filtern
+    </button>
+  </form>
+
+  <div class="divider"></div>
+
+  <!-- ───── TABLE VIEW ───── -->
+  {% if view == 'table' %}
+    <table class="product-table">
+      <thead>
+        <tr>
+          <th>
+            <a href="{{ url_for('product_list',
+                                view=view,
+                                search=search,
+                                category=category,
+                                sort='id',
+                                dir='desc' if sort=='id' and direction=='asc' else 'asc') }}"
+               style="color:inherit; text-decoration:none;">
+              ID
+            </a>
+          </th>
+          <th>
+            <a href="{{ url_for('product_list',
+                                view=view,
+                                search=search,
+                                category=category,
+                                sort='name',
+                                dir='desc' if sort=='name' and direction=='asc' else 'asc') }}"
+               style="color:inherit; text-decoration:none;">
+              Name
+            </a>
+          </th>
+          <th>
+            <a href="{{ url_for('product_list',
+                                view=view,
+                                search=search,
+                                category=category,
+                                sort='category',
+                                dir='desc' if sort=='category' and direction=='asc' else 'asc') }}"
+               style="color:inherit; text-decoration:none;">
+              Category
+            </a>
+          </th>
+          <th class="num">
+            <a href="{{ url_for('product_list',
+                                view=view,
+                                search=search,
+                                category=category,
+                                sort='price',
+                                dir='desc' if sort=='price' and direction=='asc' else 'asc') }}"
+               style="color:inherit; text-decoration:none;">
+              Price
+            </a>
+          </th>
+          <th>Details</th>
+          <th class="num">Menge</th>
+          <th class="num">
+            <a href="{{ url_for('product_list',
+                                view=view,
+                                search=search,
+                                category=category,
+                                sort='total',
+                                dir='desc' if sort=='total' and direction=='asc' else 'asc') }}"
+               style="color:inherit; text-decoration:none;">
+              Gesamt
+            </a>
+          </th>
+          <th class="num">Aktion</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr id="row-{{ p.product_id }}">
+          <td>{{ p.product_id }}</td>
+          <td>{{ p.product }}</td>
+          <td>{{ p.category }}</td>
+
+          <td class="num">
+            {{ p.price|eur }} €
+          </td>
+
+          <td>
+            {% if p.category == 'electronics' %}
+              Brand: {{ p.brand }}, {{ p.warranty_years }} years warranty
+            {% elif p.category == 'clothing' %}
+              Size: {{ p.size }}
+            {% elif p.category == 'books' %}
+              Author: {{ p.author }}, {{ p.page_count }} pages
+            {% else %}
+              –
+            {% endif %}
+          </td>
+
+          <!-- Menge -->
+          <td class="num">
+            <form method="post"
+                  action="{{ url_for('set_cart_quantity', product_id=p.product_id) }}"
+                  class="qty-form">
+              <input type="hidden"
+                     name="return_url"
+                     value="{{ request.full_path }}#row-{{ p.product_id }}">
+              <button type="button" class="qty-btn" onclick="changeQty(this, -1)">−</button>
+              <input type="number"
+                     name="qty"
+                     min="0"
+                     max="999999"
+                     class="qty-input"
+                     value="{{ counts[p.product_id] if p.product_id in counts else 0 }}">
+              <button type="button" class="qty-btn" onclick="changeQty(this, 1)">+</button>
+            </form>
+          </td>
+
+          <!-- Gesamtpreis -->
+          <td class="num">
+            {% if p.product_id in counts %}
+              {{ (counts[p.product_id] * p.price)|eur }} €
+            {% else %}
+              0,00 €
+            {% endif %}
+          </td>
+
+          <!-- BUTTON: icon -->
+          <td class="num">
+            <form method="post"
+                  action="{{ url_for('add_to_cart_route', product_id=p.product_id, view=view) }}">
+              <button type="submit" class="cart-icon-btn" title="In den Warenkorb">
+                <span>🛒</span>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  <!-- ───── CARDS VIEW ───── -->
+  {% if view == 'cards' %}
+    <h2 class="page-subtitle" style="margin-top: 30px;">Cards view</h2>
+    <div class="divider"></div>
+
+    <div class="products-grid">
+      {% for p in products %}
+        <div class="product-card" id="row-{{ p.product_id }}">
+
+          <div>
+            <div class="product-card-title">
+              {{ p.product }}
+            </div>
+
+            <div class="product-card-category">
+              Category: {{ p.category }}
+            </div>
+
+            {% if p.category == 'electronics' %}
+              <div class="product-card-category">
+                Brand: {{ p.brand }}
+              </div>
+              <div class="product-card-category">
+                {{ p.warranty_years }} years warranty
+              </div>
+            {% elif p.category == 'clothing' %}
+              <div class="product-card-category">
+                Size: {{ p.size }}
+              </div>
+            {% elif p.category == 'books' %}
+              <div class="product-card-category">
+                Author: {{ p.author }}
+              </div>
+              <div class="product-card-category">
+                {{ p.page_count }} pages
+              </div>
+            {% endif %}
+
+            <div class="product-card-price">
+              {{ p.price|eur }} €
+            </div>
+
+            {% set qty = counts.get(p.product_id, 0) %}
+            {% if qty > 0 %}
+              <div class="product-card-category">
+                Im Warenkorb: {{ qty }} Stk. ({{ (qty * p.price)|eur }} €)
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="card-footer">
+            <form method="post"
+                  action="{{ url_for('set_cart_quantity', product_id=p.product_id) }}"
+                  class="qty-form" style="margin-right:8px;">
+              <input type="hidden"
+                     name="return_url"
+                     value="{{ request.full_path }}#row-{{ p.product_id }}">
+              <button type="button" class="qty-btn" onclick="changeQty(this, -1)">−</button>
+              <input type="number"
+                     name="qty"
+                     min="0"
+                     max="999999"
+                     class="qty-input"
+                     value="{{ qty }}">
+              <button type="button" class="qty-btn" onclick="changeQty(this, 1)">+</button>
+            </form>
+
+            <form method="post"
+                  action="{{ url_for('add_to_cart_route', product_id=p.product_id, view=view) }}">
+              <button type="submit" class="cart-icon-btn" title="In den Warenkorb">
+                <span>🛒</span>
+              </button>
+            </form>
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+</div>
+
 {% endblock %}

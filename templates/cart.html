@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Warenkorb{% endblock %}
+
+{% block content %}
+<div class="page-container">
+  <h1 class="page-title">Warenkorb</h1>
+  <p class="page-subtitle">Ihre ausgewählten Produkte</p>
+
+  <!-- Cart total summary -->
+  <p class="cart-summary">
+    Warenkorb-Summe: {{ total|eur }} €
+  </p>
+
+  <div class="divider"></div>
+
+  {% if products %}
+    <table class="product-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Category</th>
+          <th class="num">Preis / Stk.</th>
+          <th class="num">Menge</th>
+          <th class="num">Gesamt</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for p in products %}
+        <tr id="row-{{ p.product_id }}">
+          <td>{{ p.product_id }}</td>
+          <td>{{ p.product }}</td>
+          <td>{{ p.category }}</td>
+
+          <td class="num">{{ p.price|eur }} €</td>
+
+          <!-- Menge mit Input und +/- -->
+          <td class="num">
+            <form method="post"
+                  action="{{ url_for('set_cart_quantity', product_id=p.product_id) }}"
+                  class="qty-form">
+              <input type="hidden"
+                     name="return_url"
+                     value="{{ request.full_path }}#row-{{ p.product_id }}">
+              <button type="button" class="qty-btn" onclick="changeQty(this, -1)">−</button>
+              <input type="number"
+                     name="qty"
+                     min="0"
+                     max="999999"
+                     class="qty-input"
+                     value="{{ p.quantity }}">
+              <button type="button" class="qty-btn" onclick="changeQty(this, 1)">+</button>
+            </form>
+          </td>
+
+          <td class="num">{{ p.line_total|eur }} €</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+
+      <!-- Footer row with total -->
+      <tfoot>
+        <tr>
+          <td colspan="5" style="text-align:right; font-weight:600;">
+            Gesamtsumme:
+          </td>
+          <td class="num" style="font-weight:600;">
+            {{ total|eur }} €
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  {% else %}
+    <p>Ihr Warenkorb ist leer.</p>
+  {% endif %}
+
+    <div style="margin-top: 20px; display:flex; gap:12px;">
+    <a href="{{ url_for('product_list') }}" class="nav-link">
+      Zurück zu den Produkten
+    </a>
+
+    {% if products %}
+      <form method="post"
+            action="{{ url_for('clear_cart') }}">
+        <button type="submit" class="card-btn" style="font-size:14px;">
+          Warenkorb leeren
+        </button>
+      </form>
+
+      <form method="get"
+            action="{{ url_for('checkout') }}">
+        <button type="submit" class="card-btn" style="font-size:14px;">
+          Zur Kasse
+        </button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
