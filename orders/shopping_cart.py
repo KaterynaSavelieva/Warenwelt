@@ -2,49 +2,60 @@ from products.product_methods import ProductMethods
 
 class ShoppingCart:
     def __init__(self, customer_id: int):
-        self.customer_id = customer_id # save the customer id
-        self.products = []  # create an empty list to store products (as tuples),
-        # each tuple looks like (product_id, quantity)
-        self.total_sum = 0.0 # total price of all products in the cart
+        self.customer_id = customer_id
+        self.products: dict[int, int] = {}   # {product_id: quantity}
+        self.total_sum = 0.0
 
 
     def add_product(self, product_id: int, quantity: int = 1):
-        # quantity = 1 is a default parameter value
-        # if the user doesn’t give a quantity, it will automatically be 1
-        self.products.append((product_id, quantity)) # add a new product (as a tuple) to the product list
-        print(f"Product {product_id} added (x{quantity}).")
-    # cart.add_product(5)       → quantity = 1 automatically
-    # cart.add_product(5, 3)    → quantity = 3 (because it was given explicitly)
+        if quantity < 1:
+            print("Quantity must be at least 1.")
+            return
+
+        if product_id in self.products:
+            self.products[product_id] += quantity
+        else:
+            self.products[product_id] = quantity
+
+        print(f"Product {product_id} added (x{quantity}). Current quantity: {self.products[product_id]}")
+
 
     def remove_product(self, product_id: int):
-        new_list = [] # create a new empty list
+        if product_id not in self.products:
+            print(f"Product {product_id} not found in cart.")
+            return
 
-        for p in self.products: # go through all items in the cart
-            # p is a tuple, for example (3, 2)
-            # p[0] = product_id
-            # p[1] = quantity
+        del self.products[product_id]
+        print(f"Product {product_id} removed.")
 
-            if p[0] != product_id: # if ID doesn’t match, keep this item
-                new_list.append(p)
-            else: # if it matches — skip (basically “remove”)
-                print(f"Product {product_id} will be removed...")
-
-        self.products = new_list # replace the old list of products with the new one
-        print(f"Product {product_id} removed.") # final message
 
     def clear_cart(self):
-        self.products.clear()  # remove all products from the shopping cart
-        self.total_sum = 0.0 # reset the total price to zero
-        print("Shopping cart has been cleared.") # show a message to confirm that the cart is empty
+        self.products.clear()
+        self.total_sum = 0.0
+        print("Shopping cart has been cleared.")
 
-    def calculate_total_price(self, product_methods: ProductMethods):
-        total = 0 # start total sum at 0
 
-        for product_id, quantity in self.products: # go through each product in the cart
-            product = product_methods.get_product(product_id) # get full product info from the database
+    def calculate_total_price(self, product_methods: ProductMethods) -> float:
+        total = 0.0
 
-            if product:  # if the product exists, add its price * quantity to the total
-                total += product["price"] * quantity
+        for product_id, quantity in self.products.items():
+            product = product_methods.get_product(product_id)
+            if not product:
+                print(f"Warning: Product {product_id} not found in database!")
+                continue
 
-        self.total_sum = float(round(total, 2))  # round the total to 2 decimal places and save it
-        return self.total_sum # return the total sum
+            total += float(product["price"]) * quantity
+
+        self.total_sum = round(total, 2)
+        return self.total_sum
+
+
+    def show_cart(self):
+        if not self.products:
+            print("Cart is empty.")
+            return
+
+        print("\n--- Shopping Cart ---")
+        for pid, qty in self.products.items():
+            print(f"Product ID {pid}: quantity × {qty}")
+        print(f"Total (no DB prices yet): {self.total_sum}")

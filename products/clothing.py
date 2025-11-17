@@ -13,6 +13,6 @@ class Clothing(Product):
             "product": self.product,
             "price": self.price,
             "weight": self.weight,
-            "category": "clothing",
+            "category": self.category,
             "size": self.size,
         }

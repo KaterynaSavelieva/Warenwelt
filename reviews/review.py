@@ -1,11 +1,13 @@
 from dataclasses import dataclass
+from typing import Optional, Dict, Any
 
 @dataclass
 class Review:
     customer_id: int
     product_id: int
     rating: float
-    comment: str
+    comment: Optional[str] = None
+
     def __post_init__(self):
         if not (1<=self.rating <=5):
             raise ValueError("Rating must be between 1 and 5")

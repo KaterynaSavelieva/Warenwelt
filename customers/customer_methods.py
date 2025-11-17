@@ -4,8 +4,9 @@ from tabulate import tabulate
 from customers.validator import Validator
 import pymysql
 
+
 class CustomerMethods:
-    #Methods for saving and loading customers.
+    # Methods for saving and loading customers.
 
     def __init__(self):
         self.storage = Storage()
@@ -91,7 +92,8 @@ class CustomerMethods:
                 raise ValueError("Email: this email already exists. Please use another email.") from None
             if code == 1062 and "company_number" in msg:
                 raise ValueError(
-                    "Company number: this company number already exists. Please use another number.") from None
+                    "Company number: this company number already exists. Please use another number."
+                ) from None
             # усе інше нехай летить далі
             raise
 
@@ -139,20 +141,20 @@ class CustomerMethods:
         try:
             sets, vals = [], []
             if name:
-                sets.append("name=%s");
+                sets.append("name=%s")
                 vals.append(Validator.validate_name(name))
             if address:
-                sets.append("address=%s");
+                sets.append("address=%s")
                 vals.append(Validator.validate_address(address))
             if phone:
-                sets.append("phone=%s");
+                sets.append("phone=%s")
                 vals.append(Validator.validate_phone(phone))
             if password:
-                sets.append("password=%s");
+                sets.append("password=%s")
                 vals.append(Validator.validate_password(password))
 
             if not sets:
-                print("Nothing to update.");
+                print("Nothing to update.")
                 return False
 
             sql = f"UPDATE customers SET {', '.join(sets)} WHERE customer_id=%s"
@@ -161,11 +163,11 @@ class CustomerMethods:
             self.storage.connection.commit()
             print(f"Customer {customer_id} updated.") if ok else print("No changes.")
             return bool(ok)
-        except Exception as e:
-            self.storage.connection.rollback();
-            print("Update error:", e);
+        except MySQLError as e:
+            self.storage.connection.rollback()
+            print("Update error:", e)
             return False
-
+        # ValueError від Validator нехай летить нагору → побачиш нормальне повідомлення в UI/меню
 
     def delete_customer(self, customer_id: int) -> bool:
         try:
@@ -173,23 +175,26 @@ class CustomerMethods:
             self.storage.connection.commit()
             print(f"Customer {customer_id} deleted.") if ok else print("Not found.")
             return bool(ok)
-        except Exception as e:
-            self.storage.connection.rollback();
-            print("Delete error:", e);
+        except MySQLError as e:
+            self.storage.connection.rollback()
+            print("Delete error:", e)
             return False
 
-
     def find_customers_by_kind(self, kind: str) -> list[dict]:
+        # якщо передадуть "privat" → тут одразу ValueError, і це добре
+        kind = Validator.validate_kind(kind)
         try:
-            kind = Validator.validate_kind(kind)
-            rows = self.storage.fetch_all("SELECT * FROM v_cust WHERE kind=%s ORDER BY customer_id", (kind,))
+            rows = self.storage.fetch_all(
+                "SELECT * FROM v_cust WHERE kind=%s ORDER BY customer_id",
+                (kind,)
+            )
             if rows:
-                from tabulate import tabulate; print(tabulate(rows, headers="keys", tablefmt="rounded_grid"))
+                print(tabulate(rows, headers="keys", tablefmt="rounded_grid"))
             else:
                 print("No customers for this kind.")
             return rows or []
-        except Exception as e:
-            print("Find error:", e);
+        except MySQLError as e:
+            print("Find error:", e)
             return []
 
     def close(self):

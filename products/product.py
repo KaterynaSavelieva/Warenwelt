@@ -5,17 +5,29 @@ from typing import Optional, Dict, Any
 
 @dataclass
 class Product(ABC):
-    """Abstract base class for all product types (matches SQL schema)."""
+    """
+    Abstract base class for all product types.
+    Matches SQL table `product`.
+    """
 
-    product_id: Optional[int]  # None for new rows; DB assigns AUTO_INCREMENT
-    product: str
+    product_id: Optional[int]   # None → DB AUTO_INCREMENT
+    product: str                # назва товару
     price: float
     weight: float
+    category: str               # electronics | clothing | books
 
     @abstractmethod
     def to_row(self) -> Dict[str, Any]:
         """
-        Return a dictionary of all fields (keys must match SQL column names),
-        e.g. include 'product_id', 'name', 'price', 'weight', 'category', ...
+        Must return dict matching SQL columns for INSERT/UPDATE:
+        {
+            "product_id": ...,
+            "product": ...,
+            "price": ...,
+            "weight": ...,
+            "category": ...
+        }
+        Subclasses must extend it with category-specific fields
+        (brand, author, size, ...).
         """
         pass

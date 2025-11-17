@@ -1,17 +1,18 @@
 from typing import Optional
-from validator import Validator
+from .validator import Validator
+
 
 class Customer:
-    next_id = 10001
+    next_id = 1
 
     def __init__(
         self,
         name: str,
-        address: str,
+        address: Optional[str],
         email: str,
-        phone: str,
+        phone: Optional[str],
         password: str,
-        kind: str,  # нове поле
+        kind: str,
         customer_id: Optional[int] = None
     ):
         if customer_id is not None:
@@ -20,12 +21,11 @@ class Customer:
             self.customer_id = Customer.next_id
             Customer.next_id += 1
 
-        # validate & assign
         self._name = Validator.validate_name(name)
         self._address = Validator.validate_address(address)
         self._email = Validator.validate_email(email)
-        self._phone = Validator.validate_phone(phone)
-        self._kind = Validator.validate_kind(kind)  # new validation
+        self._phone = Validator.validate_phone(phone) if phone else None
+        self._kind = Validator.validate_kind(kind)
         self.__password = Validator.validate_password(password)
 
     # --- properties with re-validation ---
@@ -38,12 +38,15 @@ class Customer:
         self._name = Validator.validate_name(value)
 
     @property
-    def address(self) -> str:
+    def address(self) -> str | None:
         return self._address
 
     @address.setter
-    def address(self, value: str) -> None:
-        self._address = Validator.validate_address(value)
+    def address(self, value: str | None) -> None:
+        if value is None:
+            self._address = None
+        else:
+            self._address = Validator.validate_address(value)
 
     @property
     def email(self) -> str:
@@ -54,12 +57,15 @@ class Customer:
         self._email = Validator.validate_email(value)
 
     @property
-    def phone(self) -> str:
+    def phone(self) -> str | None:
         return self._phone
 
     @phone.setter
-    def phone(self, value: str) -> None:
-        self._phone = Validator.validate_phone(value)
+    def phone(self, value: str | None) -> None:
+        if value is None:
+            self._phone = None
+        else:
+            self._phone = Validator.validate_phone(value)
 
     @property
     def kind(self) -> str:

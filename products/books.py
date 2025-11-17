@@ -14,7 +14,7 @@ class Book(Product):
             "product": self.product,
             "price": self.price,
             "weight": self.weight,
-            "category": "books",
+            "category": self.category,
             "author": self.author,
             "page_count": self.page_count,
         }

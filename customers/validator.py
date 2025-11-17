@@ -48,6 +48,19 @@ class _Rules(BaseModel):
             raise ValueError("Birthdate: customer must be at least 18 years old.")
         return birthdate
 
+    @field_validator(
+        "email","phone", "name", "address", "company_number",
+        mode="before")
+    @classmethod
+    def clean_text_fields(cls, v):
+        if v is None:
+            return v
+        # remove newlines, tabs
+        v = v.replace("\n", " ").replace("\r", " ").replace("\t", " ")
+        # collapse multiple spaces inside and strip outside
+        v = " ".join(v.split())
+        return v
+
 
 class Validator:
     """Thin wrapper around _Rules with short, user-friendly error messages."""

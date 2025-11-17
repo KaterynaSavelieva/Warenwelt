@@ -51,9 +51,11 @@ class Storage:    # Storage class for database connection and queries.
         try:
             with self.connection.cursor() as cur:
                 cur.execute(sql, params)
+                self.connection.commit() #!!!
                 return cur.lastrowid or None
         except Exception as e:
             print("Error executing insert:", e)
+            self.connection.rollback() #!!!
             return None
 
 

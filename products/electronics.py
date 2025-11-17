@@ -14,7 +14,7 @@ class Electronics(Product):
             "product": self.product,
             "price": self.price,
             "weight": self.weight,
-            "category": "electronics",
+            "category": self.category,
             "brand": self.brand,
             "warranty_years": self.warranty_years,
         }
