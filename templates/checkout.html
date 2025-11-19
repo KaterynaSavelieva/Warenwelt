@@ -3,22 +3,25 @@
 
 {% block content %}
 <div class="page-container">
+
   <h1 class="page-title">Checkout</h1>
-  <p class="page-subtitle">Bitte prüfen Sie Ihre Bestellung</p>
+  <p class="page-subtitle">Please review your order before continuing.</p>
 
   <div class="divider"></div>
 
+  <!-- ORDER SUMMARY TABLE -->
   <table class="product-table">
     <thead>
       <tr>
         <th>ID</th>
         <th>Name</th>
         <th>Category</th>
-        <th class="num">Preis / Stk.</th>
-        <th class="num">Menge</th>
-        <th class="num">Gesamt</th>
+        <th class="num">Price / Unit</th>
+        <th class="num">Quantity</th>
+        <th class="num">Total</th>
       </tr>
     </thead>
+
     <tbody>
       {% for p in items %}
       <tr>
@@ -31,30 +34,50 @@
       </tr>
       {% endfor %}
     </tbody>
+
     <tfoot>
       <tr>
-        <td colspan="5" style="text-align:right; font-weight:600;">
-          Gesamtsumme:
-        </td>
+        <td colspan="5" style="text-align:right; font-weight:600;">Order Total:</td>
         <td class="num" style="font-weight:600;">
           {{ total|eur }} €
         </td>
       </tr>
+
+      {% if is_company %}
+      <tr>
+        <td colspan="6" style="text-align:center; color:#1d4ed8; padding-top:10px;">
+          (Company customer – 5% discount applied)
+        </td>
+      </tr>
+      {% endif %}
     </tfoot>
   </table>
 
-  <div style="margin-top: 20px; display:flex; gap:12px;">
-    <a href="{{ url_for('cart_view') }}" class="nav-link">
-      Zurück zum Warenkorb
-    </a>
+  <div class="divider"></div>
 
-    <form method="post" action="{{ url_for('checkout') }}">
-      <!-- таблиця з items -->
-      <button type="submit" class="card-btn">
-        Bestellung abschließen
-      </button>
-    </form>
+  <!-- SHIPPING METHOD + PLACE ORDER -->
+  <form method="post" action="{{ url_for('checkout') }}"
+        style="background:#ffffff; padding:20px; border-radius:10px;
+               box-shadow:0 4px 16px rgba(0,0,0,0.08); max-width:450px;">
 
+    <p style="margin-bottom:12px;">
+      <label for="shipping_method" style="font-weight:600;">Shipping method:</label><br>
+      <select name="shipping_method"
+              id="shipping_method"
+              style="width:100%; padding:8px; border-radius:6px; border:1px solid #d1d5db; margin-top:6px;">
+        <option value="standard">Standard shipping (3–5 days)</option>
+        <option value="express">Express shipping (1–2 days)</option>
+      </select>
+    </p>
+
+    <button type="submit" class="card-btn" style="margin-top:10px;">
+      Place order
+    </button>
+  </form>
+
+  <div style="margin-top:20px;">
+    <a href="{{ url_for('cart_view') }}" class="nav-link">Back to cart</a>
   </div>
+
 </div>
 {% endblock %}

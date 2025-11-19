@@ -2,66 +2,100 @@ from connection.storage import Storage
 from orders.shopping_cart import ShoppingCart
 import pymysql
 
+
 class OrderMethods:
     def __init__(self):
-        # Create a connection to the database
         self.storage = Storage()
         self.storage.connect()
 
-    def save_order(self, cart: ShoppingCart, is_company=False) -> int | None:
+    def save_order(self, cart: ShoppingCart, is_company: bool = False) -> int | None:
         """
         Saves an order into two tables:
         - 'bestellung' (order header)
         - 'bestellung_details' (order items)
         """
         try:
-            # Check if the cart is empty
+            # 1) basic checks
             if not cart.products:
-                print("Cart is empty.")
+                print("SAVE_ORDER: Cart is empty.")
                 return None
 
-            total = 0.0                 # total amount of the order
-            items = []                  # will store (product_id, quantity, price)
+            if cart.customer_id is None:
+                print("SAVE_ORDER: customer_id is None.")
+                return None
 
-            # Get product prices from the database
-            for product_id, quantity in cart.products:
-                # Get the product price by ID
-                row = self.storage.fetch_one(
-                    "SELECT price FROM product WHERE product_id=%s", (product_id,)
-                )
+            total = 0.0
+            items: list[tuple[int, int, float]] = []  # (product_id, quantity, price)
 
-                # If product not found, skip it
-                if not row:
-                    print(f"Product {product_id} not found. Skipped.")
+            # 2) normalize cart.products (support dict, tuples, and plain IDs)
+            # cart.products can be:
+            # - dict: {product_id: quantity}
+            # - list of (product_id, quantity)
+            # - list of product_id (quantity = 1)
+            if isinstance(cart.products, dict):
+                raw_items = cart.products.items()       # (product_id, quantity)
+            else:
+                raw_items = cart.products
+
+            for entry in raw_items:
+                if isinstance(entry, dict):
+                    # e.g. {"product_id": 1, "quantity": 2}
+                    product_id = entry.get("product_id")
+                    quantity = entry.get("quantity", 0)
+
+                elif isinstance(entry, (tuple, list)) and len(entry) == 2:
+                    # e.g. (1, 2)
+                    product_id, quantity = entry
+
+                else:
+                    # e.g. only product_id (int or str)
+                    product_id = int(entry)
+                    quantity = 1
+
+                if not product_id or quantity <= 0:
+                    print(f"SAVE_ORDER: invalid cart item {entry}, skipped.")
                     continue
 
-                price = float(row["price"])   # convert price to float
-                items.append((product_id, quantity, price))
-                total += price * quantity           # add to total
 
-            # If no valid products were found
+                row = self.storage.fetch_one(
+                    "SELECT price FROM product WHERE product_id = %s",
+                    (product_id,),
+                )
+
+                if not row:
+                    print(f"SAVE_ORDER: product {product_id} not found in DB, skipped.")
+                    continue
+
+                price = float(row["price"])
+                items.append((product_id, quantity, price))
+                total += price * quantity
+
             if not items:
-                print("No valid products to save.")
+                print("SAVE_ORDER: no valid products to save.")
                 return None
 
-            # Apply company discount if needed
+            # 3) apply company discount if needed
             if is_company:
-                total *= 0.95  # 5% discount for company orders
+                total *= 0.95
 
-            # Start a single database transaction
+            total = round(total, 2)
+
+            print(f"SAVE_ORDER: customer_id={cart.customer_id}, "
+                  f"is_company={is_company}, total={total}")
+
+            # 4) start transaction
             self.storage.connection.begin()
 
-            # Save main order record (header)
+            # 4.1 insert into bestellung (order header)
             order_id = self.storage.insert_and_get_id(
                 "INSERT INTO bestellung (customer_id, total) VALUES (%s, %s)",
-                (cart.customer_id, round(total, 2))
+                (cart.customer_id, total),
             )
 
-            # If no ID was returned, something went wrong
             if not order_id:
-                raise RuntimeError("Insert failed: no new order ID returned.")
+                raise RuntimeError("SAVE_ORDER: insert into 'bestellung' returned no ID.")
 
-            # 4.2 Save each product from the cart into bestellung_details
+            # 4.2 insert all items into bestellung_details
             sql_detail = """
                 INSERT INTO bestellung_details (order_id, product_id, quantity, price)
                 VALUES (%s, %s, %s, %s)
@@ -69,27 +103,30 @@ class OrderMethods:
             for product_id, quantity, price in items:
                 self.storage.execute(sql_detail, (order_id, product_id, quantity, price))
 
-            # Commit the transaction
+            # 5) commit
             self.storage.connection.commit()
-            print(f"Order saved successfully (ID {order_id})")
+            print(f"SAVE_ORDER: order saved successfully (ID {order_id}).")
 
-            #  Empty the cart after saving
+            # 6) optional: clear cart
             if hasattr(cart, "clear_cart"):
                 cart.clear_cart()
 
             return order_id
 
-        # Error handling
         except pymysql.err.IntegrityError as e:
-            # For example, if foreign key constraint fails
             self.storage.connection.rollback()
-            print("Integrity error while saving order:", e)
+            print("SAVE_ORDER IntegrityError:", e)
+            return None
+
+        except pymysql.MySQLError as e:
+            self.storage.connection.rollback()
+            print("SAVE_ORDER MySQLError:", e)
             return None
 
         except Exception as e:
-            self.storage.connection.rollback()  # For all other unexpected errors
-            print("Error while saving the order:", e)
+            self.storage.connection.rollback()
+            print("SAVE_ORDER unexpected error:", e)
             return None
 
-    def close(self): # Close the database connection
+    def close(self):
         self.storage.disconnect()

@@ -84,7 +84,7 @@ class CustomerMethods:
             return new_id
 
         except pymysql.err.IntegrityError as e:
-            # 🔴 дублікати email/номер компанії → теж як помилка введення
+            #  дублікати email/номер компанії → теж як помилка введення
             self.storage.connection.rollback()
             code = getattr(e, "args", [None])[0]
             msg = str(e).lower()
@@ -103,7 +103,7 @@ class CustomerMethods:
             print(f"Database error: {e}")
             return None
 
-        # ❌ НІЯКОГО `except Exception` тут – інакше ми знову з’їмо ValueError!
+        # НІЯКОГО `except Exception` тут – інакше ми знову з’їмо ValueError!
 
     def get_customer(self, customer_id: int) -> dict | None:
         """Load one customers by id from the view v_cust."""
@@ -118,6 +118,20 @@ class CustomerMethods:
         except MySQLError as e:
             print("Error loading customers:", e)
             return None
+
+    def get_customer_by_email (self, email: str) -> dict | None:
+        try:
+            sql = "SELECT * FROM v_cust WHERE email = %s"
+            row = self.storage.fetch_one(sql, (email,)) #tuple
+            if row:
+                print(tabulate([row], headers="keys", tablefmt="rounded_grid"))
+            else:
+                print("No customers found with this email.")
+            return row
+        except MySQLError as e:
+            print("Error loading customers:", e)
+            return None
+
 
     def get_all_customers(self) -> list[dict]:
         """Load all customers from the view v_cust."""

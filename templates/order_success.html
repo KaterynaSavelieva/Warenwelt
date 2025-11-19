@@ -19,6 +19,17 @@
     {{ order.order_date.strftime("%d.%m.%Y %H:%M") if order.order_date else "-" }}
   </p>
 
+  <p>
+    Versandart:
+    <strong>
+      {% if shipping_method == "express" %}
+        Expressversand (1–2 Tage)
+      {% else %}
+        Standardversand (3–5 Tage)
+      {% endif %}
+    </strong>
+  </p>
+
   <div class="divider"></div>
 
   <h3>Bestellte Artikel</h3>

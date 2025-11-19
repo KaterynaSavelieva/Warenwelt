@@ -57,6 +57,15 @@ def calculate_cart_total(products, counts: Counter) -> float:
             total += qty * price_each
     return total
 
+def check_password (user_row: dict, plain_password: str) -> bool: #password check: compares plain text from form with the value from database.
+    if not user_row:
+        return False
+    db_password = user_row.get("password")
+    if db_password is None:
+        return False
+    return db_password == plain_password
+
+
 # ---------- маршрути ----------
 
 @app.route("/")
@@ -206,18 +215,23 @@ def checkout():
     if not cart_ids:
         return redirect(url_for("cart_view"))
 
-    # ---- хто робить замовлення? ----
-    customer_id = session.get("customer_id", 1)        # тимчасово 1
-    is_company = session.get("is_company", False)      # True/False з login
+    # who is making the order?
+    customer_id = session.get("customer_id")
+    if not customer_id:
+        flash("Please log in before checkout.", "error")
+        return redirect(url_for("login"))
 
-    # ---- всі продукти з БД + кількості з сесії ----
+    is_company = session.get("is_company", False)
+
+    # load all products and quantities from session
+    # всі продукти з БД + кількості з сесії
     all_products = product_methods.get_all_products()
     counts = Counter(cart_ids)
 
     products_by_id = {p["product_id"]: p for p in all_products}
 
     items = []
-    total = 0.0
+    total = 0.00
 
     for pid, qty in counts.items():
         p = products_by_id.get(pid)
@@ -237,11 +251,13 @@ def checkout():
             "line_total": line_total,
         })
 
+    # apply discount logically (DB discount is handled in OrderMethods)
     # застосовуємо знижку тільки логічно (у БД вже робиться в OrderMethods)
     discount_factor = 0.95 if is_company else 1.0
     total_with_discount = total * discount_factor
 
-    # ---- GET: просто показати підсумкову таблицю ----
+    #  GET: just show summary table and shipping options
+    #  просто показати підсумкову таблицю
     if request.method == "GET":
         return render_template(
             "checkout.html",
@@ -250,29 +266,37 @@ def checkout():
             is_company=is_company,       # щоб у шаблоні показати "5% Rabatt"
         )
 
-    # ---- POST: користувач натиснув "Bestellung abschließen" ----
+    # POST: user clicked "Place order"
+    shipping_method = request.form.get("shipping_method", "standard")
+    session["shipping_method"] = shipping_method
 
-    # 1) будуємо ShoppingCart з того, що лежить у сесії
+
+    # 1) build ShoppingCart from session data
+    # будуємо ShoppingCart з того, що лежить у сесії
     cart = ShoppingCart(customer_id=customer_id)
 
     for pid, qty in counts.items():
         cart.add_product(pid, qty)
 
+    # calculate total_sum inside cart (for Order)
     # порахувати total_sum всередині кошика (для Order)
     cart.calculate_total_price(product_methods)
 
-    # 2) зберігаємо замовлення в БД за допомогою ТВОГО OrderMethods
+    # 2) save order in DB using OrderMethods
+    #  зберігаємо замовлення в БД за допомогою OrderMethods
     order_id = order_methods.save_order(cart, is_company=is_company)
     if not order_id:
-        flash("Beim Speichern der Bestellung ist ein Fehler aufgetreten.", "error")
+        flash("An error occurred while saving the order.", "error")
         return redirect(url_for("cart_view"))
 
-    # 3) створюємо обʼєкт Order (твій клас) і генеруємо інвойс
+    # 3) create Order object and generate invoice
+    # створюємо обʼєкт Order (твій клас) і генеруємо інвойс
     order = Order(cart, is_company=is_company)
     order.set_order_id(order_id)
     order.create_invoice()
 
-    # 4) чистимо кошик у сесії й показуємо success
+    # 4)  clear cart in session and show success page
+    # чистимо кошик у сесії й показуємо success
     session["cart"] = []
     flash("Ihre Bestellung wurde erfolgreich abgeschlossen.", "success")
     return redirect(url_for("order_success", order_id=order_id))
@@ -339,17 +363,31 @@ def login():
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "")
 
-        # TODO: тут перевірка у БД
-        # user = customer_methods.find_by_email(email)
-        # if not user or not check_password(user, password): ...
-
+        # 1) Simple check for empty fields
+        #   проста перевірка, що поля не порожні
         if not email or not password:
-            error = "Bitte geben Sie Email und Passwort ein."
+            error = "Please enter your email address and password.."
         else:
-            # Поки що – фейк: вважаємо, що логін завжди успішний
-            session["user_email"] = email
-            flash("Erfolgreich eingeloggt.", "success")
-            return redirect(url_for("product_list"))
+            # 2) Load user from database
+            #  шукаємо користувача в БД
+            user = customer_methods.get_customer_by_email(email)
+
+            # 3)  Validate user and password
+            #  якщо немає юзера або пароль не збігається → помилка
+            if not user or not check_password(user, password):
+                error = "Incorrect email or password."
+
+            else:
+                # 4) Login successful → store user session
+                # логін успішний → зберігаємо дані в сесії
+                session.clear() # optional: очистити старі дані
+
+                session["customer_id"]= user ["customer_id"]
+                session["user_email"] = user["email"]
+                session["is_company"] = (user["kind"]=="company") #is_company – True для kind == 'company', інакше False.
+
+                flash("Logged in as {}.".format(user["name"]), "success")
+                return redirect(url_for("product_list"))
 
     return render_template("login.html", error=error)
 
@@ -435,6 +473,9 @@ def order_success(order_id: int):
 
     om.close()
 
+    # NEW: get shipping method from session (default: standard)
+    shipping_method = session.get("shipping_method", "standard")
+
     return render_template(
         "order_success.html",
         order=order_row,
@@ -444,6 +485,7 @@ def order_success(order_id: int):
         total=total,
         is_company=is_company,
         invoice_path=invoice_path,
+        shipping_method=shipping_method,
     )
 
 
