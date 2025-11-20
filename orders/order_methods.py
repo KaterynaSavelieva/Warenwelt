@@ -1,6 +1,8 @@
 from connection.storage import Storage
 from orders.shopping_cart import ShoppingCart
 import pymysql
+from collections import defaultdict
+from typing import List, Dict, Any
 
 
 class OrderMethods:
@@ -93,18 +95,18 @@ class OrderMethods:
             # 4) start transaction
             self.storage.connection.begin()
 
-            # 4.1 insert into bestellung (order header)
+            # 4.1 insert into orders (order header)
             order_id = self.storage.insert_and_get_id(
-                "INSERT INTO bestellung (customer_id, total) VALUES (%s, %s)",
+                "INSERT INTO orders (customer_id, total) VALUES (%s, %s)",
                 (cart.customer_id, total),
             )
 
             if not order_id:
-                raise RuntimeError("SAVE_ORDER: insert into 'bestellung' returned no ID.")
+                raise RuntimeError("SAVE_ORDER: insert into 'orders' returned no ID.")
 
-            # 4.2 insert all items into bestellung_details
+            # 4.2 insert all items into order_items
             sql_detail = """
-                INSERT INTO bestellung_details (order_id, product_id, quantity, price)
+                INSERT INTO order_items (order_id, product_id, quantity, price)
                 VALUES (%s, %s, %s, %s)
             """
             for product_id, quantity, price in items:
@@ -134,6 +136,71 @@ class OrderMethods:
             self.storage.connection.rollback()
             print("SAVE_ORDER unexpected error:", e)
             return None
+
+    def get_orders_with_items_for_customer(self, customer_id: int) -> List[Dict[str, Any]]:
+        """
+        Returns list of orders for given customer.
+        Each element:
+        {
+            "order_id": int,
+            "order_date": date/datetime,
+            "total": float,
+            "items": [
+                {
+                    "product_id": int,
+                    "product": str,
+                    "category": str,
+                    "quantity": int,
+                    "price": float,
+                    "line_total": float,
+                }, ...
+            ]
+        }
+        """
+        sql = """
+               SELECT
+                   o.order_id,
+                   o.order_date,
+                   o.total,
+                   oi.product_id,
+                   oi.quantity,
+                   oi.price,
+                   p.product,
+                   p.category
+               FROM orders o
+               JOIN order_items oi ON oi.order_id = o.order_id
+               JOIN product p      ON p.product_id = oi.product_id
+               WHERE o.customer_id = %s
+               ORDER BY o.order_date DESC, o.order_id DESC, oi.product_id
+           """
+        rows = self.storage.fetch_all(sql, (customer_id,))
+
+        orders: Dict[int, Dict[str, Any]] = {}
+
+        for r in rows:
+            oid = r["order_id"]
+            if oid not in orders:
+                orders[oid] = {
+                    "order_id": oid,
+                    "order_date": r["order_date"],
+                    "total": float(r["total"]),
+                    "items": [],
+                }
+
+            line_total = float(r["price"]) * r["quantity"]
+
+            orders[oid]["items"].append(
+                {
+                    "product_id": r["product_id"],
+                    "product": r["product"],
+                    "category": r["category"],
+                    "quantity": r["quantity"],
+                    "price": float(r["price"]),
+                    "line_total": line_total,
+                }
+            )
+
+        return list(orders.values())
 
     def close(self):
         self.storage.disconnect()

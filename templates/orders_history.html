@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}My orders{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+  <h1 class="page-title">My orders</h1>
+  <p class="page-subtitle">
+    Here you can see all your completed orders.
+  </p>
+
+  <div class="divider"></div>
+
+  {% if not orders %}
+    <p>You have no orders yet.</p>
+  {% else %}
+
+    <div class="order-summary-global">
+    <p><strong>Total subtotal:</strong> {{ total_subtotal|eur }} €</p>
+
+    {% if total_discount > 0 %}
+    <p><strong>Total discount:</strong> -{{ total_discount|eur }} €</p>
+    {% endif %}
+
+    <p><strong>Total paid:</strong> {{ total_final|eur }} €</p>
+</div>
+
+<div class="divider"></div>
+
+
+    {% for order in orders %}
+      <div style="margin-bottom: 32px;">
+        <h2 style="margin-bottom:4px;">
+          Order #{{ order.order_id }}
+        </h2>
+        <p style="margin:0;">
+          Date:
+          {{ order.order_date.strftime("%d.%m.%Y %H:%M") if order.order_date else "-" }}
+          <br>
+          Total: <strong>{{ order.total|eur }} €</strong>
+        </p>
+
+        <div class="divider" style="margin:12px 0;"></div>
+
+        <table class="product-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th class="num">Price</th>
+              <th class="num">Quantity</th>
+              <th class="num">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in order["items"] %}
+              <tr>
+                <td>{{ item.product_id }}</td>
+                <td>{{ item.product }}</td>
+                <td>{{ item.category }}</td>
+                <td class="num">{{ item.price|eur }} €</td>
+                <td class="num">{{ item.quantity }}</td>
+                <td class="num">{{ item.line_total|eur }} €</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="order-summary-box">
+            <p>
+                <strong>Subtotal:</strong>
+                {{ order.subtotal|eur }} €
+            </p>
+
+            {% if order.discount > 0 %}
+            <p>
+                <strong>Company discount ({{ order.discount_percent }} %):</strong>
+                -{{ order.discount|eur }} €
+            </p>
+            {% endif %}
+
+            <p>
+                <strong>Total:</strong>
+                {{ order.total|eur }} €
+            </p>
+        </div>
+
+
+      </div>
+    {% endfor %}
+
+  {% endif %}
+
+</div>
+{% endblock %}

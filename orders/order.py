@@ -4,6 +4,8 @@ from orders.shopping_cart import ShoppingCart
 import os
 from connection.storage import Storage
 from datetime import datetime
+from pathlib import Path
+
 
 
 class Order:
@@ -14,10 +16,14 @@ class Order:
         - total_sum
         - list of (product_id, quantity)
         """
+        self.cart = cart
         self.customer_id: int | None = cart.customer_id
         self.is_company: bool = is_company
         self.total_sum: float = float(getattr(cart, "total_sum", 0.0))
         self.order_id: int | None = None
+
+        self.storage = Storage()
+        self.storage.connect()
 
         ordered: list[tuple[int, int]] = []
         products = cart.products
@@ -63,66 +69,113 @@ class Order:
 
     def create_invoice(self) -> str:
         """
-        Create a simple TXT invoice file in the 'invoices' folder
-        and return the absolute path to the file.
+        Створює TXT-інвойс із:
+          - даними клієнта (ім'я, тип, адреса, email, телефон)
+          - таблицею куплених товарів (ID, Name, Qty, Price, Total)
+          - підсумком, знижкою для company і total.
         """
-        if self.order_id is None:
-            raise ValueError("order_id is not set for this order.")
 
-        # 1) Make sure the invoices directory exists
-        base_dir = os.path.dirname(os.path.dirname(__file__))  # project root
-        invoices_dir = os.path.join(base_dir, "invoices")
-        os.makedirs(invoices_dir, exist_ok=True)
+        # 1) Дані клієнта
+        customer = self.storage.fetch_one(
+            """
+            SELECT customer_id, name, email, address, phone, kind
+            FROM customers
+            WHERE customer_id = %s
+            """,
+            (self.cart.customer_id,),
+        )
 
-        # 2) Create filename with timestamp
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        filename = f"invoice_order_{self.order_id}_{timestamp}.txt"
-        full_path = os.path.join(invoices_dir, filename)
+        # 2) Рядки замовлення по цьому order_id
+        items = self.storage.fetch_all(
+            """
+            SELECT d.product_id,
+                   p.product,
+                   d.quantity,
+                   d.price
+            FROM order_items d
+            JOIN product p ON p.product_id = d.product_id
+            WHERE d.order_id = %s
+            """,
+            (self.order_id,),
+        )
 
-        # 3) Load product data from database
-        storage = Storage()
-        storage.connect()
+        # 2.1) Рахуємо subtotal і суму по кожному рядку
+        subtotal = 0.0
+        for row in items:
+            line_total = float(row["price"]) * row["quantity"]
+            row["line_total"] = line_total
+            subtotal += line_total
+
+        # 3) Знижка для компанії
+        if self.is_company:
+            discount = round(subtotal * 0.05, 2)
+        else:
+            discount = 0.0
+
+        total = round(subtotal - discount, 2)
+
+        # 4) Формуємо текст інвойсу
+        now_str = datetime.now().strftime("%d.%m.%Y %H:%M")
+        kind_str = "COMPANY" if self.is_company else "PRIVATE"
 
         lines: list[str] = []
         lines.append(f"INVOICE #{self.order_id}")
-        lines.append(f"Customer ID: {self.customer_id}")
         lines.append("")
-        lines.append("Items:")
 
-        total = 0.0
-
-        for product_id, quantity in self.ordered_products:
-            row = storage.fetch_one(
-                "SELECT product, price FROM product WHERE product_id = %s",
-                (product_id,),
-            )
-            if not row:
-                continue
-
-            name = row["product"]
-            price = float(row["price"])
-            line_total = price * quantity
-            total += line_total
-
-            lines.append(
-                f"- {product_id}: {name} | qty: {quantity} | "
-                f"price: {price:.2f} EUR | line total: {line_total:.2f} EUR"
-            )
-
-        storage.disconnect()
-
-        lines.append("")
-        if self.is_company:
-            lines.append("Customer type: COMPANY (5% discount applied in order total).")
+        # ---- Блок КЛІЄНТ ----
+        lines.append("Customer")
+        lines.append("--------")
+        if customer:
+            lines.append(f"  Name   : {customer['name']}")
+            lines.append(f"  ID     : {customer['customer_id']}")
+            lines.append(f"  Type   : {kind_str}")
+            lines.append(f"  Address: {customer.get('address') or '-'}")
+            lines.append(f"  Email  : {customer.get('email') or '-'}")
+            lines.append(f"  Phone  : {customer.get('phone') or '-'}")
         else:
-            lines.append("Customer type: PRIVATE.")
+            # запасний варіант, якщо раптом не знайдеться
+            lines.append(f"  ID   : {self.cart.customer_id}")
+            lines.append(f"  Type : {kind_str}")
+        lines.append("")
+        lines.append(f"Order date : {now_str}")
+        lines.append("")
 
-        lines.append(f"Order total (cart): {self.total_sum:.2f} EUR")
-        lines.append(f"Order ID (DB): {self.order_id}")
+        # ---- Таблиця ТОВАРІВ ----
+        header = f"{'ID':<4} {'Name':<30} {'Qty':>5} {'Price':>10} {'Total':>10}"
+        lines.append("Items")
+        lines.append("-----")
+        lines.append(header)
+        lines.append("-" * len(header))
 
-        # 4) Write file
-        with open(full_path, "w", encoding="utf-8") as f:
-            f.write("\n".join(lines))
+        for row in items:
+            pid = row["product_id"]
+            name = row["product"]
+            qty = row["quantity"]
+            price = float(row["price"])
+            line_total = row["line_total"]
 
-        print(f"Invoice created: {full_path}")
-        return full_path
+            # .30 обрізає дуже довгі назви, щоб таблиця не “роз’їжджалась”
+            lines.append(
+                f"{pid:<4} {name:<30.30} {qty:>5} {price:>10.2f} {line_total:>10.2f}"
+            )
+
+        lines.append("")
+        lines.append(f"{'Subtotal:':>53} {subtotal:>10.2f}")
+        if discount > 0:
+            lines.append(f"{'Company discount (5 %):':>53} -{discount:>9.2f}")
+        lines.append(f"{'Total:':>53} {total:>10.2f}")
+        lines.append("")
+
+        # 5) Запис у файл
+        invoices_dir = Path("invoices")
+        invoices_dir.mkdir(exist_ok=True)
+        ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        filename = f"invoice_order_{self.order_id}_{ts}.txt"
+        full_path = invoices_dir / filename
+
+        full_path.write_text("\n".join(lines), encoding="utf-8")
+
+        # Можна закрити з'єднання (якщо цей об'єкт більше не потрібен)
+        self.storage.disconnect()
+
+        return str(full_path)

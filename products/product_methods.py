@@ -2,14 +2,10 @@ from connection.storage import Storage
 from pymysql import MySQLError
 from tabulate import tabulate
 
-
 class ProductMethods:
-    # Methods for loading product data.
-
     def __init__(self):
         self.storage = Storage()
         self.storage.connect()
-
 
     def get_product(self, product_id: int):
         try:
@@ -25,7 +21,31 @@ class ProductMethods:
 
     def get_all_products(self):
         try:
-            sql = "SELECT * FROM v_prod ORDER BY product_id"
+            sql = """
+                SELECT
+                    p.product_id,
+                    p.product,
+                    p.category,
+                    p.price,
+                    p.brand,
+                    p.warranty_years,
+                    p.size,
+                    p.author,
+                    p.page_count,
+                    ar.avg_rating,
+                    ar.review_count
+                FROM v_prod p
+                LEFT JOIN (
+                    SELECT
+                        product_id,
+                        AVG(rating) AS avg_rating,
+                        COUNT(*)    AS review_count
+                    FROM review
+                    GROUP BY product_id
+                ) ar ON ar.product_id = p.product_id
+                ORDER BY p.product_id
+            """
+            #sql = "SELECT * FROM v_prod ORDER BY product_id"
             results = self.storage.fetch_all(sql)
             if results:
                 print(tabulate(results, headers="keys", tablefmt="rounded_grid"))
@@ -36,19 +56,7 @@ class ProductMethods:
             print("Error loading all products:", e)
             return []
 
-    def save_product(
-            self,
-            *,
-            product_new: str,
-            price: float,
-            weight: float,
-            category: str,  # 'electronics' | 'clothing' | 'books'
-            author: str | None = None,
-            page_count: int | None = None,
-            brand: str | None = None,
-            warranty_years: int | None = None,
-            size: str | None = None
-    ) -> int | None:
+    def save_product(self, *, product_new: str, price: float, weight: float, category: str,  author: str | None = None, page_count: int | None = None, brand: str | None = None, warranty_years: int | None = None, size: str | None = None) -> int | None:
         try:
             # 1️ Мінімальна перевірка
             product_new = (product_new or "").strip()
@@ -122,15 +130,7 @@ class ProductMethods:
             print("Error saving product:", e)
             return None
 
-    # ---------------- UPDATE ----------------
-    def update_product(
-        self,
-        product_id: int,
-        *,
-        name: str | None = None,
-        price: float | None = None,
-        weight: float | None = None
-    ) -> bool:
+    def update_product(self, product_id: int, *, name: str | None = None, price: float | None = None, weight: float | None = None) -> bool:
         """Просте оновлення базових даних продукту."""
         try:
             # Формуємо динамічний SQL тільки для наявних полів
@@ -170,8 +170,6 @@ class ProductMethods:
             print("Unexpected error:", e)
             return False
 
-
-    # ---------------- DELETE ----------------
     def delete_product(self, product_id: int) -> bool:
         """Видаляє продукт за ID (разом із підтаблицею завдяки CASCADE)."""
         try:
@@ -192,7 +190,6 @@ class ProductMethods:
             print("Unexpected error:", e)
             return False
 
-
     def find_products_by_category(self, category: str) -> list[dict]:
         if category not in ("electronics", "clothing", "books"):
             print("Category must be 'electronics' | 'clothing' | 'books'.");
@@ -206,7 +203,6 @@ class ProductMethods:
             print("No products for this category.")
         return rows or []
 
-
     def find_products_under_price(self, max_price: float) -> list[dict]:
         rows = self.storage.fetch_all(
             "SELECT * FROM v_prod WHERE price <= %s ORDER BY price, product_id", (max_price,)
@@ -217,10 +213,96 @@ class ProductMethods:
             print("No products under this price.")
         return rows or []
 
+    def get_products_filtered(
+        self,
+        *,
+        search: str = "",
+        category: str = "",
+        brand: str = "",
+        author: str = "",
+        size: str = "",
+        sort: str = "id",        # можна ігнорувати, сортуємо у Python
+        direction: str = "asc",  # те саме
+    ) -> list[dict]:
+        """
+        Load products with optional filters and rating info.
+
+        Returns rows with:
+        product_id, product, category, price,
+        brand, warranty_years, size, author, page_count,
+        avg_rating, review_count
+        """
+
+        sql = """
+            SELECT
+                p.product_id,
+                p.product,
+                p.category,
+                p.price,
+
+                e.brand,
+                e.warranty_years,
+
+                cl.size,
+                b.author,
+                b.page_count,
+
+                r.avg_rating,
+                r.review_count
+            FROM product p
+            LEFT JOIN electronics e
+                ON e.product_id = p.product_id
+            LEFT JOIN clothing cl
+                ON cl.product_id = p.product_id
+            LEFT JOIN books b
+                ON b.product_id = p.product_id
+            LEFT JOIN (
+                SELECT
+                    product_id,
+                    ROUND(AVG(rating), 1) AS avg_rating,
+                    COUNT(*)              AS review_count
+                FROM review
+                GROUP BY product_id
+            ) r
+                ON r.product_id = p.product_id
+            WHERE 1 = 1
+        """
+
+        params: list = []
+
+        # ----- filters -----
+        if category:
+            sql += " AND p.category = %s"
+            params.append(category)
+
+        if search:
+            sql += " AND LOWER(p.product) LIKE %s"
+            params.append("%" + search.lower() + "%")
+
+        if brand:
+            # логічно використовується для electronics
+            sql += " AND e.brand = %s"
+            params.append(brand)
+
+        if author:
+            # логічно використовується для books
+            sql += " AND b.author = %s"
+            params.append(author)
+
+        if size:
+            # логічно використовується для clothing
+            sql += " AND cl.size = %s"
+            params.append(size)
+
+        # ORDER BY можна не робити (ми сортуємо у product_list),
+        # але якщо хочеш – можна додати просте сортування по id:
+        # sql += " ORDER BY p.product_id ASC"
+
+        rows = self.storage.fetch_all(sql, params)
+        return rows
 
     def close(self):
         self.storage.disconnect()
-
 
 
 

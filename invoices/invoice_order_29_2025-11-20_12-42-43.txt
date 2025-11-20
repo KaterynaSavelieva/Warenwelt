@@ -1,0 +1,26 @@
+INVOICE #29
+
+Customer
+--------
+  Name   : Valentyna Savelieva
+  ID     : 21
+  Type   : COMPANY
+  Address: Hauptplatz 5
+  Email  : aaa@123.as
+  Phone  : 067764753721
+
+Order date : 20.11.2025 12:42
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+4    Winterjacke Damen                  1     129.90     129.90
+5    Jeans Herren Slim Fit              1      79.50      79.50
+7    Roman "Der Fluss"                  1      14.99      14.99
+20   Roman "Schatten der Zeit"          1      18.50      18.50
+8    Kochbuch Vegan Life                1      24.50      24.50
+
+                                            Subtotal:     267.39
+                              Company discount (5 %): -    13.37
+                                               Total:     254.02

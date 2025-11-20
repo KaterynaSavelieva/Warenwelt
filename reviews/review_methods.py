@@ -1,109 +1,114 @@
 from connection.storage import Storage
-from datetime import date
-from tabulate import tabulate
-class ReviewMethods:
+import pymysql
 
+
+class ReviewMethods:
     def __init__(self):
-        # Create a connection to the database
         self.storage = Storage()
         self.storage.connect()
 
-    def save_review(self, customer_id: int, product_id: int, rating: float, comment: str = ""):
-        #Save a new review into the database.
+    def get_all_reviews(self) -> list[dict]:
+        """
+        Load all reviews with customer name and product name.
+        Visible for everyone.
+        """
+        sql = """
+            SELECT
+                r.review_id,
+                r.rating,
+                r.comment,
+                r.review_date,
+                c.name    AS customer_name,
+                p.product AS product_name
+            FROM review r
+            JOIN customers c ON c.customer_id = r.customer_id
+            JOIN product   p ON p.product_id   = r.product_id
+            ORDER BY r.review_date DESC, r.review_id DESC
+        """
+        try:
+            return self.storage.fetch_all(sql)
+        except pymysql.MySQLError as e:
+            print("Error loading reviews:", e)
+            return []
 
-        # Check rating range
+    def get_purchased_products(self, customer_id: int) -> list[dict]:
+        """
+        Return DISTINCT products that this customer has bought.
+        Використовуємо для списку в формі.
+        !!! Якщо ти перейменуєш 'bestellung'/'bestellung_details' на 'orders' –
+        тут треба буде змінити назви таблиць.
+        """
+        sql = """
+            SELECT DISTINCT
+                p.product_id,
+                p.product
+            FROM bestellung b
+            JOIN bestellung_details d ON d.order_id = b.order_id
+            JOIN product p            ON p.product_id = d.product_id
+            WHERE b.customer_id = %s
+            ORDER BY p.product
+        """
+        try:
+            return self.storage.fetch_all(sql, (customer_id,))
+        except pymysql.MySQLError as e:
+            print("Error loading purchased products:", e)
+            return []
+
+    def create_review(
+        self,
+        customer_id: int,
+        product_id: int,
+        rating: int,
+        comment: str | None = None,
+    ) -> bool:
+        """
+        Insert a new review.
+        Allowed ONLY if customer has bought this product.
+        """
         if rating < 1 or rating > 5:
-            print("Rating must be between 1 and 5.")
-            return None
-
-        sql = """
-        INSERT INTO review (customer_id, product_id, rating, comment, created_at)
-        VALUES (%s, %s, %s, %s, %s)
-        """
-        params = (customer_id, product_id, rating, comment, date.today())
-
-        try:
-            # Insert and get new review ID
-            review_id = self.storage.insert_and_get_id(sql, params)
-            print(f"Review saved with ID {review_id}")
-            return review_id
-        except Exception as e:
-            print("Error while saving review:", e)
-            return None
-
-
-    def get_reviews_for_product(self, product_id: int) -> list[dict]:
-        sql = """
-        SELECT review_id, customer_id, product_id, rating, comment, created_at
-        FROM review
-        WHERE product_id = %s
-        ORDER BY created_at DESC
-        """
-        try:
-            rows = self.storage.fetch_all(sql, (product_id,))
-            if rows:
-                print(tabulate(rows, headers="keys", tablefmt="rounded_grid"))
-            else:
-                print(f"No reviews found for product ID {product_id}.")
-            return rows
-        except Exception as e:
-            print("Error while reading product reviews:", e)
-            return []
-
-    def get_rating_summary_for_product(self, product_id: int) -> dict:
-        sql = "SELECT * FROM v_rating_summary_for_product WHERE product_id = %s"
-        try:
-            row = self.storage.fetch_one(sql, params=(product_id,))
-            if row:
-                print(tabulate([row], headers="keys", tablefmt="rounded_grid"))
-            else:
-                print(f"No rating summary found for product ID {product_id}.")
-            return row or {}
-        except Exception as e:
-            print("Error reading product rating summary:", e)
-            return {}
-
-    def get_reviews_for_customer(self, customer_id: int) -> list[dict]:
-        sql = """
-        SELECT review_id, customer_id, product_id, rating, comment, created_at
-        FROM review
-        WHERE customer_id = %s
-        ORDER BY created_at DESC
-        """
-        try:
-            rows = self.storage.fetch_all(sql, (customer_id,))
-            if rows:
-                print(tabulate(rows, headers="keys", tablefmt="rounded_grid"))
-            else:
-                print(f"No reviews found for customer ID {customer_id}.")
-            return rows
-        except Exception as e:
-            print("Error while reading customer reviews:", e)
-            return []
-
-    def get_rating_summary_for_customer(self, customer_id: int) -> dict:
-        sql = "SELECT * FROM v_rating_summary_for_customer WHERE customer_id = %s"
-        try:
-            row = self.storage.fetch_one(sql, params=(customer_id,))
-            if row:
-                print(tabulate([row], headers="keys", tablefmt="rounded_grid"))
-            else:
-                print(f"No rating summary found for customer ID {customer_id}.")
-            return row or {}
-        except Exception as e:
-            print("Error reading customer rating summary:", e)
-            return {}
-
-    def delete_review(self, review_id: int):    #Delete one review by its ID
-        sql = "DELETE FROM review WHERE review_id = %s"
-        try:
-            self.storage.execute(sql, (review_id,))
-            print(f"Review {review_id} deleted.")
-            return True
-        except Exception as e:
-            print(" Error while deleting review:", e)
+            print("create_review: rating must be between 1 and 5")
             return False
 
+        try:
+            # 1) Check that customer really bought this product
+            sql_check = """
+                SELECT 1
+                FROM bestellung b
+                JOIN bestellung_details d ON d.order_id = b.order_id
+                WHERE b.customer_id = %s
+                  AND d.product_id  = %s
+                LIMIT 1
+            """
+            row = self.storage.fetch_one(sql_check, (customer_id, product_id))
+            if not row:
+                print("create_review: customer has not purchased this product.")
+                return False
+
+            # (опційно) заборонити другий review на той самий товар
+            sql_exists = """
+                SELECT 1
+                FROM review
+                WHERE customer_id = %s AND product_id = %s
+                LIMIT 1
+            """
+            already = self.storage.fetch_one(sql_exists, (customer_id, product_id))
+            if already:
+                print("create_review: review for this product already exists.")
+                return False
+
+            # 2) Insert review
+            sql_insert = """
+                INSERT INTO review (customer_id, product_id, rating, comment)
+                VALUES (%s, %s, %s, %s)
+            """
+            self.storage.execute(sql_insert, (customer_id, product_id, rating, comment))
+            self.storage.connection.commit()
+            return True
+
+        except pymysql.MySQLError as e:
+            print("Error creating review:", e)
+            self.storage.connection.rollback()
+            return False
 
     def close(self):
         self.storage.disconnect()

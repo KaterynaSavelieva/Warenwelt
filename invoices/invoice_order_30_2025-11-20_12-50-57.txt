@@ -1,0 +1,22 @@
+INVOICE #30
+
+Customer
+--------
+  Name   : Johann Bauer
+  ID     : 8
+  Type   : PRIVATE
+  Address: Graz, Feldgasse 10
+  Email  : johann.bauer@example.com
+  Phone  : +436609999999
+
+Order date : 20.11.2025 12:50
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+18   Hose Damen Elegant                 2      69.90     139.80
+16   Monitor Dell 24"                   2     189.99     379.98
+
+                                            Subtotal:     519.78
+                                               Total:     519.78

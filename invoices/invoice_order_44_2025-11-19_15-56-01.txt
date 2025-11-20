@@ -1,9 +1,0 @@
-INVOICE #44
-Customer ID: 8
-
-Items:
-- 1: Laptop Lenovo IdeaPad | qty: 9 | price: 899.99 EUR | line total: 8099.91 EUR
-
-Customer type: PRIVATE.
-Order total (cart): 8099.91 EUR
-Order ID (DB): 44

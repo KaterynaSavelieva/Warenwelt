@@ -6,6 +6,11 @@ from orders.shopping_cart import ShoppingCart
 from orders.order import Order
 from orders.order_methods import OrderMethods
 from customers.customer_methods import CustomerMethods
+from reviews.review_methods import ReviewMethods
+from connection.storage import Storage
+
+
+
 
 app = Flask(__name__)
 app.secret_key = "change_me_to_a_random_secret_key"
@@ -31,8 +36,8 @@ def eur(value):
 app.jinja_env.filters["eur"] = eur
 
 pm = ProductMethods()                    # один екземпляр для всіх запитів
-om = OrderMethods()
 cm = CustomerMethods()
+rm = ReviewMethods()
 
 # ---------- helper-функції для кошика в сесії ----------
 
@@ -70,8 +75,6 @@ def check_password (user_row: dict, plain_password: str) -> bool: #password chec
 def home():
     return render_template("home.html")
 
-
-
 @app.route("/products")
 def product_list():
     view = request.args.get("view", "table")
@@ -79,59 +82,71 @@ def product_list():
         view = "table"
 
     # ---- параметри фільтра та сортування ----
-    search = request.args.get("search", "").strip()
-    category = request.args.get("category", "").strip()
-    sort = request.args.get("sort", "id")
+    search    = request.args.get("search", "").strip()
+    category  = request.args.get("category", "").strip()
+    brand     = request.args.get("brand", "").strip()
+    author    = request.args.get("author", "").strip()
+    size      = request.args.get("size", "").strip()
+    sort      = request.args.get("sort", "id")
     direction = request.args.get("dir", "asc")
 
-    products = pm.get_all_products()
+    # ---- Всі продукти (для фільтрів + суми кошика) ----
+    all_products = pm.get_all_products()          # без фільтрів!
 
-    # ---- кошик ----
     cart_ids = get_cart_ids()
     counts = Counter(cart_ids)
+    cart_total = calculate_cart_total(all_products, counts)
 
+    # списки для випадаючих меню
+    categories = sorted({p["category"] for p in all_products})
+    brands     = sorted({p["brand"]   for p in all_products if p.get("brand")})
+    authors    = sorted({p["author"]  for p in all_products if p.get("author")})
+    sizes = sorted({p["size"] for p in all_products if p.get("size")})
+
+    # ---- Список товарів з фільтрами з БД ----
+    products = pm.get_products_filtered(
+        search=search,
+        category=category,
+        brand=brand,
+        author=author,
+        size=size,
+    )
+
+    # ---- Сортування в Python (додаємо rating) ----
     def total_for(p):
         return counts.get(p["product_id"], 0) * float(p["price"])
 
-    # ---- фільтрація ----
-    filtered = products
-
-    if category:
-        filtered = [p for p in filtered if p["category"] == category]
-
-    if search:
-        term = search.lower()
-        filtered = [
-            p for p in filtered
-            if term in p["product"].lower()
-        ]
-
-    # ---- сортування по будь-якому полю ----
     key_map = {
         "id":       lambda p: p["product_id"],
         "name":     lambda p: p["product"],
         "category": lambda p: p["category"],
         "price":    lambda p: float(p["price"]),
         "total":    total_for,
+        "rating":   lambda p: float(p["avg_rating"] or 0.0),   # НОВЕ
     }
     key_func = key_map.get(sort, key_map["id"])
     reverse = (direction == "desc")
-    filtered = sorted(filtered, key=key_func, reverse=reverse)
-
-    # загальна сума всього кошика (по всіх товарах, не тільки відфільтрованих)
-    cart_total = calculate_cart_total(products, counts)
+    products = sorted(products, key=key_func, reverse=reverse)
 
     return render_template(
         "products.html",
-        products=filtered,
+        products=products,
         view=view,
-        counts=counts,
-        cart_total=cart_total,
         search=search,
         category=category,
+        brand=brand,
+        author=author,
+        size=size,
         sort=sort,
         direction=direction,
+        cart_total=cart_total,
+        counts=counts,
+        categories=categories,   # для select
+        brands=brands,
+        authors=authors,
+        sizes=sizes,
     )
+
 
 @app.route("/add_to_cart/<int:product_id>", methods=["POST"])
 def add_to_cart_route(product_id: int):
@@ -217,7 +232,6 @@ def checkout():
     if not cart_ids:
         return redirect(url_for("cart_view"))
 
-    # who is making the order?
     customer_id = session.get("customer_id")
     if not customer_id:
         flash("Please log in before checkout.", "error")
@@ -225,25 +239,19 @@ def checkout():
 
     is_company = session.get("is_company", False)
 
-    # load all products and quantities from session
-    # всі продукти з БД + кількості з сесії
     all_products = pm.get_all_products()
     counts = Counter(cart_ids)
-
     products_by_id = {p["product_id"]: p for p in all_products}
 
     items = []
     total = 0.00
-
     for pid, qty in counts.items():
         p = products_by_id.get(pid)
         if not p or qty <= 0:
             continue
-
         price = float(p["price"])
         line_total = price * qty
         total += line_total
-
         items.append({
             "product_id": pid,
             "product": p["product"],
@@ -253,54 +261,41 @@ def checkout():
             "line_total": line_total,
         })
 
-    # apply discount logically (DB discount is handled in OrderMethods)
-    # застосовуємо знижку тільки логічно (у БД вже робиться в OrderMethods)
     discount_factor = 0.95 if is_company else 1.0
     total_with_discount = total * discount_factor
 
-    #  GET: just show summary table and shipping options
-    #  просто показати підсумкову таблицю
+    # ВАЖЛИВО: створюємо тут
+    om = OrderMethods()
+
     if request.method == "GET":
         return render_template(
             "checkout.html",
             items=items,
-            total=total_with_discount,   # вже зі знижкою
-            is_company=is_company,       # щоб у шаблоні показати "5% Rabatt"
+            total=total_with_discount,
+            is_company=is_company,
         )
 
-    # POST: user clicked "Place order"
+    # POST
     shipping_method = request.form.get("shipping_method", "standard")
     session["shipping_method"] = shipping_method
 
-
-    # 1) build ShoppingCart from session data
-    # будуємо ShoppingCart з того, що лежить у сесії
     cart = ShoppingCart(customer_id=customer_id)
-
     for pid, qty in counts.items():
         cart.add_product(pid, qty)
 
-    # calculate total_sum inside cart (for Order)
-    # порахувати total_sum всередині кошика (для Order)
     cart.calculate_total_price(pm)
 
-    # 2) save order in DB using OrderMethods
-    #  зберігаємо замовлення в БД за допомогою OrderMethods
     order_id = om.save_order(cart, is_company=is_company)
     if not order_id:
         flash("An error occurred while saving the order.", "error")
         return redirect(url_for("cart_view"))
 
-    # 3) create Order object and generate invoice
-    # створюємо обʼєкт Order (твій клас) і генеруємо інвойс
+    # створюємо інвойс
     order = Order(cart, is_company=is_company)
     order.set_order_id(order_id)
     order.create_invoice()
 
-    # 4)  clear cart in session and show success page
-    # чистимо кошик у сесії й показуємо success
     session["cart"] = []
-    #flash("Your order has been successfully completed.", "success")
     return redirect(url_for("order_success", order_id=order_id))
 
 @app.route("/register", methods=["GET", "POST"])
@@ -408,92 +403,306 @@ def logout():
 
 @app.route("/order_success/<int:order_id>")
 def order_success(order_id: int):
+    om = OrderMethods()          # новий інстанс на КОЖЕН запит
+    try:
+        # 1) Заголовок замовлення + дані клієнта
+        order_row = om.storage.fetch_one(
+            """
+            SELECT b.order_id,
+                   b.customer_id,
+                   b.order_date,
+                   b.total,
+                   c.name,
+                   c.email,
+                   c.address,
+                   c.kind AS customer_kind
+            FROM orders b
+            JOIN customers c ON c.customer_id = b.customer_id
+            WHERE b.order_id = %s
+            """,
+            (order_id,),
+        )
 
-    # 1) Заголовок замовлення
-    order_row = om.storage.fetch_one(
-        """
-        SELECT b.order_id,
-               b.customer_id,
-               b.order_date,
-               b.total,
-               c.kind AS customer_kind
-        FROM bestellung b
-        JOIN customers c ON c.customer_id = b.customer_id
-        WHERE b.order_id = %s
-        """,
-        (order_id,),
+        if not order_row:
+            return redirect(url_for("cart_view"))
+
+        # 2) Рядки замовлення
+        items = om.storage.fetch_all(
+            """
+            SELECT d.product_id,
+                   p.product,
+                   p.category,
+                   d.quantity,
+                   d.price
+            FROM order_items d
+            JOIN product p ON p.product_id = d.product_id
+            WHERE d.order_id = %s
+            """,
+            (order_id,),
+        )
+
+        # ... твій код підрахунку subtotal / discount / total ...
+        subtotal = 0.0
+        for row in items:
+            line_total = float(row["price"]) * row["quantity"]
+            row["line_total"] = line_total
+            subtotal += line_total
+
+        is_company = (order_row["customer_kind"] == "company")
+        total_db = float(order_row["total"])
+
+        if is_company:
+            discount_amount = subtotal - total_db
+            total = total_db
+        else:
+            discount_amount = 0.0
+            total = subtotal
+
+        # ShoppingCart + invoice як було
+        cart = ShoppingCart(customer_id=order_row["customer_id"])
+        for row in items:
+            cart.add_product(row["product_id"], row["quantity"])
+        cart.total_sum = subtotal
+
+        order_obj = Order(cart, is_company=is_company)
+        order_obj.set_order_id(order_id)
+        invoice_path = order_obj.create_invoice()
+
+        shipping_method = session.get("shipping_method", "standard")
+
+        return render_template(
+            "order_success.html",
+            order=order_row,
+            items=items,
+            subtotal=subtotal,
+            discount=discount_amount,
+            total=total,
+            is_company=is_company,
+            invoice_path=invoice_path,
+            shipping_method=shipping_method,
+        )
+    finally:
+        om.close()   # закриваємо з’єднання
+
+@app.route("/reviews", methods=["GET", "POST"])
+def reviews_view():
+    storage = Storage()
+    storage.connect()
+
+    customer_id = session.get("customer_id")
+    error = None
+
+    # -------- параметри фільтра / сортування з URL --------
+    search = (request.args.get("search") or "").strip()
+    category_filter = request.args.get("category", "")
+    rating_filter = request.args.get("rating", "")
+    sort = request.args.get("sort", "date")
+    direction = request.args.get("dir", "desc")
+
+    # дозволені поля сортування
+    sort_map = {
+        "date": "r.created_at",
+        "product": "p.product",
+        "category": "p.category",
+        "customer": "c.name",
+        "rating": "r.rating",
+        "comment": "r.comment",
+        "avg_rating": "avg_rating",
+    }
+    sort_column = sort_map.get(sort, "r.created_at")
+    dir_sql = "ASC" if direction == "asc" else "DESC"
+    order_clause = f"{sort_column} {dir_sql}"
+
+    # -------- якщо POST: додаємо новий відгук --------
+    if request.method == "POST":
+        if not customer_id:
+            flash("Please log in to write a review.", "error")
+            storage.disconnect()
+            return redirect(url_for("login"))
+
+        try:
+            product_id = int(request.form.get("product_id", "0"))
+        except ValueError:
+            product_id = 0
+
+        try:
+            rating = int(request.form.get("rating", "0"))
+        except ValueError:
+            rating = 0
+
+        comment = (request.form.get("comment") or "").strip()
+
+        # перевіряємо, чи клієнт дійсно купував цей товар
+        allowed = storage.fetch_one(
+            """
+            SELECT 1
+            FROM orders o
+            JOIN order_items oi ON oi.order_id = o.order_id
+            WHERE o.customer_id = %s
+              AND oi.product_id = %s
+            LIMIT 1
+            """,
+            (customer_id, product_id),
+        )
+
+        if not allowed:
+            error = "You can review only products you have bought."
+        elif rating < 1 or rating > 5:
+            error = "Rating must be between 1 and 5."
+        else:
+            storage.execute(
+                """
+                INSERT INTO review (customer_id, product_id, rating, comment)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (customer_id, product_id, rating, comment),
+            )
+            storage.connection.commit()
+            flash("Thank you for your review!", "success")
+            storage.disconnect()
+            # після успішного запису – повертаємось на GET з тими ж фільтрами
+            return redirect(
+                url_for(
+                    "reviews_view",
+                    search=search,
+                    category=category_filter,
+                    rating=rating_filter,
+                    sort=sort,
+                    dir=direction,
+                )
+            )
+
+    # -------- 1) всі відгуки з фільтрацією/сортуванням --------
+    where_clauses = []
+    params: list = []
+
+    if search:
+        where_clauses.append(
+            "(p.product LIKE %s OR c.name LIKE %s OR r.comment LIKE %s)"
+        )
+        like = f"%{search}%"
+        params.extend([like, like, like])
+
+    if category_filter:
+        where_clauses.append("p.category = %s")
+        params.append(category_filter)
+
+    if rating_filter:
+        where_clauses.append("r.rating = %s")
+        params.append(int(rating_filter))
+
+    where_sql = ""
+    if where_clauses:
+        where_sql = "WHERE " + " AND ".join(where_clauses)
+
+
+    sql = f"""
+        SELECT
+            r.review_id,
+            r.rating,
+            r.comment,
+            r.created_at,
+            c.name       AS customer_name,
+            p.product_id,
+            p.product    AS product_name,
+            p.category   AS category,
+            ar.avg_rating,
+            ar.review_count
+        FROM review r
+        JOIN customers c ON c.customer_id = r.customer_id
+        JOIN product   p ON p.product_id   = r.product_id
+        LEFT JOIN (
+            SELECT
+                product_id,
+                AVG(rating) AS avg_rating,
+                COUNT(*)    AS review_count
+            FROM review
+            GROUP BY product_id
+        ) ar ON ar.product_id = p.product_id
+        {where_sql}
+        ORDER BY {order_clause}
+    """
+
+    all_reviews = storage.fetch_all(sql, tuple(params))
+
+    # -------- 2) продукти, які поточний клієнт може оцінити --------
+    purchasable_products = []
+    if customer_id:
+        purchasable_products = storage.fetch_all(
+            """
+            SELECT DISTINCT
+                p.product_id,
+                p.product  AS product_name
+            FROM orders o
+            JOIN order_items oi ON oi.order_id   = o.order_id
+            JOIN product     p  ON p.product_id  = oi.product_id
+            LEFT JOIN review r
+                   ON r.customer_id = o.customer_id
+                  AND r.product_id  = p.product_id
+            WHERE o.customer_id = %s
+              AND r.review_id IS NULL
+            ORDER BY p.product_id
+            """,
+            (customer_id,),
+        )
+
+    # -------- 3) список категорій для випадаючого списку --------
+    categories = storage.fetch_all(
+        "SELECT DISTINCT category FROM product ORDER BY category"
     )
 
-    if not order_row:
-        om.close()
-        return redirect(url_for("cart_view"))
-
-    # 1.1) Дані клієнта (імʼя, адреса, email, kind тощо)
-    customer = cm.get_customer(order_row["customer_id"])
-    # очікуємо dict типу: {"customer_id":..., "name":..., "email":..., "address":..., "kind":...}
-
-    # 2) Рядки замовлення
-    items = om.storage.fetch_all(
-        """
-        SELECT d.product_id,
-               p.product,
-               p.category,
-               d.quantity,
-               d.price
-        FROM bestellung_details d
-        JOIN product p ON p.product_id = d.product_id
-        WHERE d.order_id = %s
-        """,
-        (order_id,),
-    )
-
-    # 2.1) Проміжна сума + total по рядку
-    subtotal = 0.0
-    for row in items:
-        line_total = float(row["price"]) * row["quantity"]
-        row["line_total"] = line_total
-        subtotal += line_total
-
-    is_company = (order_row["customer_kind"] == "company")
-
-    total_db = float(order_row["total"])
-
-    if is_company:
-        discount_amount = subtotal - total_db
-        total = total_db
-    else:
-        discount_amount = 0.0
-        total = subtotal
-
-    # 3) Temporary cart for TXT invoice
-    cart = ShoppingCart(customer_id=order_row["customer_id"])
-    for row in items:
-        cart.add_product(row["product_id"], row["quantity"])
-    cart.total_sum = subtotal
-
-    # 4) Order object
-    order_obj = Order(cart, is_company=is_company)
-    order_obj.set_order_id(order_id)
-
-    # 5) TXT invoice
-    invoice_path = order_obj.create_invoice()
-
-    om.close()
-
-    shipping_method = session.get("shipping_method", "Standard shipping (3–5 days)")
+    storage.disconnect()
 
     return render_template(
-        "order_success.html",
-        order=order_row,
-        items=items,
-        customer=customer,          # 🔹 додаємо
-        subtotal=subtotal,
-        discount=discount_amount,   # 🔹 як ти й передаєш
-        total=total,
-        is_company=is_company,
-        invoice_path=invoice_path,
-        shipping_method=shipping_method,
+        "reviews.html",
+        reviews=all_reviews,
+        purchasable_products=purchasable_products,
+        categories=categories,
+        error=error,
+        # параметри для шаблону
+        search=search,
+        category_filter=category_filter,
+        rating_filter=rating_filter,
+        sort=sort,
+        direction=direction,
     )
+
+
+@app.route("/my_orders")
+def my_orders():
+    customer_id = session.get("customer_id")
+    if not customer_id:
+        return redirect(url_for("login"))
+
+    om = OrderMethods()
+    orders = om.get_orders_with_items_for_customer(customer_id)
+
+    total_subtotal = 0
+    total_discount = 0
+    total_final = 0
+
+    for order in orders:
+        subtotal = sum(item["price"] * item["quantity"] for item in order["items"])
+        total = order["total"]
+        discount = subtotal - total
+
+        order["subtotal"] = subtotal
+        order["discount"] = discount
+        order["discount_percent"] = 5 if session.get("is_company") else 0
+
+        total_subtotal += subtotal
+        total_discount += discount
+        total_final += total
+
+    return render_template(
+        "orders_history.html",
+        orders=orders,
+        total_subtotal=total_subtotal,
+        total_discount=total_discount,
+        total_final=total_final,
+    )
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

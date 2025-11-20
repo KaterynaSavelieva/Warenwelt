@@ -37,29 +37,76 @@
   <div class="divider"></div>
 
   <!-- Filter + search -->
-  <form method="get" class="view-toggle" style="margin-top: 10px;">
-    <input type="hidden" name="view" value="{{ view }}">
-    <input type="hidden" name="sort" value="{{ sort }}">
-    <input type="hidden" name="dir" value="{{ direction }}">
 
-    <input type="text"
-           name="search"
-           placeholder="Search by name"
-           value="{{ search }}"
-           style="padding:4px 8px; border-radius:6px; border:1px solid #d1d5db; margin-right:8px;">
+    <form method="get" class="view-toggle" style="margin-top: 10px;">
+      <input type="hidden" name="view" value="{{ view }}">
+      <input type="hidden" name="sort" value="{{ sort }}">
+      <input type="hidden" name="dir" value="{{ direction }}">
 
-    <select name="category"
-            style="padding:4px 8px; border-radius:6px; border:1px solid #d1d5db; margin-right:8px;">
-      <option value="">All categories</option>
-      <option value="electronics" {{ 'selected' if category=='electronics' else '' }}>Electronics</option>
-      <option value="clothing" {{ 'selected' if category=='clothing' else '' }}>Clothing</option>
-      <option value="books" {{ 'selected' if category=='books' else '' }}>Books</option>
-    </select>
+      <input type="text"
+             name="search"
+             placeholder="Search by name"
+             value="{{ search }}"
+             style="padding:4px 8px; border-radius:6px; border:1px solid #d1d5db; margin-right:8px;">
 
-    <button type="submit" class="card-btn" style="font-size:13px;">
-      Filter
-    </button>
-  </form>
+      {# ==== Category select ==== #}
+      <select name="category"
+              style="padding:4px 8px; border-radius:6px; border:1px solid #d1d5db; margin-right:8px;">
+        <option value="">All categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat }}"
+                  {{ 'selected' if category == cat else '' }}>
+            {{ cat }}
+          </option>
+        {% endfor %}
+      </select>
+
+      {# ==== Brand select ==== #}
+      <select name="brand"
+              style="padding:4px 8px; border-radius:6px; border:1px solid #d1d5db; margin-right:8px;">
+        <option value="">Brand</option>
+        {% for b in brands %}
+          <option value="{{ b }}"
+                  {{ 'selected' if brand == b else '' }}>
+            {{ b }}
+          </option>
+        {% endfor %}
+      </select>
+
+      {# ==== Author select ==== #}
+      <select name="author"
+              style="padding:4px 8px; border-radius:6px; border:1px solid #d1d5db; margin-right:8px;">
+        <option value="">Author</option>
+        {% for a in authors %}
+          <option value="{{ a }}"
+                  {{ 'selected' if author == a else '' }}>
+            {{ a }}
+          </option>
+        {% endfor %}
+      </select>
+
+
+      {# ==== Size select ==== #}
+      <select name="size"
+              style="padding:4px 8px; border-radius:6px; border:1px solid #d1d5db; margin-right:8px;">
+        <option value="">Size</option>
+        {% for a in sizes %}
+          <option value="{{ a }}"
+                  {{ 'selected' if size == a else '' }}>
+            {{ a }}
+          </option>
+        {% endfor %}
+      </select>
+
+
+
+      <button type="submit" class="card-btn" style="font-size:13px;">
+        Filter
+      </button>
+    </form>
+
+
+
 
   <div class="divider"></div>
 
@@ -101,6 +148,25 @@
               Category
             </a>
           </th>
+
+
+
+          <th>
+              <a href="{{ url_for('product_list',
+                                  view=view,
+                                  search=search,
+                                  category=category,
+                                  brand=brand,
+                                  author=author,
+                                  size=size,
+                                  sort='rating',
+                                  dir='desc' if sort=='rating' and direction=='asc' else 'asc') }}"
+                 style="color:inherit; text-decoration:none;">
+                Rating
+              </a>
+          </th>
+
+
           <th class="num">
             <a href="{{ url_for('product_list',
                                 view=view,
@@ -112,6 +178,7 @@
               Price
             </a>
           </th>
+
           <th>Details</th>
           <th class="num">Quantity</th>
           <th class="num">
@@ -135,21 +202,39 @@
           <td>{{ p.product }}</td>
           <td>{{ p.category }}</td>
 
-          <td class="num">
-            {{ p.price|eur }} €
-          </td>
 
-          <td>
-            {% if p.category == 'electronics' %}
-              Brand: {{ p.brand }}, {{ p.warranty_years }} years warranty
-            {% elif p.category == 'clothing' %}
-              Size: {{ p.size }}
-            {% elif p.category == 'books' %}
-              Author: {{ p.author }}, {{ p.page_count }} pages
+          {# НОВЕ: середній рейтинг товару #}
+          <td class="num">
+            {% if p.avg_rating %}
+              {{ "%.1f"|format(p.avg_rating) }}
+
             {% else %}
               –
             {% endif %}
           </td>
+
+          <td class="num">
+            {{ p.price|eur }} €
+          </td>
+
+            <!-- Details -->
+            <td>
+              {% if p.category == 'electronics' %}
+                <div>Brand: {{ p.brand }}</div>
+                <div>{{ p.warranty_years }} years warranty</div>
+
+              {% elif p.category == 'clothing' %}
+                <div>Size: {{ p.size }}</div>
+
+              {% elif p.category == 'books' %}
+                <div>Author: {{ p.author }}</div>
+                <div>{{ p.page_count }} pages</div>
+
+              {% else %}
+                <div>–</div>
+              {% endif %}
+            </td>
+
 
           <!-- Menge -->
           <td class="num">
@@ -194,85 +279,93 @@
     </table>
   {% endif %}
 
-  <!-- ───── CARDS VIEW ───── -->
   {% if view == 'cards' %}
 
-    <div class="divider"></div>
+  <div class="divider"></div>
 
-    <div class="products-grid">
-      {% for p in products %}
-        <div class="product-card" id="row-{{ p.product_id }}">
+  <div class="products-grid">
+    {% for p in products %}
+      <div class="product-card" id="row-{{ p.product_id }}">
 
-          <div>
-            <div class="product-card-title">
-              {{ p.product }}
-            </div>
+        <div>
+          <div class="product-card-title">
+            {{ p.product }}
+          </div>
 
+          <div class="product-card-category">
+            Category: {{ p.category }}
+          </div>
+
+          {# НОВЕ: середній рейтинг #}
+          {% if p.avg_rating %}
             <div class="product-card-category">
-              Category: {{ p.category }}
+              Rating: {{ "%.1f"|format(p.avg_rating) }}
+
             </div>
+          {% endif %}
 
-            {% if p.category == 'electronics' %}
-              <div class="product-card-category">
-                Brand: {{ p.brand }}
-              </div>
-              <div class="product-card-category">
-                {{ p.warranty_years }} years warranty
-              </div>
-            {% elif p.category == 'clothing' %}
-              <div class="product-card-category">
-                Size: {{ p.size }}
-              </div>
-            {% elif p.category == 'books' %}
-              <div class="product-card-category">
-                Author: {{ p.author }}
-              </div>
-              <div class="product-card-category">
-                {{ p.page_count }} pages
-              </div>
-            {% endif %}
-
-            <div class="product-card-price">
-              {{ p.price|eur }} €
+          {% if p.category == 'electronics' %}
+            <div class="product-card-category">
+              Brand: {{ p.brand }}
             </div>
+            <div class="product-card-category">
+              {{ p.warranty_years }} years warranty
+            </div>
+          {% elif p.category == 'clothing' %}
+            <div class="product-card-category">
+              Size: {{ p.size }}
+            </div>
+          {% elif p.category == 'books' %}
+            <div class="product-card-category">
+              Author: {{ p.author }}
+            </div>
+            <div class="product-card-category">
+              {{ p.page_count }} pages
+            </div>
+          {% endif %}
 
-            {% set qty = counts.get(p.product_id, 0) %}
-            {% if qty > 0 %}
-              <div class="product-card-category">
-                In the shopping cart: {{ qty }} Stk. ({{ (qty * p.price)|eur }} €)
-              </div>
-            {% endif %}
+          <div class="product-card-price">
+            {{ p.price|eur }} €
           </div>
 
-          <div class="card-footer">
-            <form method="post"
-                  action="{{ url_for('set_cart_quantity', product_id=p.product_id) }}"
-                  class="qty-form" style="margin-right:8px;">
-              <input type="hidden"
-                     name="return_url"
-                     value="{{ request.full_path }}#row-{{ p.product_id }}">
-              <button type="button" class="qty-btn" onclick="changeQty(this, -1)">−</button>
-              <input type="number"
-                     name="qty"
-                     min="0"
-                     max="999999"
-                     class="qty-input"
-                     value="{{ qty }}">
-              <button type="button" class="qty-btn" onclick="changeQty(this, 1)">+</button>
-            </form>
-
-            <form method="post"
-                  action="{{ url_for('add_to_cart_route', product_id=p.product_id, view=view) }}">
-              <button type="submit" class="cart-icon-btn" title="Add to cart">
-                <span>🛒</span>
-              </button>
-            </form>
-          </div>
-
+          {% set qty = counts.get(p.product_id, 0) %}
+          {% if qty > 0 %}
+            <div class="product-card-category">
+              In the shopping cart: {{ qty }} Stk. ({{ (qty * p.price)|eur }} €)
+            </div>
+          {% endif %}
         </div>
-      {% endfor %}
-    </div>
-  {% endif %}
+
+        <div class="card-footer">
+          <form method="post"
+                action="{{ url_for('set_cart_quantity', product_id=p.product_id) }}"
+                class="qty-form" style="margin-right:8px;">
+            <input type="hidden"
+                   name="return_url"
+                   value="{{ request.full_path }}#row-{{ p.product_id }}">
+            <button type="button" class="qty-btn" onclick="changeQty(this, -1)">−</button>
+            <input type="number"
+                   name="qty"
+                   min="0"
+                   max="999999"
+                   class="qty-input"
+                   value="{{ qty }}">
+            <button type="button" class="qty-btn" onclick="changeQty(this, 1)">+</button>
+          </form>
+
+          <form method="post"
+                action="{{ url_for('add_to_cart_route', product_id=p.product_id, view=view) }}">
+            <button type="submit" class="cart-icon-btn" title="Add to cart">
+              <span>🛒</span>
+            </button>
+          </form>
+        </div>
+
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
 
 </div>
 

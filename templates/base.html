@@ -17,9 +17,16 @@
       margin: 0;
       line-height: 1.8;
       font-size: 18px;
-      background-color: #f3f4f6;
-      color: #111827;
+      background-color: #F7EBD4;
+      color: #313409;
     }
+
+    .page-container {
+        max-width: 1400px; /* або 1600px */
+        margin: 0 auto;
+        width: 100%;
+    }
+
 
     .logo-link {
       text-decoration: none;
@@ -98,8 +105,8 @@
       display: inline-block;
       padding: 10px 22px;
       border-radius: 999px;
-      background-color: #1d4ed8;
-      color: #ffffff;
+      background-color: #E9967A;
+      color: #D4F7EC;
       text-decoration: none;
       font-size: 15px;
       font-weight: 500;
@@ -111,7 +118,7 @@
 
     .btn-pill:hover,
     .nav-btn:hover {
-      background-color: #1e40af;
+      background-color: #FFA07A;
       transform: translateY(-1px);
       box-shadow: 0 10px 24px rgba(0,0,0,0.3);
     }
@@ -190,7 +197,7 @@
       border-radius: 8px;
       overflow: hidden;
       box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      background-color: #ffffff;
+      background-color: #FFFAF0;
     }
 
     .product-table th,
@@ -225,10 +232,10 @@
     }
 
     .product-card {
-      background-color: #ffffff;
+      background-color: #FFFAF0;
       border-radius: 10px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      min-height: 210px;
+      min-height: 200px;
       padding: 16px;
       display: flex;
       flex-direction: column;
@@ -250,7 +257,7 @@
     .product-card-price {
       font-size: 18px;
       font-weight: 600;
-      color: #1d4ed8;
+      color: #800000;
       margin-top: 10px;
     }
 
@@ -377,6 +384,33 @@
       justify-content: space-between;
       gap: 16px;
     }
+
+
+    .order-summary-box {
+        margin-top: 10px;
+        padding: 12px 18px;
+        width: 300px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .order-summary-box p {
+        margin: 4px 0;
+        font-size: 15px;
+    }
+
+    .order-summary-global {
+        background: #fff;
+        padding: 15px 20px;
+        width: 350px;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        margin-bottom: 25px;
+    }
+    .order-summary-global p {
+        margin: 4px 0;
+        font-size: 15px;
+    }
   </style>
 
   <title>{% block title %}Products{% endblock %}</title>
@@ -394,6 +428,8 @@
       <!-- blue buttons, без logout -->
       <a href="{{ url_for('product_list') }}" class="nav-btn">Products</a>
       <a href="{{ url_for('cart_view') }}" class="nav-btn">Shopping cart</a>
+      <a href="{{ url_for('reviews_view') }}" class="nav-btn">Reviews</a>
+      <a href="{{ url_for('my_orders') }}" class="nav-btn">My orders</a>
     </div>
 
     <div class="nav-right">
