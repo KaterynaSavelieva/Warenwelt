@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block body_class %}home-page{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+  <div class="home-hero">
+    <div class="home-hero-inner">
+      <h1>Welcome to our Onlineshop</h1>
+      <p>Find electronics, clothing and books in one place.</p>
+
+      <a href="{{ url_for('product_list') }}" class="btn-pill">
+        Go to products
+      </a>
+    </div>
+  </div>
+
+  <p style="color:white; text-shadow:0 1px 3px rgba(0,0,0,0.7); text-align:center; margin-bottom:20px;">
+    You can browse products, add them to your cart and complete your order with a few clicks.
+  </p>
+
+</div>
+{% endblock %}

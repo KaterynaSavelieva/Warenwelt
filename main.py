@@ -1,8 +1,8 @@
-from management_functions import run_customer_management
-from product_managment import run_product_management
-from reviews_main import run_review_management
+from view.management_functions import run_customer_management
+from view.product_managment import run_product_management
+from view.reviews_main import run_review_management
 from utils.input_helpers import pause
-from orders_main import run_order_management
+from view.orders_main import run_order_management
 
 
 def main() -> None:

@@ -1,0 +1,10 @@
+INVOICE #41
+Customer ID: 30
+
+Items:
+- 2: Smartphone Samsung S24 | qty: 1 | price: 999.00 EUR | line total: 999.00 EUR
+- 6: Kinder T-Shirt | qty: 1 | price: 19.99 EUR | line total: 19.99 EUR
+
+Customer type: PRIVATE.
+Order total (cart): 1018.99 EUR
+Order ID (DB): 41

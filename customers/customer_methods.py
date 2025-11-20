@@ -108,7 +108,7 @@ class CustomerMethods:
     def get_customer(self, customer_id: int) -> dict | None:
         """Load one customers by id from the view v_cust."""
         try:
-            sql = "SELECT * FROM v_cust WHERE customer_id = %s"
+            sql = "SELECT * FROM v_customers WHERE customer_id = %s"
             row = self.storage.fetch_one(sql, (customer_id,))
             if row:
                 print(tabulate([row], headers="keys", tablefmt="rounded_grid"))
@@ -118,6 +118,15 @@ class CustomerMethods:
         except MySQLError as e:
             print("Error loading customers:", e)
             return None
+
+    def get_customer_name(self, customer_id: int) -> str | None:
+        row = self.storage.fetch_one(
+            "SELECT name FROM v_cust WHERE customer_id = %s",
+            (customer_id,)
+        )
+        if row:
+            return row["name"]
+        return None
 
     def get_customer_by_email (self, email: str) -> dict | None:
         try:
@@ -134,9 +143,9 @@ class CustomerMethods:
 
 
     def get_all_customers(self) -> list[dict]:
-        """Load all customers from the view v_cust."""
+        """Load all customers from the view v_customers."""
         try:
-            sql = "SELECT * FROM v_cust ORDER BY customer_id DESC"
+            sql = "SELECT * FROM v_customers ORDER BY customer_id DESC"
             rows = self.storage.fetch_all(sql)
             if rows:
                 print(tabulate(rows, headers="keys", tablefmt="rounded_grid"))
@@ -187,7 +196,6 @@ class CustomerMethods:
         try:
             ok = self.storage.execute("DELETE FROM customers WHERE customer_id=%s", (customer_id,))
             self.storage.connection.commit()
-            print(f"Customer {customer_id} deleted.") if ok else print("Not found.")
             return bool(ok)
         except MySQLError as e:
             self.storage.connection.rollback()
@@ -199,7 +207,7 @@ class CustomerMethods:
         kind = Validator.validate_kind(kind)
         try:
             rows = self.storage.fetch_all(
-                "SELECT * FROM v_cust WHERE kind=%s ORDER BY customer_id",
+                "SELECT * FROM v_customers WHERE kind=%s ORDER BY customer_id",
                 (kind,)
             )
             if rows:

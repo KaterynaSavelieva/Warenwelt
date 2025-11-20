@@ -5,13 +5,11 @@
 
 <div class="page-container">
 
-  <h1 class="page-title">Onlineshop</h1>
-  <p class="page-subtitle">Product list</p>
 
   <!-- Верхня панель: зліва сума кошика, справа перемикач виду -->
   <div class="view-bar">
     <p class="cart-summary">
-      Warenkorb-Summe: {{ cart_total|eur }} €
+      Shopping cart total: {{ cart_total|eur }} €
     </p>
 
     <div class="view-toggle">
@@ -46,20 +44,20 @@
 
     <input type="text"
            name="search"
-           placeholder="Suche nach Name"
+           placeholder="Search by name"
            value="{{ search }}"
            style="padding:4px 8px; border-radius:6px; border:1px solid #d1d5db; margin-right:8px;">
 
     <select name="category"
             style="padding:4px 8px; border-radius:6px; border:1px solid #d1d5db; margin-right:8px;">
-      <option value="">Alle Kategorien</option>
+      <option value="">All categories</option>
       <option value="electronics" {{ 'selected' if category=='electronics' else '' }}>Electronics</option>
       <option value="clothing" {{ 'selected' if category=='clothing' else '' }}>Clothing</option>
       <option value="books" {{ 'selected' if category=='books' else '' }}>Books</option>
     </select>
 
     <button type="submit" class="card-btn" style="font-size:13px;">
-      Filtern
+      Filter
     </button>
   </form>
 
@@ -115,7 +113,7 @@
             </a>
           </th>
           <th>Details</th>
-          <th class="num">Menge</th>
+          <th class="num">Quantity</th>
           <th class="num">
             <a href="{{ url_for('product_list',
                                 view=view,
@@ -124,10 +122,10 @@
                                 sort='total',
                                 dir='desc' if sort=='total' and direction=='asc' else 'asc') }}"
                style="color:inherit; text-decoration:none;">
-              Gesamt
+              Total
             </a>
           </th>
-          <th class="num">Aktion</th>
+          <th class="num">Action</th>
         </tr>
       </thead>
       <tbody>
@@ -185,7 +183,7 @@
           <td class="num">
             <form method="post"
                   action="{{ url_for('add_to_cart_route', product_id=p.product_id, view=view) }}">
-              <button type="submit" class="cart-icon-btn" title="In den Warenkorb">
+              <button type="submit" class="cart-icon-btn" title="Add to cart">
                 <span>🛒</span>
               </button>
             </form>
@@ -198,7 +196,7 @@
 
   <!-- ───── CARDS VIEW ───── -->
   {% if view == 'cards' %}
-    <h2 class="page-subtitle" style="margin-top: 30px;">Cards view</h2>
+
     <div class="divider"></div>
 
     <div class="products-grid">
@@ -241,7 +239,7 @@
             {% set qty = counts.get(p.product_id, 0) %}
             {% if qty > 0 %}
               <div class="product-card-category">
-                Im Warenkorb: {{ qty }} Stk. ({{ (qty * p.price)|eur }} €)
+                In the shopping cart: {{ qty }} Stk. ({{ (qty * p.price)|eur }} €)
               </div>
             {% endif %}
           </div>
@@ -265,7 +263,7 @@
 
             <form method="post"
                   action="{{ url_for('add_to_cart_route', product_id=p.product_id, view=view) }}">
-              <button type="submit" class="cart-icon-btn" title="In den Warenkorb">
+              <button type="submit" class="cart-icon-btn" title="Add to cart">
                 <span>🛒</span>
               </button>
             </form>

@@ -6,7 +6,7 @@
 
   <h1 class="page-title">Login</h1>
   <p class="page-subtitle">
-    Bitte melden Sie sich mit Ihrem Kundenkonto an.
+    Please log in with your customer account..
   </p>
 
   <div class="divider"></div>
@@ -37,10 +37,22 @@
 
     <p>
       <label>Password:</label><br>
-      <input type="password" name="password"
-             required autocomplete="off"
-             style="width:100%; padding:6px 8px;
+        <div style="position: relative;">
+          <input type="password"
+                 id="password"
+                 name="password"
+                 class="login-input"
+                 required
+                 style="width:100%; padding:6px 8px;
                     border-radius:6px; border:1px solid #d1d5db;">
+
+          <!-- Око -->
+          <span id="togglePassword"
+                style="position:absolute; right:12px; top:50%; transform:translateY(-50%);
+                       cursor:pointer; font-size:20px; color:#888;">
+              👁️
+          </span>
+        </div>
     </p>
 
     <p style="margin-top:18px;">
@@ -50,5 +62,24 @@
     </p>
   </form>
 
+
+
+
 </div>
+
+
+<script>
+document.getElementById("togglePassword").addEventListener("click", function () {
+    const pwd = document.getElementById("password");
+
+    if (pwd.type === "password") {
+        pwd.type = "text";
+        this.textContent = "🙈";   // іконка коли пароль відкритий
+    } else {
+        pwd.type = "password";
+        this.textContent = "👁️";  // іконка коли пароль прихований
+    }
+});
+</script>
+
 {% endblock %}

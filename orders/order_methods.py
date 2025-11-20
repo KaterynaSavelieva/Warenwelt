@@ -27,36 +27,41 @@ class OrderMethods:
             total = 0.0
             items: list[tuple[int, int, float]] = []  # (product_id, quantity, price)
 
-            # 2) normalize cart.products (support dict, tuples, and plain IDs)
-            # cart.products can be:
-            # - dict: {product_id: quantity}
-            # - list of (product_id, quantity)
-            # - list of product_id (quantity = 1)
-            if isinstance(cart.products, dict):
-                raw_items = cart.products.items()       # (product_id, quantity)
-            else:
-                raw_items = cart.products
+            # 2) normalize cart.products (support dict, tuples AND dicts)
+            raw = cart.products
 
-            for entry in raw_items:
+            # Example structures we support:
+            # - {2: 1, 4: 3}
+            # - [(2, 1), (4, 3)]
+            # - [{"product_id": 2, "quantity": 1}, ...]
+            if isinstance(raw, dict):
+                # dict {product_id: qty}
+                iterable = [(pid, qty) for pid, qty in raw.items()]
+            else:
+                # already some kind of list/tuple
+                iterable = raw
+
+            for entry in iterable:
+                product_id = None
+                quantity = 0
+
                 if isinstance(entry, dict):
-                    # e.g. {"product_id": 1, "quantity": 2}
                     product_id = entry.get("product_id")
                     quantity = entry.get("quantity", 0)
 
-                elif isinstance(entry, (tuple, list)) and len(entry) == 2:
-                    # e.g. (1, 2)
-                    product_id, quantity = entry
+                elif isinstance(entry, (tuple, list)) and len(entry) >= 2:
+                    product_id = entry[0]
+                    quantity = entry[1]
 
                 else:
-                    # e.g. only product_id (int or str)
-                    product_id = int(entry)
-                    quantity = 1
+                    print(f"SAVE_ORDER: invalid cart item format {entry}, skipped.")
+                    continue
 
                 if not product_id or quantity <= 0:
                     print(f"SAVE_ORDER: invalid cart item {entry}, skipped.")
                     continue
 
-
+                # 2.1) read current price from DB
                 row = self.storage.fetch_one(
                     "SELECT price FROM product WHERE product_id = %s",
                     (product_id,),
@@ -76,12 +81,14 @@ class OrderMethods:
 
             # 3) apply company discount if needed
             if is_company:
-                total *= 0.95
+                total *= 0.95  # 5% discount
 
             total = round(total, 2)
 
-            print(f"SAVE_ORDER: customer_id={cart.customer_id}, "
-                  f"is_company={is_company}, total={total}")
+            print(
+                f"SAVE_ORDER: customer_id={cart.customer_id}, "
+                f"is_company={is_company}, total={total}"
+            )
 
             # 4) start transaction
             self.storage.connection.begin()

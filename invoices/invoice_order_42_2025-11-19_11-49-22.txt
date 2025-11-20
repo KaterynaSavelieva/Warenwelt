@@ -1,0 +1,10 @@
+INVOICE #42
+Customer ID: 29
+
+Items:
+- 5: Jeans Herren Slim Fit | qty: 1 | price: 79.50 EUR | line total: 79.50 EUR
+- 1: Laptop Lenovo IdeaPad | qty: 1 | price: 899.99 EUR | line total: 899.99 EUR
+
+Customer type: PRIVATE.
+Order total (cart): 979.49 EUR
+Order ID (DB): 42

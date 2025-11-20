@@ -94,7 +94,25 @@ def run_customer_management() -> None:
             case "5":
                 print("\n--- Delete customer ---")
                 customer_id = get_int_input("Customer ID: ")
-                cm.delete_customer(customer_id)
+
+                # Get name BEFORE asking for confirmation
+                name = cm.get_customer_name(customer_id)
+
+                if not name:
+                    print (f"No customer found with ID {customer_id}")
+                    pause()
+                    continue  #  Повертаємось на початок циклу customer-меню
+
+                # Show full customer info
+                cm.get_customer(customer_id)
+                print(f"\nDo you really want to delete the customer {name}? (y/n)?")
+                choice = input("y/n: ").lower()
+
+                if choice == "y":
+                    cm.delete_customer(customer_id)
+                    print(f"\nDeleted customer {customer_id} {name}.")
+                else:
+                    print("Operation cancelled.")
                 pause()
 
             case "6":

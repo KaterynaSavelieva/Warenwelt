@@ -14,23 +14,60 @@
 
     body {
       font-family: "Inter", sans-serif;
-      margin: 20px;
+      margin: 0;
       line-height: 1.8;
       font-size: 18px;
       background-color: #f3f4f6;
       color: #111827;
     }
 
-    /* ---------- TOP NAVIGATION ---------- */
-
-    .main-title {
-      font-size: 32px;
-      font-weight: 600;
-      margin-bottom: 4px;
+    .logo-link {
+      text-decoration: none;
+      color: inherit;
     }
 
-    .nav-bar {
-      margin-bottom: 30px;
+    .home-page .logo {
+      display: none;
+    }
+
+    body.home-page {
+      overflow: hidden;
+      position: relative;
+    }
+
+    body.home-page::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("{{ url_for('static', filename='img/World_of_goods.png') }}");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: -1;
+    }
+
+    /* ---------- NAVIGATION ---------- */
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 30px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .logo {
+      margin: 0;
+      font-size: 32px;
+      font-weight: 600;
+    }
+
+    .nav-left,
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
     }
 
     .nav-link {
@@ -38,11 +75,83 @@
       color: #007bff;
       text-decoration: none;
       font-weight: 500;
-      margin-right: 20px;
     }
 
     .nav-link:hover {
       text-decoration: underline;
+    }
+
+    /* User info bubble */
+    .user-info {
+        padding: 6px 14px;
+        background: rgba(0, 0, 0, 0.45); /* напівпрозорий темний фон */
+        backdrop-filter: blur(4px);      /* легкий блюр */
+        color: #fff;                     /* білий шрифт */
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    /* Кнопки як Go to products (пігулки) */
+    .btn-pill,
+    .nav-btn {
+      display: inline-block;
+      padding: 10px 22px;
+      border-radius: 999px;
+      background-color: #1d4ed8;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 500;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-pill:hover,
+    .nav-btn:hover {
+      background-color: #1e40af;
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+    }
+
+    .logout {
+      background-color: #d9534f;
+    }
+
+    .logout:hover {
+      background-color: #b52f29;
+    }
+
+    /* ---------- HOME HERO ---------- */
+
+    .home-hero {
+      min-height: calc(100vh - 80px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .home-hero-inner {
+      max-width: 420px;
+      padding: 24px 28px;
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(10px);
+      color: #ffffff;
+      text-align: left;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+
+    .home-hero-inner h1 {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+      font-weight: 600;
+    }
+
+    .home-hero-inner p {
+      margin: 4px 0 16px 0;
     }
 
     /* ---------- PAGE LAYOUT ---------- */
@@ -119,7 +228,7 @@
       background-color: #ffffff;
       border-radius: 10px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      min-height: 210px; /* Ensure similar card height */
+      min-height: 210px;
       padding: 16px;
       display: flex;
       flex-direction: column;
@@ -166,8 +275,6 @@
       background-color: #1e40af;
     }
 
-    /* ---------- VIEW SWITCHER ---------- */
-
     .view-toggle {
       margin: 10px 0 0 0;
     }
@@ -200,7 +307,6 @@
       color: #111827;
     }
 
-    /* кількість у таблицях/кошиках/картах */
     .qty-form {
       display: flex;
       align-items: center;
@@ -233,20 +339,17 @@
       padding: 0 4px;
     }
 
-    /* вирівнювання чисел по правому краю */
     .product-table th.num,
     .product-table td.num {
       text-align: right;
     }
 
-    /* закріплена шапка таблиці */
     .product-table thead th {
       position: sticky;
       top: 0;
       z-index: 1;
     }
 
-    /* кнопка з іконкою кошика */
     .cart-icon-btn {
       width: 42px;
       height: 32px;
@@ -268,7 +371,6 @@
       font-size: 18px;
     }
 
-    /* верхня панель: зліва сума кошика, справа перемикач Table/Cards */
     .view-bar {
       display: flex;
       align-items: center;
@@ -280,18 +382,41 @@
   <title>{% block title %}Products{% endblock %}</title>
 </head>
 
-<body>
+<body class="{% block body_class %}{% endblock %}">
 
-  <h1 class="main-title">Onlineshop</h1>
+  <!-- TOP NAVBAR -->
+  <div class="navbar">
+    <div class="nav-left">
+      <a href="{{ url_for('home') }}" class="logo-link">
+        <h1 class="logo">World of goods</h1>
+      </a>
 
-  <nav class="nav-bar">
-    <a href="{{ url_for('product_list') }}" class="nav-link">Products</a>
-    <a href="{{ url_for('cart_view') }}" class="nav-link">Warenkorb</a>
-    <a href="{{ url_for('login') }}" class="nav-link">Login</a>
-    <a href="{{ url_for('register') }}" class="nav-link">Register</a>
-  </nav>
+      <!-- blue buttons, без logout -->
+      <a href="{{ url_for('product_list') }}" class="nav-btn">Products</a>
+      <a href="{{ url_for('cart_view') }}" class="nav-btn">Shopping cart</a>
+    </div>
 
-  {# Flash-повідомлення #}
+    <div class="nav-right">
+      {# 1) витягаємо можливі поля з session  #}
+      {% set cust_name = session.get("user_name") %}
+      {% set cust_id   = session.get("customer_id") or session.get("id") %}
+      {% set cust_kind = session.get("kind") or session.get("customer_kind") %}
+
+      {% if cust_id %}
+        <span class="user-info">
+          {{ cust_name }} (ID {{ cust_id }}, {{ cust_kind }})
+        </span>
+        <a href="{{ url_for('logout') }}" class="nav-btn logout">Logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="nav-btn">Login</a>
+        <a href="{{ url_for('register') }}" class="nav-btn">Register</a>
+      {% endif %}
+    </div>
+
+
+
+  </div>
+
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div style="max-width:1100px;margin:0 auto 16px auto;">

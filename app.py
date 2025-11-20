@@ -30,9 +30,9 @@ def eur(value):
 
 app.jinja_env.filters["eur"] = eur
 
-product_methods = ProductMethods()                    # один екземпляр для всіх запитів
-order_methods = OrderMethods()
-customer_methods = CustomerMethods()
+pm = ProductMethods()                    # один екземпляр для всіх запитів
+om = OrderMethods()
+cm = CustomerMethods()
 
 # ---------- helper-функції для кошика в сесії ----------
 
@@ -47,7 +47,7 @@ def add_to_cart(product_id: int) -> None:
     session["cart"] = cart
 
 def calculate_cart_total(products, counts: Counter) -> float:
-    """Рахує загальну суму кошика на основі products + Counter(product_id)."""
+    #Рахує загальну суму кошика на основі products + Counter(product_id).
     total = 0.0
     for p in products:
         pid = p["product_id"]
@@ -65,10 +65,14 @@ def check_password (user_row: dict, plain_password: str) -> bool: #password chec
         return False
     return db_password == plain_password
 
-
 # ---------- маршрути ----------
-
 @app.route("/")
+def home():
+    return render_template("home.html")
+
+
+
+@app.route("/products")
 def product_list():
     view = request.args.get("view", "table")
     if view not in ("table", "cards"):
@@ -80,7 +84,7 @@ def product_list():
     sort = request.args.get("sort", "id")
     direction = request.args.get("dir", "asc")
 
-    products = product_methods.get_all_products()
+    products = pm.get_all_products()
 
     # ---- кошик ----
     cart_ids = get_cart_ids()
@@ -129,7 +133,6 @@ def product_list():
         direction=direction,
     )
 
-
 @app.route("/add_to_cart/<int:product_id>", methods=["POST"])
 def add_to_cart_route(product_id: int):
     """Обробник кліку на кнопку 'In den Warenkorb'."""
@@ -167,14 +170,13 @@ def set_cart_quantity(product_id: int):
 
     return redirect(request.referrer or url_for("product_list"))
 
-
 @app.route("/cart")
 def cart_view():
     """Сторінка кошика з кількістю, сумою по рядку та загальною сумою."""
     cart_ids = get_cart_ids()
     counts = Counter(cart_ids)
 
-    all_products = product_methods.get_all_products()
+    all_products = pm.get_all_products()
 
     cart_products = []
     cart_total = 0.0
@@ -225,7 +227,7 @@ def checkout():
 
     # load all products and quantities from session
     # всі продукти з БД + кількості з сесії
-    all_products = product_methods.get_all_products()
+    all_products = pm.get_all_products()
     counts = Counter(cart_ids)
 
     products_by_id = {p["product_id"]: p for p in all_products}
@@ -280,11 +282,11 @@ def checkout():
 
     # calculate total_sum inside cart (for Order)
     # порахувати total_sum всередині кошика (для Order)
-    cart.calculate_total_price(product_methods)
+    cart.calculate_total_price(pm)
 
     # 2) save order in DB using OrderMethods
     #  зберігаємо замовлення в БД за допомогою OrderMethods
-    order_id = order_methods.save_order(cart, is_company=is_company)
+    order_id = om.save_order(cart, is_company=is_company)
     if not order_id:
         flash("An error occurred while saving the order.", "error")
         return redirect(url_for("cart_view"))
@@ -298,9 +300,8 @@ def checkout():
     # 4)  clear cart in session and show success page
     # чистимо кошик у сесії й показуємо success
     session["cart"] = []
-    flash("Ihre Bestellung wurde erfolgreich abgeschlossen.", "success")
+    #flash("Your order has been successfully completed.", "success")
     return redirect(url_for("order_success", order_id=order_id))
-
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -321,7 +322,7 @@ def register():
             if password != password2:
                 raise ValueError("Passwords do not match.")
 
-            new_id = customer_methods.save_customer(
+            new_id = cm.save_customer(
                 name=name,
                 email=email,
                 address=address,
@@ -337,8 +338,10 @@ def register():
                 return render_template("register.html", form=form)
 
             flash(
-                f"Registration successful! Your customer number is {new_id}. "
-                f"Please write down your number and password.",
+                f"Registration successful, {name}!\n"
+                f"Your customer number is {new_id}. \n"
+                "Please save your customer number and password. \n"
+                "You can now log in.",
                 "success"
             )
             return redirect(url_for("login"))
@@ -353,7 +356,6 @@ def register():
             return render_template("register.html", form=form)
 
     return render_template("register.html", form={})
-
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -370,7 +372,7 @@ def login():
         else:
             # 2) Load user from database
             #  шукаємо користувача в БД
-            user = customer_methods.get_customer_by_email(email)
+            user = cm.get_customer_by_email(email)
 
             # 3)  Validate user and password
             #  якщо немає юзера або пароль не збігається → помилка
@@ -384,6 +386,9 @@ def login():
 
                 session["customer_id"]= user ["customer_id"]
                 session["user_email"] = user["email"]
+                session["user_name"] = user["name"]
+                session["customer_name"] = user["name"]
+                session["customer_kind"] = user["kind"]     # 'private' or 'company'
                 session["is_company"] = (user["kind"]=="company") #is_company – True для kind == 'company', інакше False.
 
                 flash("Logged in as {}.".format(user["name"]), "success")
@@ -391,17 +396,18 @@ def login():
 
     return render_template("login.html", error=error)
 
-
 @app.route("/logout")
 def logout():
     session.pop("user_email", None)
-    flash("Sie wurden ausgeloggt.", "success")
+    session.pop("customer_id", None)
+    session.pop("user_name", None)
+    session.pop("customer_kind", None)
+    session.pop("is_company", None)
+    flash("You have been logged out.", "success")
     return redirect(url_for("product_list"))
-
 
 @app.route("/order_success/<int:order_id>")
 def order_success(order_id: int):
-    om = OrderMethods()
 
     # 1) Заголовок замовлення
     order_row = om.storage.fetch_one(
@@ -422,6 +428,10 @@ def order_success(order_id: int):
         om.close()
         return redirect(url_for("cart_view"))
 
+    # 1.1) Дані клієнта (імʼя, адреса, email, kind тощо)
+    customer = cm.get_customer(order_row["customer_id"])
+    # очікуємо dict типу: {"customer_id":..., "name":..., "email":..., "address":..., "kind":...}
+
     # 2) Рядки замовлення
     items = om.storage.fetch_all(
         """
@@ -437,57 +447,53 @@ def order_success(order_id: int):
         (order_id,),
     )
 
-    # 2.1) Рахуємо проміжну суму (без знижки) і суму по рядку
+    # 2.1) Проміжна сума + total по рядку
     subtotal = 0.0
     for row in items:
         line_total = float(row["price"]) * row["quantity"]
-        row["line_total"] = line_total   # щоб у шаблоні показати Gesamt
+        row["line_total"] = line_total
         subtotal += line_total
 
     is_company = (order_row["customer_kind"] == "company")
 
-    # total із БД (там уже знижка 5 % для company)
     total_db = float(order_row["total"])
 
     if is_company:
-        discount_amount = subtotal - total_db   # скільки саме знижки
-        total = total_db                        # фінальна сума
+        discount_amount = subtotal - total_db
+        total = total_db
     else:
         discount_amount = 0.0
         total = subtotal
 
-    # 3) Тимчасовий ShoppingCart для знімка (для TXT-інвойсу)
+    # 3) Temporary cart for TXT invoice
     cart = ShoppingCart(customer_id=order_row["customer_id"])
     for row in items:
         cart.add_product(row["product_id"], row["quantity"])
-
-    # ВАЖЛИВО: тут кладемо **subtotal**, а не total_db
     cart.total_sum = subtotal
 
-    # 4) Створюємо Order зі знімка кошика
+    # 4) Order object
     order_obj = Order(cart, is_company=is_company)
     order_obj.set_order_id(order_id)
 
-    # 5) Генеруємо TXT-інвойс з деталями
+    # 5) TXT invoice
     invoice_path = order_obj.create_invoice()
 
     om.close()
 
-    # NEW: get shipping method from session (default: standard)
-    shipping_method = session.get("shipping_method", "standard")
+    shipping_method = session.get("shipping_method", "Standard shipping (3–5 days)")
 
     return render_template(
         "order_success.html",
         order=order_row,
         items=items,
+        customer=customer,          # 🔹 додаємо
         subtotal=subtotal,
-        discount=discount_amount,
+        discount=discount_amount,   # 🔹 як ти й передаєш
         total=total,
         is_company=is_company,
         invoice_path=invoice_path,
         shipping_method=shipping_method,
     )
-
 
 if __name__ == "__main__":
     app.run(debug=True)

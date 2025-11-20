@@ -1,84 +1,114 @@
 {% extends "base.html" %}
-{% block title %}Bestellung erfolgreich{% endblock %}
+{% block title %}Order success{% endblock %}
 
 {% block content %}
 <div class="page-container">
 
-  <h2>Vielen Dank für Ihre Bestellung!</h2>
+  <h1 class="page-title">Vielen Dank für Ihre Bestellung!</h1>
   <p class="page-subtitle">
-    Ihre Bestellung wurde erfolgreich abgeschlossen.
+    Your order has been successfully completed..
   </p>
 
-  <p>
-    Bestellnummer:
-    <strong>#{{ order.order_id }}</strong>
-  </p>
+  <!-- ===== CUSTOMER INFO TABLE ===== -->
+  {% if customer %}
+  <table class="product-table" style="margin-top: 20px; max-width: 600px;">
+    <tbody>
+      <tr>
+        <th style="width: 180px;">Customer</th>
+        <td>{{ customer.name }}</td>
+      </tr>
+      <tr>
+        <th>Customer type</th>
+        <td>
+          {% if customer.kind == 'company' %}
+            Company customer
+          {% else %}
+            Private customer
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>Address</th>
+        <td>{{ customer.address }}</td>
+      </tr>
+      <tr>
+        <th>Email</th>
+        <td>{{ customer.email }}</td>
+      </tr>
+    </tbody>
+  </table>
+  {% endif %}
 
-  <p>
-    Datum:
-    {{ order.order_date.strftime("%d.%m.%Y %H:%M") if order.order_date else "-" }}
-  </p>
+  <div class="divider"></div>
 
+  <!-- ===== ORDER META INFO ===== -->
   <p>
-    Versandart:
-    <strong>
-      {% if shipping_method == "express" %}
-        Expressversand (1–2 Tage)
-      {% else %}
-        Standardversand (3–5 Tage)
-      {% endif %}
-    </strong>
+    <strong>Order number:</strong> #{{ order.order_id }}<br>
+    <strong>Date:</strong>
+      {{ order.order_date.strftime("%d.%m.%Y %H:%M") if order.order_date else "-" }}<br>
+    <strong>Shipping method:</strong> {{ shipping_method }}
   </p>
 
   <div class="divider"></div>
 
-  <h3>Bestellte Artikel</h3>
+  <!-- ===== ORDERED ITEMS TABLE ===== -->
+  <h2 class="page-subtitle" style="margin-top: 10px;">Ordered items</h2>
 
   <table class="product-table">
     <thead>
       <tr>
-        <th>ID</th>
+        <th class="num">ID</th>
         <th>Name</th>
-        <th>Kategorie</th>
-        <th class="num">Preis</th>
-        <th class="num">Menge</th>
-        <th class="num">Gesamt</th>
+        <th>Category</th>
+        <th class="num">Price</th>
+        <th class="num">Quantity</th>
+        <th class="num">Total</th>
       </tr>
     </thead>
     <tbody>
       {% for item in items %}
       <tr>
-        <td>{{ item.product_id }}</td>
+        <td class="num">{{ item.product_id }}</td>
         <td>{{ item.product }}</td>
         <td>{{ item.category }}</td>
         <td class="num">{{ item.price|eur }} €</td>
         <td class="num">{{ item.quantity }}</td>
-        <td class="num">
-          {{ (item.line_total if item.line_total is defined else item.price * item.quantity)|eur }} €
-        </td>
+        <td class="num">{{ item.line_total|eur }} €</td>
       </tr>
       {% endfor %}
     </tbody>
-    <tfoot>
+  </table>
+
+  <!-- ===== SUMMARY WITH DISCOUNT ===== -->
+  <table class="product-table" style="margin-top: 10px; max-width: 400px; margin-left:auto;">
+    <tbody>
       <tr>
-        <td colspan="5" class="num">Zwischensumme:</td>
+        <td>Subtotal:</td>
         <td class="num">{{ subtotal|eur }} €</td>
       </tr>
-      {% if is_company %}
+
+      {% if discount and discount > 0 %}
       <tr>
-        <td colspan="5" class="num">Firmenrabatt (5 %):</td>
+        <td>
+          {% if is_company %}
+            Company discount (5 %):
+          {% else %}
+            Discount:
+          {% endif %}
+        </td>
         <td class="num">-{{ discount|eur }} €</td>
       </tr>
       {% endif %}
+
       <tr>
-        <td colspan="5" class="num" style="font-weight:600;">Gesamtsumme:</td>
-        <td class="num" style="font-weight:600;">{{ total|eur }} €</td>
+        <td><strong>Total:</strong></td>
+        <td class="num"><strong>{{ total|eur }} €</strong></td>
       </tr>
-    </tfoot>
+    </tbody>
   </table>
 
-  <p style="margin-top:20px;">
-    <a href="{{ url_for('product_list') }}" class="nav-link">Zurück zum Shop</a>
+  <p style="margin-top: 20px;">
+    <a href="{{ url_for('product_list') }}" class="nav-btn">Back to the shop</a>
   </p>
 
 </div>

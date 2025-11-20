@@ -1,0 +1,15 @@
+INVOICE #45
+Customer ID: 10
+
+Items:
+- 1: Laptop Lenovo IdeaPad | qty: 1 | price: 899.99 EUR | line total: 899.99 EUR
+- 11: Sommerkleid | qty: 1 | price: 49.99 EUR | line total: 49.99 EUR
+- 14: Kinderbuch "Tiere" | qty: 1 | price: 12.99 EUR | line total: 12.99 EUR
+- 2: Smartphone Samsung S24 | qty: 1 | price: 999.00 EUR | line total: 999.00 EUR
+- 4: Winterjacke Damen | qty: 1 | price: 129.90 EUR | line total: 129.90 EUR
+- 7: Roman "Der Fluss" | qty: 1 | price: 14.99 EUR | line total: 14.99 EUR
+- 19: Fachbuch "Python Basics" | qty: 1 | price: 35.00 EUR | line total: 35.00 EUR
+
+Customer type: COMPANY (5% discount applied in order total).
+Order total (cart): 2141.86 EUR
+Order ID (DB): 45

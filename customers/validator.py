@@ -61,6 +61,13 @@ class _Rules(BaseModel):
         v = " ".join(v.split())
         return v
 
+    @field_validator("name", mode="before")
+    @classmethod
+    def normalize_name(cls, v: str | None) -> str:
+        if v is None:
+            return v
+        return v.title()
+
 
 class Validator:
     """Thin wrapper around _Rules with short, user-friendly error messages."""

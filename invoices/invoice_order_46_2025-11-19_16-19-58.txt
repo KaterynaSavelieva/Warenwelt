@@ -1,0 +1,13 @@
+INVOICE #46
+Customer ID: 10
+
+Items:
+- 6: Kinder T-Shirt | qty: 1 | price: 19.99 EUR | line total: 19.99 EUR
+- 10: Tastatur Logitech | qty: 1 | price: 59.99 EUR | line total: 59.99 EUR
+- 12: Pullover Wolle | qty: 1 | price: 89.00 EUR | line total: 89.00 EUR
+- 14: Kinderbuch "Tiere" | qty: 1 | price: 12.99 EUR | line total: 12.99 EUR
+- 15: Smartwatch Apple SE | qty: 1 | price: 349.00 EUR | line total: 349.00 EUR
+
+Customer type: COMPANY (5% discount applied in order total).
+Order total (cart): 530.97 EUR
+Order ID (DB): 46

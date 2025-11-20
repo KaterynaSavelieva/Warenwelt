@@ -1,0 +1,10 @@
+INVOICE #43
+Customer ID: 7
+
+Items:
+- 1: Laptop Lenovo IdeaPad | qty: 1 | price: 899.99 EUR | line total: 899.99 EUR
+- 3: Bluetooth Kopfhörer Sony | qty: 2 | price: 149.99 EUR | line total: 299.98 EUR
+
+Customer type: PRIVATE.
+Order total (cart): 1199.97 EUR
+Order ID (DB): 43

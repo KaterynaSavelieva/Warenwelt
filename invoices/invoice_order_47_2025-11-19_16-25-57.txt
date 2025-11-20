@@ -1,0 +1,10 @@
+INVOICE #47
+Customer ID: 10
+
+Items:
+- 2: Smartphone Samsung S24 | qty: 1 | price: 999.00 EUR | line total: 999.00 EUR
+- 3: Bluetooth Kopfhörer Sony | qty: 2 | price: 149.99 EUR | line total: 299.98 EUR
+
+Customer type: COMPANY (5% discount applied in order total).
+Order total (cart): 1298.98 EUR
+Order ID (DB): 47

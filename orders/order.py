@@ -1,92 +1,128 @@
-# orders/order.py
-from datetime import datetime
-from pathlib import Path
+from collections import Counter
 from orders.shopping_cart import ShoppingCart
+
+import os
+from connection.storage import Storage
+from datetime import datetime
+
 
 class Order:
     def __init__(self, cart: ShoppingCart, is_company: bool = False):
-        self.order_time = datetime.now()
-
-        #ЗНІМОК позицій
-        # Підтримує як (product_id, qty), так і розширені кортежі
-        self.ordered_products = [tuple(item) for item in list(cart.products)]
-
-        self.user_id = cart.customer_id
-        self.is_company = is_company
-
-        # суму беремо зі знімка cart.total_sum (вже пораховано раніше)
-        self.total_amount = float(cart.total_sum)
-        if self.is_company:
-            self.total_amount *= 0.95
-
+        """
+        Take a ShoppingCart and create a snapshot for the invoice:
+        - customer_id
+        - total_sum
+        - list of (product_id, quantity)
+        """
+        self.customer_id: int | None = cart.customer_id
+        self.is_company: bool = is_company
+        self.total_sum: float = float(getattr(cart, "total_sum", 0.0))
         self.order_id: int | None = None
 
-    def set_order_id(self, order_id: int) -> None:
-        self.order_id = int(order_id)
+        ordered: list[tuple[int, int]] = []
+        products = cart.products
 
-    def calculate_total(self) -> float:
-        return round(self.total_amount, 2)
+        # cart.products can be:
+        # - dict: {product_id: quantity}
+        # - list of (product_id, quantity)
+        # - list of product_id (repeated for quantity)
+        if isinstance(products, dict):
+            for pid, qty in products.items():
+                pid = int(pid)
+                qty = int(qty)
+                if qty > 0:
+                    ordered.append((pid, qty))
 
-    def create_invoice(self, filename: str | None = None) -> str:
-        out_dir = Path(__file__).resolve().parents[1] / "invoices"
-        out_dir.mkdir(parents=True, exist_ok=True)
+        elif isinstance(products, list) and products:
+            first = products[0]
 
-        ts = self.order_time.strftime("%Y-%m-%d_%H-%M-%S")
-        if filename is None:
-            filename = (f"invoice_order_{self.order_id}_{ts}.txt"
-                        if self.order_id else f"invoice_{ts}.txt")
-        filepath = out_dir / filename
+            if isinstance(first, (tuple, list)) and len(first) == 2:
+                # e.g. [(1, 2), (3, 1)]
+                for pid, qty in products:
+                    pid = int(pid)
+                    qty = int(qty)
+                    if qty > 0:
+                        ordered.append((pid, qty))
+            else:
+                # e.g. [1, 1, 2, 10, 10]  → compress with Counter
+                counts = Counter(products)
+                for pid, qty in counts.items():
+                    pid = int(pid)
+                    qty = int(qty)
+                    if qty > 0:
+                        ordered.append((pid, qty))
+        else:
+            # empty or unknown format
+            ordered = []
 
-        # Спробуємо підтягнути назву/ціну з БД для кращого інвойсу
-        try:
-            from products.product_methods import ProductMethods
-            pm = ProductMethods()
-        except Exception:
-            pm = None  # якщо немає доступу — просто виведемо IDs
+        self.ordered_products: list[tuple[int, int]] = ordered
 
-        with open(filepath, "w", encoding="utf-8") as f:
-            f.write(f"ORDER ID: {self.order_id if self.order_id else '-'}\n")
-            f.write(f"Customer ID: {self.user_id}\n")
-            f.write(f"Date: {self.order_time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-            f.write(f"Company discount: {'5%' if self.is_company else '0%'}\n")
-            f.write("=" * 60 + "\n")
-            f.write("Products:\n")
+    def set_order_id(self, order_id: int | None) -> None:
+        #Set the order ID after saving to the database.
+        self.order_id = order_id
 
-            # ітеруємо по копії позицій
-            for item in self.ordered_products:
-                # підтримка формату (pid, qty) або (pid, qty, name, price, ...)
-                pid = item[0]
-                qty = item[1] if len(item) > 1 else 1
+    def create_invoice(self) -> str:
+        """
+        Create a simple TXT invoice file in the 'invoices' folder
+        and return the absolute path to the file.
+        """
+        if self.order_id is None:
+            raise ValueError("order_id is not set for this order.")
 
-                name = None
-                price = None
-                if len(item) >= 4:
-                    name = item[2]
-                    price = float(item[3])
-                elif pm is not None:
-                    try:
-                        row = pm.storage.fetch_one(
-                            "SELECT product, price FROM product WHERE product_id=%s", (pid,)
-                        )
-                        if row:
-                            name = row["product"]
-                            price = float(row["price"])
-                    except Exception:
-                        pass
+        # 1) Make sure the invoices directory exists
+        base_dir = os.path.dirname(os.path.dirname(__file__))  # project root
+        invoices_dir = os.path.join(base_dir, "invoices")
+        os.makedirs(invoices_dir, exist_ok=True)
 
-                if name is not None and price is not None:
-                    f.write(f"  [{pid}] {name} | Qty: {qty} | Price: {price:.2f} EUR\n")
-                else:
-                    f.write(f"  Product ID: {pid} | Quantity: {qty}\n")
+        # 2) Create filename with timestamp
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        filename = f"invoice_order_{self.order_id}_{timestamp}.txt"
+        full_path = os.path.join(invoices_dir, filename)
 
-            f.write("=" * 60 + "\n")
-            f.write(f"Total amount: {self.calculate_total():.2f} EUR\n")
+        # 3) Load product data from database
+        storage = Storage()
+        storage.connect()
 
-        # акуратно закриємо конекшн до продуктів, якщо відкривали
-        try:
-            if pm is not None:
-                pm.close()
-        except Exception:
-            pass
+        lines: list[str] = []
+        lines.append(f"INVOICE #{self.order_id}")
+        lines.append(f"Customer ID: {self.customer_id}")
+        lines.append("")
+        lines.append("Items:")
 
-        return str(filepath)
+        total = 0.0
+
+        for product_id, quantity in self.ordered_products:
+            row = storage.fetch_one(
+                "SELECT product, price FROM product WHERE product_id = %s",
+                (product_id,),
+            )
+            if not row:
+                continue
+
+            name = row["product"]
+            price = float(row["price"])
+            line_total = price * quantity
+            total += line_total
+
+            lines.append(
+                f"- {product_id}: {name} | qty: {quantity} | "
+                f"price: {price:.2f} EUR | line total: {line_total:.2f} EUR"
+            )
+
+        storage.disconnect()
+
+        lines.append("")
+        if self.is_company:
+            lines.append("Customer type: COMPANY (5% discount applied in order total).")
+        else:
+            lines.append("Customer type: PRIVATE.")
+
+        lines.append(f"Order total (cart): {self.total_sum:.2f} EUR")
+        lines.append(f"Order ID (DB): {self.order_id}")
+
+        # 4) Write file
+        with open(full_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines))
+
+        print(f"Invoice created: {full_path}")
+        return full_path

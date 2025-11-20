@@ -1,14 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Warenkorb{% endblock %}
+{% block title %}Shopping cart{% endblock %}
 
 {% block content %}
 <div class="page-container">
-  <h1 class="page-title">Warenkorb</h1>
-  <p class="page-subtitle">Ihre ausgewählten Produkte</p>
+  <h1 class="page-title">Shopping cart</h1>
+  <p class="page-subtitle">Your selected products</p>
 
   <!-- Cart total summary -->
   <p class="cart-summary">
-    Warenkorb-Summe: {{ total|eur }} €
+    Shopping cart total: {{ total|eur }} €
   </p>
 
   <div class="divider"></div>
@@ -20,9 +20,9 @@
           <th>ID</th>
           <th>Name</th>
           <th>Category</th>
-          <th class="num">Preis / Stk.</th>
-          <th class="num">Menge</th>
-          <th class="num">Gesamt</th>
+          <th class="num">Price per piece</th>
+          <th class="num">Quantity</th>
+          <th class="num">Total</th>
         </tr>
       </thead>
 
@@ -63,7 +63,7 @@
       <tfoot>
         <tr>
           <td colspan="5" style="text-align:right; font-weight:600;">
-            Gesamtsumme:
+            Total:
           </td>
           <td class="num" style="font-weight:600;">
             {{ total|eur }} €
@@ -72,26 +72,26 @@
       </tfoot>
     </table>
   {% else %}
-    <p>Ihr Warenkorb ist leer.</p>
+    <p>Your cart is empty.</p>
   {% endif %}
 
     <div style="margin-top: 20px; display:flex; gap:12px;">
     <a href="{{ url_for('product_list') }}" class="nav-link">
-      Zurück zu den Produkten
+      Back to products
     </a>
 
     {% if products %}
       <form method="post"
             action="{{ url_for('clear_cart') }}">
         <button type="submit" class="card-btn" style="font-size:14px;">
-          Warenkorb leeren
+          Empty shopping cart
         </button>
       </form>
 
       <form method="get"
             action="{{ url_for('checkout') }}">
         <button type="submit" class="card-btn" style="font-size:14px;">
-          Zur Kasse
+          To the checkout
         </button>
       </form>
     {% endif %}
