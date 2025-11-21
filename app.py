@@ -8,7 +8,7 @@ from orders.order_methods import OrderMethods
 from customers.customer_methods import CustomerMethods
 from reviews.review_methods import ReviewMethods
 from connection.storage import Storage
-
+from customers.validator import Validator
 
 
 
@@ -700,6 +700,67 @@ def my_orders():
         total_subtotal=total_subtotal,
         total_discount=total_discount,
         total_final=total_final,
+    )
+
+
+
+@app.route("/profile", methods=["GET", "POST"])
+def profile():
+    customer_id = session.get("customer_id")
+    if not customer_id:
+        flash("Please log in to access your profile.", "error")
+        return redirect(url_for("login"))
+
+    # завантажуємо поточного користувача
+    user = cm.get_customer_by_id(customer_id)
+    if not user:
+        flash("Customer not found.", "error")
+        return redirect(url_for("product_list"))
+
+    error = None
+    success = None
+
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip()
+        address = request.form.get("address", "").strip()
+        phone = request.form.get("phone", "").strip()
+
+        # якщо хочеш – підключи свій Validator
+        try:
+            # приклад – адаптуй під свої методи
+            name = Validator.validate_name(name)
+            email = Validator.validate_email(email)
+            address = Validator.validate_address(address)
+            phone = Validator.validate_phone(phone)
+
+            ok = cm.update_customer(
+                customer_id=customer_id,
+                name=name,
+                email=email,
+                address=address,
+                phone=phone,
+            )
+
+            if not ok:
+                error = "Could not update profile. Please try again."
+            else:
+                # оновлюємо дані в session, щоб у шапці показувалось нове ім’я/емейл
+                session["user_name"] = name
+                session["user_email"] = email
+                success = "Profile updated successfully."
+
+                # перезавантажимо user, щоб у формі були свіжі дані
+                user = cm.get_customer_by_id(customer_id)
+
+        except ValueError as e:
+            error = str(e)
+
+    return render_template(
+        "profile.html",
+        user=user,
+        error=error,
+        success=success,
     )
 
 

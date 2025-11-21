@@ -1,18 +1,6 @@
+DROP DATABASE onlineshop;
 CREATE DATABASE IF NOT EXISTS onlineshop CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE onlineshop;
-
-DROP TABLE IF EXISTS bestellung_details;
-DROP TABLE IF EXISTS bestellung;
-
-DROP TABLE IF EXISTS review;
-
-DROP TABLE IF EXISTS electronics;
-DROP TABLE IF EXISTS clothing;
-DROP TABLE IF EXISTS books;
-DROP TABLE IF EXISTS product;
-DROP TABLE IF EXISTS private_customer;
-DROP TABLE IF EXISTS company_customer;
-DROP TABLE IF EXISTS customers;
 
 CREATE TABLE IF NOT EXISTS customers (
     customer_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -78,7 +66,7 @@ CREATE TABLE IF NOT EXISTS review (
 );
 
 -- Головна таблиця замовлень
-CREATE TABLE IF NOT EXISTS bestellung (
+CREATE TABLE IF NOT EXISTS orders (
     order_id INT AUTO_INCREMENT PRIMARY KEY,
     customer_id INT NOT NULL,
     order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -87,12 +75,14 @@ CREATE TABLE IF NOT EXISTS bestellung (
 );
 
 -- Підтаблиця для позицій (окремі продукти в замовленні)
-CREATE TABLE IF NOT EXISTS bestellung_details (
+CREATE TABLE IF NOT EXISTS order_items (
     detail_id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
     product_id INT NOT NULL,
     quantity INT NOT NULL DEFAULT 1,
     price DECIMAL(10,2) NOT NULL,
-    FOREIGN KEY (order_id) REFERENCES bestellung(order_id) ON DELETE CASCADE,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES product(product_id) ON DELETE CASCADE
 );
+
+

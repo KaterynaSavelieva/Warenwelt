@@ -21,8 +21,9 @@ LEFT JOIN product pr 	ON pr.product_id=r.product_id
 LEFT JOIN electronics pr_e ON pr_e.product_id = pr.product_id
 LEFT JOIN clothing pr_c     ON pr_c.product_id = pr.product_id
 LEFT JOIN books pr_b        ON pr_b.product_id = pr.product_id
-ORDER BY cus.customer_id;
+ORDER BY cus.customer_id DESC;
 
 SELECT * FROM v_cust;
+SELECT * FROM v_tab;
 
 -- SELECT * FROM company_customer;

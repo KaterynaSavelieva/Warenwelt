@@ -96,7 +96,7 @@ INSERT INTO review (customer_id, product_id, rating, comment) VALUES
 (8, 13, 3, 'Ganz ok, aber etwas langweilig.'),
 (19, 19, 5, 'Sehr hilfreich für Anfänger!');
 
-INSERT INTO bestellung (customer_id, order_date, total) VALUES
+INSERT INTO orders (customer_id, order_date, total) VALUES
 (1, '2025-10-01 10:15:00', 899.99),
 (2, '2025-10-03 09:20:00', 999.00),
 (3, '2025-10-05 14:45:00', 129.90),
@@ -123,7 +123,7 @@ INSERT INTO bestellung (customer_id, order_date, total) VALUES
 (4, '2025-10-27 12:05:00', 37.49),
 (5, '2025-10-28 09:20:00', 228.90);
 
-INSERT INTO bestellung_details (order_id, product_id, quantity, price) VALUES
+INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
 (1, 1, 1, 899.99),
 (2, 2, 1, 999.00),
 (3, 4, 1, 129.90),

@@ -1,5 +1,7 @@
 USE onlineshop;
 
-SELECT * FROM bestellung_details;
-SELECT * FROM bestellung
-INNER JOIN bestellung_details ON bestellung.order_id=bestellung_details.order_id;
+SELECT * FROM order_items;
+SELECT * FROM orders
+INNER JOIN order_items ON orders.order_id=order_items.order_id;
+
+SELECT * FROM review;

@@ -13,7 +13,7 @@ LEFT JOIN review AS r ON c.customer_id = r.customer_id
 GROUP BY c.customer_id, c.name
 ORDER BY avg_rating DESC;
 
-SELECT * FROM v_rating_summary_for_customer;
+SELECT * FROM v_rating_summary_for_customer;v_cust
 -- drop view v_customer_rating;
 
 

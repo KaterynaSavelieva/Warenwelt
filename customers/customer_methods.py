@@ -141,6 +141,10 @@ class CustomerMethods:
             print("Error loading customers:", e)
             return None
 
+    def get_customer_by_id(self, customer_id: int) -> dict | None:
+        sql = "SELECT * FROM v_customers WHERE customer_id = %s"
+        row = self.storage.fetch_one(sql, (customer_id,))
+        return row
 
     def get_all_customers(self) -> list[dict]:
         """Load all customers from the view v_customers."""
@@ -156,7 +160,43 @@ class CustomerMethods:
             print("Error loading all customers:", e)
             return []
 
-    def update_customer(self, customer_id: int, *,
+    def update_customer(
+            self,
+            customer_id: int,
+            *,
+            name: str | None = None,
+            email: str | None = None,
+            address: str | None = None,
+            phone: str | None = None,
+    ) -> bool:
+        """
+        Updates basic customer data in 'customers' table.
+        """
+        fields = []
+        params: list[object] = []
+
+        if name is not None:
+            fields.append("name = %s")
+            params.append(name)
+        if email is not None:
+            fields.append("email = %s")
+            params.append(email)
+        if address is not None:
+            fields.append("address = %s")
+            params.append(address)
+        if phone is not None:
+            fields.append("phone = %s")
+            params.append(phone)
+
+        if not fields:
+            return True  # nothing to update
+
+        params.append(customer_id)
+        sql = "UPDATE customers SET " + ", ".join(fields) + " WHERE customer_id = %s"
+        ok = self.storage.execute(sql, tuple(params))
+        return bool(ok)
+
+    def update_customer2(self, customer_id: int, *,
                         name: str | None = None,
                         address: str | None = None,
                         phone: str | None = None,
