@@ -1,0 +1,150 @@
+/* ========== GLOBAL BASE STYLES ========== */
+
+/* Base font, background color and text color for the whole site */
+body {
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  line-height: 1.8;
+  font-size: 18px;
+  background-color: #F7EBD4;
+  color: #313409;
+}
+
+/* Link around logo: looks like plain text */
+.logo-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Main logo text style */
+.logo {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 600;
+}
+
+/* Simple text navigation links (not the orange pills) */
+.nav-link {
+  font-size: 18px;
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+/* User info “bubble” in the top-right corner */
+.user-info {
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* ========== MAIN BUTTONS (PILLS) ========== */
+
+.btn-pill,
+.nav-btn {
+  display: inline-block;
+  padding: 10px 22px;
+  border-radius: 999px;
+  background-color: #E9967A;
+  color: #D4F7EC;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  border: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.btn-pill:hover,
+.nav-btn:hover {
+  background-color: #FFA07A;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Red “Logout” pill */
+.logout {
+  background-color: #d9534f;
+}
+
+.logout:hover {
+  background-color: #b52f29;
+}
+
+/* ========== HEADINGS & DIVIDERS ========== */
+
+/* Page title above the content */
+.page-title {
+  font-size: 30px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+/* Short description text under the title */
+.page-subtitle {
+  font-size: 18px;
+  font-weight: 400;
+  margin-top: 0;
+  color: #6b7280;
+}
+
+/* Horizontal divider line between sections */
+.divider {
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 20px 0;
+}
+
+/* Short text with total amount of items in the cart (top of products page) */
+.cart-summary {
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #111827;
+}
+
+/* Wrapper around cart total text and view switcher */
+.view-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* ========== FLASH MESSAGES ========== */
+
+.flash-container {
+  max-width: 1100px;
+  margin: 0 auto 16px auto;
+}
+
+/* Base flash message style */
+.flash-message {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* Success message */
+.flash-success {
+  background-color: #dcfce7;
+  color: #14532d;
+}
+
+/* Error / other message */
+.flash-error {
+  background-color: #fee2e2;
+  color: #7f1d1d;
+}

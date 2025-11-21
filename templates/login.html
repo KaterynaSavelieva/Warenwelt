@@ -6,80 +6,54 @@
 
   <h1 class="page-title">Login</h1>
   <p class="page-subtitle">
-    Please log in with your customer account..
+    Please log in with your customer account.
   </p>
 
   <div class="divider"></div>
 
-  {% if error %}
-    <div style="
-        margin-bottom:16px;
-        padding:10px 14px;
-        border-radius:8px;
-        background-color:#fee2e2;
-        color:#7f1d1d;
-        font-size:14px;">
-      {{ error }}
-    </div>
-  {% endif %}
 
-  <form method="post"
-        style="background:#ffffff; padding:20px 24px; border-radius:10px;
-               box-shadow:0 4px 16px rgba(0,0,0,0.08); max-width:420px;">
+    {% if error %}
+      <div class="login-error">
+        {{ error }}
+      </div>
+    {% endif %}
 
-    <p>
-      <label>Email:</label><br>
-      <input type="email" name="email"
-             required autocomplete="off"
-             style="width:100%; padding:6px 8px;
-                    border-radius:6px; border:1px solid #d1d5db;">
-    </p>
+    <form method="post" class="form-card">
+      <p class="form-field">
+        <label class="form-label">Email:</label>
+        <input type="email"
+               name="email"
+               required
+               autocomplete="off"
+               class="input-text">
+      </p>
 
-    <p>
-      <label>Password:</label><br>
-        <div style="position: relative;">
+      <p class="form-field">
+        <label class="form-label">Password:</label>
+        <div class="password-field">
           <input type="password"
                  id="password"
                  name="password"
-                 class="login-input"
                  required
-                 style="width:100%; padding:6px 8px;
-                    border-radius:6px; border:1px solid #d1d5db;">
+                 class="input-text">
 
-          <!-- Око -->
-          <span id="togglePassword"
-                style="position:absolute; right:12px; top:50%; transform:translateY(-50%);
-                       cursor:pointer; font-size:20px; color:#888;">
-              👁️
+          <span id="togglePassword" class="password-eye">
+            👁️
           </span>
         </div>
-    </p>
+      </p>
 
-    <p style="margin-top:18px;">
-      <button type="submit" class="card-btn">
-        Login
-      </button>
-    </p>
-  </form>
-
-
+      <p class="login-submit">
+        <button type="submit" class="btn-primary">
+          Login
+        </button>
+      </p>
+    </form>
 
 
 </div>
+{% endblock %}
 
-
-<script>
-document.getElementById("togglePassword").addEventListener("click", function () {
-    const pwd = document.getElementById("password");
-
-    if (pwd.type === "password") {
-        pwd.type = "text";
-        this.textContent = "🙈";   // іконка коли пароль відкритий
-    } else {
-        pwd.type = "password";
-        this.textContent = "👁️";  // іконка коли пароль прихований
-    }
-});
-</script>
-
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 {% endblock %}

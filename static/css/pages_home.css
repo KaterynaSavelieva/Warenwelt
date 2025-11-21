@@ -1,0 +1,57 @@
+/* ========== HOME PAGE SPECIFIC STYLES ========== */
+
+/* Hide big logo text on the home page (we use image background instead) */
+.home-page .logo {
+  display: none;
+}
+
+/* Home page body: needed for background overlay positioning */
+body.home-page {
+  overflow: hidden;
+  position: relative;
+}
+
+/* Full-screen background image on the home page */
+body.home-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  /* IMPORTANT: static path, no Jinja */
+  background-image: url("/static/img/World_of_goods.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -1;
+}
+
+/* Wrapper for the welcome card in the center of the home page */
+.home-hero {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Glassmorphism card with title, text and button */
+.home-hero-inner {
+  max-width: 420px;
+  padding: 24px 28px;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  color: #ffffff;
+  text-align: left;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.home-hero-inner h1 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.home-hero-inner p {
+  margin: 4px 0 16px 0;
+}
+
+

@@ -11,174 +11,134 @@
 
   <div class="divider"></div>
 
-  {# якщо ти з беку передаєш змінну error або errors – можна показати тут #}
+  {# Error message from backend #}
   {% if error %}
-    <div style="
-        margin-bottom:16px;
-        padding:10px 14px;
-        border-radius:8px;
-        background-color:#fee2e2;
-        color:#7f1d1d;
-        font-size:14px;">
+    <div class="flash-message flash-error">
       {{ error }}
     </div>
   {% endif %}
 
-  <form method="post" autocomplete="off"
-        style="background:#ffffff; padding:20px 24px; border-radius:10px;
-               box-shadow:0 4px 16px rgba(0,0,0,0.08); max-width:520px;">
+  <form method="post"
+        autocomplete="off"
+        class="form-card">
 
-    <p>
-      <label>Name:</label><br>
-      <input type="text" name="name"
-             value="{{ form.name or '' }}" required
-             style="width:100%; padding:6px 8px; border-radius:6px; border:1px solid #d1d5db;">
+    <!-- Name -->
+    <p class="form-field">
+      <label class="form-label">Name:</label>
+      <input type="text"
+             name="name"
+             value="{{ form.name or '' }}"
+             required
+             class="input-text">
     </p>
 
-    <p>
-      <label>Email:</label><br>
-      <input type="email" name="email"
-             value="{{ form.email or '' }}" required
-             style="width:100%; padding:6px 8px; border-radius:6px; border:1px solid #d1d5db;">
+    <!-- Email -->
+    <p class="form-field">
+      <label class="form-label">Email:</label>
+      <input type="email"
+             name="email"
+             value="{{ form.email or '' }}"
+             required
+             class="input-text">
     </p>
 
-    <p>
-      <label>Address (optional):</label><br>
-      <input type="text" name="address"
+    <!-- Address -->
+    <p class="form-field">
+      <label class="form-label">Address (optional):</label>
+      <input type="text"
+             name="address"
              value="{{ form.address or '' }}"
-             style="width:100%; padding:6px 8px; border-radius:6px; border:1px solid #d1d5db;">
+             class="input-text">
     </p>
 
-    <p>
-      <label>Phone (optional):</label><br>
-      <input type="tel" name="phone"
+    <!-- Phone -->
+    <p class="form-field">
+      <label class="form-label">Phone (optional):</label>
+      <input type="tel"
+             name="phone"
              value="{{ form.phone or '' }}"
-             style="width:100%; padding:6px 8px; border-radius:6px; border:1px solid #d1d5db;">
+             class="input-text">
     </p>
 
-    <p>
-      <label>Kind:</label><br>
-      <select name="kind" id="kind-select"
-              style="width:100%; padding:6px 8px; border-radius:6px; border:1px solid #d1d5db;">
-        <option value="private" {% if form.kind =='private' %}selected{% endif %}>Private</option>
-        <option value="company" {% if form.kind =='company' %}selected{% endif %}>Company</option>
+    <!-- Kind: private / company -->
+    <p class="form-field">
+      <label class="form-label">Kind:</label>
+      <select name="kind"
+              id="kind-select"
+              class="input-text">
+        <option value="private"
+                {% if form.kind == 'private' %}selected{% endif %}>
+          Private
+        </option>
+        <option value="company"
+                {% if form.kind == 'company' %}selected{% endif %}>
+          Company
+        </option>
       </select>
     </p>
 
-    <p>
-      <label>Password:</label><br>
-      <span class="password-wrapper">
-        <input type="password" name="password" id="password"
-               required autocomplete="off"
-               style="padding:6px 8px; border-radius:6px; border:1px solid #d1d5db;">
-        <button type="button" id="toggle-password" class="eye-btn" aria-label="Show password">👁</button>
-      </span>
+    <!-- Password -->
+    <p class="form-field">
+      <label class="form-label">Password:</label>
+      <div class="password-field">
+        <input type="password"
+               id="password"
+               name="password"
+               required
+               autocomplete="off"
+               class="input-text">
+        <span class="password-eye"
+              data-target="password">
+          👁️
+        </span>
+      </div>
     </p>
 
-    <p>
-      <label>Repeat password:</label><br>
-      <span class="password-wrapper">
-        <input type="password" name="password2" id="password2"
-               required autocomplete="off"
-               style="padding:6px 8px; border-radius:6px; border:1px solid #d1d5db;">
-        <button type="button" id="toggle-password2" class="eye-btn" aria-label="Show password">👁</button>
-      </span>
+    <!-- Repeat password -->
+    <p class="form-field">
+      <label class="form-label">Repeat password:</label>
+      <div class="password-field">
+        <input type="password"
+               id="password2"
+               name="password2"
+               required
+               autocomplete="off"
+               class="input-text">
+        <span class="password-eye"
+              data-target="password2">
+          👁️
+        </span>
+      </div>
     </p>
 
-    <p id="birthdate-group">
-      <label>Birthdate (for private customers):</label><br>
-      <input type="date" name="birthdate" id="birthdate"
-             style="padding:6px 8px; border-radius:6px; border:1px solid #d1d5db;">
+    <!-- Birthdate (only for private customers) -->
+    <p class="form-field" id="birthdate-group">
+      <label class="form-label">Birthdate (for private customers):</label>
+      <input type="date"
+             id="birthdate"
+             name="birthdate"
+             class="input-text">
     </p>
 
-    <p id="company-group">
-      <label>Company number (for company customers):</label><br>
-      <input type="text" name="company_number"
-             style="padding:6px 8px; border-radius:6px; border:1px solid #d1d5db;">
+    <!-- Company number (only for company customers) -->
+    <p class="form-field" id="company-group">
+      <label class="form-label">Company number (for company customers):</label>
+      <input type="text"
+             name="company_number"
+             class="input-text">
     </p>
 
-    <p style="margin-top:18px;">
-      <button type="submit" class="card-btn">
+    <!-- Submit button -->
+    <p class="login-submit">
+      <button type="submit" class="btn-primary">
         Register
       </button>
     </p>
+
   </form>
 </div>
+{% endblock %}
 
-<style>
-  .password-wrapper {
-    display: inline-flex;
-    align-items: center;
-  }
-  .password-wrapper input {
-    margin-right: 4px;
-  }
-  .eye-btn {
-    border: 1px solid #ccc;
-    padding: 2px 6px;
-    cursor: pointer;
-    background: #f7f7f7;
-  }
-</style>
-
-<script>
-  // Показ/приховування блоків Privat/Company
-  function updateKindFields() {
-    const kind = document.getElementById("kind-select").value;
-    const birth = document.getElementById("birthdate-group");
-    const company = document.getElementById("company-group");
-
-    if (kind === "private") {
-      birth.style.display = "block";
-      company.style.display = "none";
-    } else {
-      birth.style.display = "none";
-      company.style.display = "block";
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    const select = document.getElementById("kind-select");
-    if (select) {
-      select.addEventListener("change", updateKindFields);
-      updateKindFields();
-    }
-
-    function setupEye(inputId, btnId) {
-      const input = document.getElementById(inputId);
-      const btn = document.getElementById(btnId);
-      if (!input || !btn) return;
-
-      const show = () => { input.type = "text"; };
-      const hide = () => { input.type = "password"; };
-
-      btn.addEventListener("mousedown", show);
-      btn.addEventListener("mouseup", hide);
-      btn.addEventListener("mouseleave", hide);
-      btn.addEventListener("touchstart", function (e) {
-        e.preventDefault();
-        show();
-      });
-      btn.addEventListener("touchend", function (e) {
-        e.preventDefault();
-        hide();
-      });
-    }
-
-    setupEye("password", "toggle-password");
-    setupEye("password2", "toggle-password2");
-
-    // max-дата для birthdate (сьогодні мінус 18 років)
-    const bdInput = document.getElementById("birthdate");
-    if (bdInput) {
-      const today = new Date();
-      const year = today.getFullYear() - 18;
-      const month = String(today.getMonth() + 1).padStart(2, "0");
-      const day = String(today.getDate()).padStart(2, "0");
-      const maxDate = `${year}-${month}-${day}`;
-      bdInput.setAttribute("max", maxDate);
-    }
-  });
-</script>
-
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/register.js') }}"></script>
 {% endblock %}

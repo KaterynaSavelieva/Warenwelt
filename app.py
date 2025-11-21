@@ -9,8 +9,7 @@ from customers.customer_methods import CustomerMethods
 from reviews.review_methods import ReviewMethods
 from connection.storage import Storage
 from customers.validator import Validator
-
-
+from pydantic import ValidationError
 
 app = Flask(__name__)
 app.secret_key = "change_me_to_a_random_secret_key"
@@ -298,13 +297,14 @@ def checkout():
     session["cart"] = []
     return redirect(url_for("order_success", order_id=order_id))
 
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         form = request.form.to_dict()
 
-        name = form.get("name", "").strip()
-        email = form.get("email", "").strip()
+        name = form.get("name", "").strip().title()
+        email = form.get("email", "").strip().title()
         address = form.get("address") or None
         phone = form.get("phone") or None
         kind = form.get("kind", "private").lower()
@@ -314,34 +314,56 @@ def register():
         company_number = form.get("company_number") or None
 
         try:
+            # 1) Перевірка збігу паролів
             if password != password2:
                 raise ValueError("Passwords do not match.")
 
-            new_id = cm.save_customer(
-                name=name,
-                email=email,
-                address=address,
-                phone=phone,
-                kind=kind,
-                password=password,
-                birthdate=birthdate,
-                company_number=company_number,
-            )
+            # 2) Спроба зберегти клієнта
+            try:
+                new_id = cm.save_customer(
+                    name=name,
+                    email=email,
+                    address=address,
+                    phone=phone,
+                    kind=kind,
+                    password=password,
+                    birthdate=birthdate,
+                    company_number=company_number,
+                )
+            except ValidationError as err:
+                # дізнаємося, яке саме поле впало в Pydantic
+                field = err.errors()[0].get("loc", ["?"])[0]
+                field_map = {
+                    "name": "Name",
+                    "email": "Email",
+                    "address": "Address",
+                    "phone": "Phone",
+                    "birthdate": "Birthdate",
+                    "company_number": "Company number",
+                    "password": "Password",
+                    "kind": "Kind",
+                }
+                label = field_map.get(field, str(field).capitalize())
+                # це підніме ValueError з красивим текстом
+                Validator.f_short_err(err, label)
 
+            # 3) Якщо збереження повернуло None
             if not new_id:
                 flash("Registration failed. Please try again later.", "error")
                 return render_template("register.html", form=form)
 
+            # 4) Успіх
             flash(
                 f"Registration successful, {name}!\n"
                 f"Your customer number is {new_id}. \n"
                 "Please save your customer number and password. \n"
                 "You can now log in.",
-                "success"
+                "success",
             )
             return redirect(url_for("login"))
 
         except ValueError as e:
+            # Сюди прилітають ВСІ наші «красиві» помилки
             flash(str(e), "error")
             return render_template("register.html", form=form)
 
@@ -351,6 +373,7 @@ def register():
             return render_template("register.html", form=form)
 
     return render_template("register.html", form={})
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():

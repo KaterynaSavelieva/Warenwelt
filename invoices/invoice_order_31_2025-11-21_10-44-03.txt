@@ -1,0 +1,23 @@
+INVOICE #31
+
+Customer
+--------
+  Name   : Lisa Baume
+  ID     : 7
+  Type   : PRIVATE
+  Address: Villach, Gartenweg 91
+  Email  : lisa.baum@example.com
+  Phone  : +436751234567
+
+Order date : 21.11.2025 10:44
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+3    Bluetooth Kopfhörer Sony           1     149.99     149.99
+10   Tastatur Logitech                  1      59.99      59.99
+2    Smartphone Samsung S24             1     999.00     999.00
+
+                                            Subtotal:    1208.98
+                                               Total:    1208.98

@@ -1,0 +1,22 @@
+INVOICE #33
+
+Customer
+--------
+  Name   : BookPlanet GmbH
+  ID     : 10
+  Type   : COMPANY
+  Address: Salzburg, Buchweg 8
+  Email  : service@bookplanet.at
+  Phone  : +43662888888
+
+Order date : 21.11.2025 14:05
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+12   Pullover Wolle                     2      89.00     178.00
+
+                                            Subtotal:     178.00
+                              Company discount (5 %): -     8.90
+                                               Total:     169.10

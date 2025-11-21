@@ -1,0 +1,106 @@
+/* ================== GENERIC FORM CARD ================== */
+/* Білий прямокутник-картка для всіх форм (login, register, checkout) */
+.form-card {
+  background: #ffffff;
+  padding: 20px 24px;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  max-width: 450px;
+}
+
+/* Один блок форми (label + input) */
+.form-field {
+  margin-bottom: 16px;
+}
+
+/* Підпис над полем */
+.form-label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* ================== TEXT INPUTS / SELECTS ================== */
+/* Базовий стиль для всіх текстових полів і select */
+.input-text {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 16px;
+}
+
+/* Якщо хочеш – можна використати теж для <select> */
+select.input-text {
+  padding: 8px;
+}
+
+/* ================== PRIMARY BUTTON ================== */
+/* Синя “головна” кнопка (Login, Register, Place order, тощо) */
+.btn-primary,
+.card-btn {             /* щоб старі .card-btn теж виглядали так само */
+  padding: 8px 14px;
+  border-radius: 999px;
+  background-color: #1d4ed8;
+  color: #ffffff;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-primary:hover,
+.card-btn:hover {
+  background-color: #1e40af;
+}
+
+/* ================== PASSWORD EYE ================== */
+
+.password-field {
+  position: relative;
+}
+
+.password-eye {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 20px;
+  color: #888;
+}
+
+/* Помилка логіну / реєстрації */
+.login-error {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background-color: #fee2e2;
+  color: #7f1d1d;
+  font-size: 14px;
+}
+
+
+/* ===== Products page: filter bar ===== */
+.filter-form {
+  display: flex;          /* все в один ряд */
+  flex-wrap: wrap;        /* якщо не влазить – переходить на наступний ряд */
+  align-items: center;
+  gap: 8px;               /* відступи між елементами */
+  margin-top: 10px;
+}
+
+/* однаковий вигляд для поля пошуку та selectів */
+.filter-form input[type="text"],
+.filter-form select {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+}
+
+/* кнопка “Filter” трохи менша за звичайну card-btn */
+.filter-btn {
+  font-size: 13px;
+  padding-inline: 14px;
+}

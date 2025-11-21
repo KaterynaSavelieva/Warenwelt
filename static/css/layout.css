@@ -1,0 +1,43 @@
+/* ========== GENERIC PAGE LAYOUT ========== */
+
+/* Inner content area for normal pages (products, orders, etc.) */
+.page-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-top: 20px;
+}
+
+/* Top navigation layout: logo + nav buttons + user info */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 30px;
+  position: relative;
+  z-index: 10;
+}
+
+/* Left and right navigation groups */
+.nav-left,
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* Container for bottom action buttons on cart page */
+.cart-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 18px;
+}
+
+/* Paragraph with "Back to the shop" button on order success page */
+.order-back-link {
+  margin-top: 20px;
+}
+
+/* "Back to cart" link block under the checkout form */
+.checkout-back-link {
+  margin-top: 20px;
+}

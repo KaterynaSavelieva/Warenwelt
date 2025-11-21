@@ -1,0 +1,242 @@
+/* ========== PRODUCT TABLE VIEW ========== */
+
+/* Main table for product list and order items */
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  background-color: #FFFAF0;
+}
+
+/* Cells inside the product table */
+.product-table th,
+.product-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  font-size: 16px;
+}
+
+/* Dark header row */
+.product-table thead {
+  background-color: #111827;
+  color: #f9fafb;
+}
+
+/* Light zebra stripes */
+.product-table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+/* Hover highlight for rows */
+.product-table tbody tr:hover {
+  background-color: #f0f4ff;
+  cursor: pointer;
+}
+
+/* Right-align numeric columns in tables */
+.product-table th.num,
+.product-table td.num {
+  text-align: right;
+}
+
+/* Sticky table header (stays visible when scrolling) */
+.product-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* Blue round button with cart icon in table view */
+.cart-icon-btn {
+  width: 42px;
+  height: 32px;
+  border-radius: 999px;
+  background-color: #1d4ed8;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-icon-btn:hover {
+  background-color: #1e40af;
+}
+
+.cart-icon-btn span {
+  font-size: 18px;
+}
+
+/* ========== PRODUCT CARDS GRID VIEW ========== */
+
+/* Grid layout for cards view of products */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 25px;
+}
+
+/* Single product card container */
+.product-card {
+  background-color: #FFFAF0;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  min-height: 200px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Product name in card */
+.product-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* Additional info (category, brand, size, etc.) in card */
+.product-card-category {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+/* Price in card */
+.product-card-price {
+  font-size: 18px;
+  font-weight: 600;
+  color: #800000;
+  margin-top: 10px;
+}
+
+/* Footer with quantity controls + add-to-cart button */
+.card-footer {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ========== ORDER SUMMARY BOXES (MY ORDERS PAGE) ========== */
+
+.order-summary-box {
+  margin-top: 10px;
+  padding: 12px 18px;
+  width: 300px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.order-summary-box p {
+  margin: 4px 0;
+  font-size: 15px;
+}
+
+/* Global summary box with total over all orders */
+.order-summary-global {
+  background: #fff;
+  padding: 15px 20px;
+  width: 350px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  margin-bottom: 25px;
+}
+
+.order-summary-global p {
+  margin: 4px 0;
+  font-size: 15px;
+}
+
+/* ========== CART & CHECKOUT TOTAL ROWS ========== */
+
+/* Footer total cell alignment in cart footer */
+.cart-total {
+  font-weight: 600;
+}
+
+/* Checkout page: order total row */
+.order-total-label {
+  text-align: right;
+  font-weight: 600;
+}
+
+.order-total-value {
+  font-weight: 600;
+}
+
+/* Checkout page: company discount info */
+.company-discount-info {
+  text-align: center;
+  color: #1d4ed8;
+  padding-top: 10px;
+}
+
+/* Small customer info table block on order success page */
+.order-customer-table {
+  margin-top: 20px;
+  max-width: 600px;
+}
+
+/* Meta information (order number, date, shipping) */
+.order-meta {
+  margin-top: 10px;
+}
+
+/* Subtitle "Ordered items" on order success page */
+.order-items-title {
+  margin-top: 10px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+/* Summary box with subtotal / discount / total aligned to the right */
+.order-summary-table {
+  margin-top: 10px;
+  max-width: 400px;
+  margin-left: auto;
+}
+
+/* Sort links inside table headers */
+.table-sort-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.table-sort-link:hover {
+  text-decoration: underline;
+}
+
+/* Small spacing on qty-form in cards footer */
+.card-footer-qty {
+  margin-right: 8px;
+}
+
+
+/* ===== My orders page: single order block ===== */
+.order-block {
+  margin-bottom: 32px;          /* відступ між замовленнями */
+}
+
+/* Заголовок замовлення "Order #123" */
+.order-header {
+  margin-bottom: 4px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Рядок з датою та total під заголовком */
+.order-meta-text {
+  margin: 0;                    /* як було в inline-стилі */
+}
+
+/* Divider всередині одного блоку замовлення */
+.order-divider {
+  margin: 12px 0;               /* як було в inline-стилі */
+}

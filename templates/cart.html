@@ -3,98 +3,135 @@
 
 {% block content %}
 <div class="page-container">
-  <h1 class="page-title">Shopping cart</h1>
-  <p class="page-subtitle">Your selected products</p>
 
-  <!-- Cart total summary -->
-  <p class="cart-summary">
-    Shopping cart total: {{ total|eur }} €
-  </p>
+    <!-- Page title -->
+    <h1 class="page-title">Shopping cart</h1>
+    <p class="page-subtitle">Your selected products</p>
 
-  <div class="divider"></div>
+    <!-- Global cart total -->
+    <p class="cart-summary">
+        Shopping cart total: {{ total|eur }} €
+    </p>
 
-  {% if products %}
-    <table class="product-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Category</th>
-          <th class="num">Price per piece</th>
-          <th class="num">Quantity</th>
-          <th class="num">Total</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {% for p in products %}
-        <tr id="row-{{ p.product_id }}">
-          <td>{{ p.product_id }}</td>
-          <td>{{ p.product }}</td>
-          <td>{{ p.category }}</td>
-
-          <td class="num">{{ p.price|eur }} €</td>
-
-          <!-- Menge mit Input und +/- -->
-          <td class="num">
-            <form method="post"
-                  action="{{ url_for('set_cart_quantity', product_id=p.product_id) }}"
-                  class="qty-form">
-              <input type="hidden"
-                     name="return_url"
-                     value="{{ request.full_path }}#row-{{ p.product_id }}">
-              <button type="button" class="qty-btn" onclick="changeQty(this, -1)">−</button>
-              <input type="number"
-                     name="qty"
-                     min="0"
-                     max="999999"
-                     class="qty-input"
-                     value="{{ p.quantity }}">
-              <button type="button" class="qty-btn" onclick="changeQty(this, 1)">+</button>
-            </form>
-          </td>
-
-          <td class="num">{{ p.line_total|eur }} €</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-
-      <!-- Footer row with total -->
-      <tfoot>
-        <tr>
-          <td colspan="5" style="text-align:right; font-weight:600;">
-            Total:
-          </td>
-          <td class="num" style="font-weight:600;">
-            {{ total|eur }} €
-          </td>
-        </tr>
-      </tfoot>
-    </table>
-  {% else %}
-    <p>Your cart is empty.</p>
-  {% endif %}
-
-    <div style="margin-top: 20px; display:flex; gap:12px;">
-    <a href="{{ url_for('product_list') }}" class="nav-link">
-      Back to products
-    </a>
+    <div class="divider"></div>
 
     {% if products %}
-      <form method="post"
-            action="{{ url_for('clear_cart') }}">
-        <button type="submit" class="card-btn" style="font-size:14px;">
-          Empty shopping cart
-        </button>
-      </form>
 
-      <form method="get"
-            action="{{ url_for('checkout') }}">
-        <button type="submit" class="card-btn" style="font-size:14px;">
-          To the checkout
-        </button>
-      </form>
+        <!-- ===================== CART TABLE ===================== -->
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th class="num">Price per piece</th>
+                    <th class="num">Quantity</th>
+                    <th class="num">Total</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for p in products %}
+                <tr id="row-{{ p.product_id }}">
+
+                    <!-- Product ID -->
+                    <td>{{ p.product_id }}</td>
+
+                    <!-- Product name -->
+                    <td>{{ p.product }}</td>
+
+                    <!-- Product category -->
+                    <td>{{ p.category }}</td>
+
+                    <!-- Price per item -->
+                    <td class="num">{{ p.price|eur }} €</td>
+
+                    <!-- Quantity with +/- buttons -->
+                    <td class="num">
+                        <form method="post"
+                              action="{{ url_for('set_cart_quantity', product_id=p.product_id) }}"
+                              class="qty-form">
+
+                            <!-- Return to the specific row after update -->
+                            <input type="hidden"
+                                   name="return_url"
+                                   value="{{ request.full_path }}#row-{{ p.product_id }}">
+
+                            <!-- Decrease quantity -->
+                            <button type="button"
+                                    class="qty-btn"
+                                    onclick="changeQty(this, -1)">−
+                            </button>
+
+                            <!-- Quantity input field -->
+                            <input type="number"
+                                   name="qty"
+                                   min="0"
+                                   max="999999"
+                                   class="qty-input"
+                                   value="{{ p.quantity }}">
+
+                            <!-- Increase quantity -->
+                            <button type="button"
+                                    class="qty-btn"
+                                    onclick="changeQty(this, 1)">+
+                            </button>
+                        </form>
+                    </td>
+
+                    <!-- Line total -->
+                    <td class="num">{{ p.line_total|eur }} €</td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+
+            <!-- ===================== TABLE FOOTER WITH TOTAL ===================== -->
+
+            <tfoot>
+            <tr>
+                <td colspan="5" class="cart-total num">
+                    Total:
+                </td>
+                <td class="num cart-total">
+                    {{ total|eur }} €
+                </td>
+            </tr>
+            </tfoot>
+
+
+        </table>
+
+    {% else %}
+        <p>Your cart is empty.</p>
     {% endif %}
-  </div>
+
+    <!-- ===================== BOTTOM ACTION BUTTONS ===================== -->
+    <div class="cart-actions">
+
+        <!-- Back to products -->
+        <a href="{{ url_for('product_list') }}" class="nav-link">
+            Back to products
+        </a>
+
+        {% if products %}
+
+            <!-- Clear cart -->
+            <form method="post" action="{{ url_for('clear_cart') }}">
+                <button type="submit" class="card-btn">
+                    Empty shopping cart
+                </button>
+            </form>
+
+            <!-- Go to checkout -->
+            <form method="get" action="{{ url_for('checkout') }}">
+                <button type="submit" class="card-btn">
+                    To the checkout
+                </button>
+            </form>
+
+        {% endif %}
+    </div>
+
 </div>
 {% endblock %}

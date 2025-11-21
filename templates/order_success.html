@@ -6,53 +6,53 @@
 
   <h1 class="page-title">Thank you for your order!</h1>
   <p class="page-subtitle">
-    Your order has been successfully completed..
+    Your order has been successfully completed.
   </p>
 
-  <!-- ===== CUSTOMER INFO TABLE ===== -->
+  {# ===== CUSTOMER INFO TABLE ===== #}
   {% if customer %}
-  <table class="product-table" style="margin-top: 20px; max-width: 600px;">
-    <tbody>
-      <tr>
-        <th style="width: 180px;">Customer</th>
-        <td>{{ customer.name }}</td>
-      </tr>
-      <tr>
-        <th>Customer type</th>
-        <td>
-          {% if customer.kind == 'company' %}
-            Company customer
-          {% else %}
-            Private customer
-          {% endif %}
-        </td>
-      </tr>
-      <tr>
-        <th>Address</th>
-        <td>{{ customer.address }}</td>
-      </tr>
-      <tr>
-        <th>Email</th>
-        <td>{{ customer.email }}</td>
-      </tr>
-    </tbody>
-  </table>
+    <table class="product-table order-customer-table">
+      <tbody>
+        <tr>
+          <th>Customer</th>
+          <td>{{ customer.name }}</td>
+        </tr>
+        <tr>
+          <th>Customer type</th>
+          <td>
+            {% if customer.kind == 'company' %}
+              Company customer
+            {% else %}
+              Private customer
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th>Address</th>
+          <td>{{ customer.address }}</td>
+        </tr>
+        <tr>
+          <th>Email</th>
+          <td>{{ customer.email }}</td>
+        </tr>
+      </tbody>
+    </table>
   {% endif %}
 
   <div class="divider"></div>
 
-  <!-- ===== ORDER META INFO ===== -->
-  <p>
+  {# ===== ORDER META INFO ===== #}
+  <p class="order-meta">
     <strong>Order number:</strong> #{{ order.order_id }}<br>
     <strong>Date:</strong>
-      {{ order.order_date.strftime("%d.%m.%Y %H:%M") if order.order_date else "-" }}<br>
+    {{ order.order_date.strftime("%d.%m.%Y %H:%M") if order.order_date else "-" }}<br>
     <strong>Shipping method:</strong> {{ shipping_method }}
   </p>
 
   <div class="divider"></div>
 
-  <!-- ===== ORDERED ITEMS TABLE ===== -->
-  <h2 class="page-subtitle" style="margin-top: 10px;">Ordered items</h2>
+  {# ===== ORDERED ITEMS TABLE ===== #}
+  <h2 class="order-items-title">Ordered items</h2>
 
   <table class="product-table">
     <thead>
@@ -67,20 +67,20 @@
     </thead>
     <tbody>
       {% for item in items %}
-      <tr>
-        <td class="num">{{ item.product_id }}</td>
-        <td>{{ item.product }}</td>
-        <td>{{ item.category }}</td>
-        <td class="num">{{ item.price|eur }} €</td>
-        <td class="num">{{ item.quantity }}</td>
-        <td class="num">{{ item.line_total|eur }} €</td>
-      </tr>
+        <tr>
+          <td class="num">{{ item.product_id }}</td>
+          <td>{{ item.product }}</td>
+          <td>{{ item.category }}</td>
+          <td class="num">{{ item.price|eur }} €</td>
+          <td class="num">{{ item.quantity }}</td>
+          <td class="num">{{ item.line_total|eur }} €</td>
+        </tr>
       {% endfor %}
     </tbody>
   </table>
 
-  <!-- ===== SUMMARY WITH DISCOUNT ===== -->
-  <table class="product-table" style="margin-top: 10px; max-width: 400px; margin-left:auto;">
+  {# ===== SUMMARY WITH DISCOUNT ===== #}
+  <table class="product-table order-summary-table">
     <tbody>
       <tr>
         <td>Subtotal:</td>
@@ -88,16 +88,16 @@
       </tr>
 
       {% if discount and discount > 0 %}
-      <tr>
-        <td>
-          {% if is_company %}
-            Company discount (5 %):
-          {% else %}
-            Discount:
-          {% endif %}
-        </td>
-        <td class="num">-{{ discount|eur }} €</td>
-      </tr>
+        <tr>
+          <td>
+            {% if is_company %}
+              Company discount (5 %):
+            {% else %}
+              Discount:
+            {% endif %}
+          </td>
+          <td class="num">-{{ discount|eur }} €</td>
+        </tr>
       {% endif %}
 
       <tr>
@@ -107,8 +107,10 @@
     </tbody>
   </table>
 
-  <p style="margin-top: 20px;">
-    <a href="{{ url_for('product_list') }}" class="nav-btn">Back to the shop</a>
+  <p class="order-back-link">
+    <a href="{{ url_for('product_list') }}" class="nav-btn">
+      Back to the shop
+    </a>
   </p>
 
 </div>

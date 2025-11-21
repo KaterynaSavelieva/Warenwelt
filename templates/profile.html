@@ -10,80 +10,94 @@
   </p>
 
   {% if error %}
-    <div style="padding:10px 14px;border-radius:8px;background:#fee2e2;color:#991b1b;margin-bottom:10px;">
-      {{ error }}
-    </div>
+    <div class="login-error">{{ error }}</div>
   {% endif %}
+
   {% if success %}
-    <div style="padding:10px 14px;border-radius:8px;background:#dcfce7;color:#166534;margin-bottom:10px;">
-      {{ success }}
-    </div>
+    <div class="login-success">{{ success }}</div>
   {% endif %}
 
-  <form method="post"
-        style="max-width:500px;background:#ffffff;border-radius:12px;
-               box-shadow:0 4px 16px rgba(0,0,0,0.08);padding:20px;">
+  <form method="post" class="form-card">
 
-    <div style="margin-bottom:12px;">
-      <label for="name" style="display:block;font-weight:500;margin-bottom:4px;">Name</label>
-      <input type="text" id="name" name="name"
-             value="{{ user.name }}"
-             style="width:100%;padding:8px;border-radius:6px;border:1px solid #d1d5db;">
-    </div>
-
-    <div style="margin-bottom:12px;">
-      <label for="email" style="display:block;font-weight:500;margin-bottom:4px;">Email</label>
-      <input type="email" id="email" name="email"
-             value="{{ user.email }}"
-             style="width:100%;padding:8px;border-radius:6px;border:1px solid #d1d5db;">
-    </div>
-
-    <div style="margin-bottom:12px;">
-      <label for="address" style="display:block;font-weight:500;margin-bottom:4px;">Address</label>
-      <input type="text" id="address" name="address"
-             value="{{ user.address or '' }}"
-             style="width:100%;padding:8px;border-radius:6px;border:1px solid #d1d5db;">
-    </div>
-
-    <div style="margin-bottom:12px;">
-      <label for="phone" style="display:block;font-weight:500;margin-bottom:4px;">Phone</label>
-      <input type="text" id="phone" name="phone"
-             value="{{ user.phone or '' }}"
-             style="width:100%;padding:8px;border-radius:6px;border:1px solid #d1d5db;">
-    </div>
-
-    <div style="margin-bottom:12px;">
-      <label style="display:block;font-weight:500;margin-bottom:4px;">Customer type</label>
+    <!-- NAME -->
+    <div class="form-field">
+      <label for="name" class="form-label">Name</label>
       <input type="text"
-             value="{{ user.kind|capitalize }}"
-             readonly
-             style="width:100%;padding:8px;border-radius:6px;border:1px solid #e5e7eb;background:#f9fafb;">
+             id="name"
+             name="name"
+             class="input-text"
+             value="{{ user.name }}">
     </div>
 
+    <!-- EMAIL -->
+    <div class="form-field">
+      <label for="email" class="form-label">Email</label>
+      <input type="email"
+             id="email"
+             name="email"
+             class="input-text"
+             value="{{ user.email }}">
+    </div>
+
+    <!-- ADDRESS -->
+    <div class="form-field">
+      <label for="address" class="form-label">Address</label>
+      <input type="text"
+             id="address"
+             name="address"
+             class="input-text"
+             value="{{ user.address or '' }}">
+    </div>
+
+    <!-- PHONE -->
+    <div class="form-field">
+      <label for="phone" class="form-label">Phone</label>
+      <input type="text"
+             id="phone"
+             name="phone"
+             class="input-text"
+             value="{{ user.phone or '' }}">
+    </div>
+
+    <!-- KIND (READONLY) -->
+    <div class="form-field">
+      <label class="form-label">Customer type</label>
+      <input type="text"
+             class="input-text readonly-field"
+             value="{{ user.kind|capitalize }}"
+             readonly>
+    </div>
+
+    <!-- PRIVATE: BIRTHDATE -->
     {% if user.kind == 'private' and user.birthdate %}
-      <div style="margin-bottom:12px;">
-        <label style="display:block;font-weight:500;margin-bottom:4px;">Birthdate</label>
+      <div class="form-field">
+        <label class="form-label">Birthdate</label>
         <input type="text"
+               class="input-text readonly-field"
                value="{{ user.birthdate }}"
-               readonly
-               style="width:100%;padding:8px;border-radius:6px;border:1px solid #e5e7eb;background:#f9fafb;">
-      </div>
-    {% elif user.kind == 'company' and user.company_number %}
-      <div style="margin-bottom:12px;">
-        <label style="display:block;font-weight:500;margin-bottom:4px;">Company number</label>
-        <input type="text"
-               value="{{ user.company_number }}"
-               readonly
-               style="width:100%;padding:8px;border-radius:6px;border:1px solid #e5e7eb;background:#f9fafb;">
+               readonly>
       </div>
     {% endif %}
 
-    <button type="submit" class="btn-pill">
+    <!-- COMPANY: COMPANY NUMBER -->
+    {% if user.kind == 'company' and user.company_number %}
+      <div class="form-field">
+        <label class="form-label">Company number</label>
+        <input type="text"
+               class="input-text readonly-field"
+               value="{{ user.company_number }}"
+               readonly>
+      </div>
+    {% endif %}
+
+    <!-- SUBMIT BUTTON -->
+    <button type="submit" class="btn-primary">
       Save changes
     </button>
+
   </form>
 
-  <div style="margin-top:20px;">
+  <div class="profile-links">
     <a href="{{ url_for('my_orders') }}" class="nav-link">View my orders</a>
   </div>
 

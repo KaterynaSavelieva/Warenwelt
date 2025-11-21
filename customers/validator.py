@@ -73,7 +73,7 @@ class Validator:
     """Thin wrapper around _Rules with short, user-friendly error messages."""
 
     @staticmethod
-    def f_short_err(err: ValidationError, field_label: str):
+    def f_short_err_alt(err: ValidationError, field_label: str):
         msg = err.errors()[0].get("msg", str(err))
         replacements = {
             "String should match pattern '^\\+?\\d{8,20}$'":
@@ -90,12 +90,63 @@ class Validator:
                 "invalid date (format: YYYY-MM-DD)",
             "String should match pattern '^[A-Za-z0-9@#$%^&+=!?.]{8,50}$'":
                 "8–50 characters, letters/digits/safe symbols (@#$%^&+=!?.)",
+            "String should match pattern '^[A-Za-zÄÖÜäöüß0-9 .,/\'-]{2,55}$'":
+                "2–55 characters, letters/digits/safe symbols (@#$%^&+=!?.)",
+            "String should match pattern '^[A-Za-zÄÖÜäöüß0-9 ,./' -]{2, 55}$'":
+                "2–55 characters, letters/digits/safe symbols (@#$%^&+=!?.)",
             "Input should be 'private' or 'company'":
                 "must be 'private' or 'company'",
         }
         msg = replacements.get(msg, msg)
         raise ValueError(f"{field_label}: {msg}") from None
 
+    @staticmethod
+    def f_short_err(err: ValidationError, field_label: str) -> None:
+        """
+        Convert raw Pydantic ValidationError into a short, user-friendly ValueError.
+        field_label – це просто красива назва поля ("Address", "Email" тощо).
+        """
+        raw_msg = err.errors()[0].get("msg", str(err))
+
+        # --- 1) Спеціальні випадки по підрядках (regex) ---
+        # Address pattern (letters/digits + , . / ' - , length 2–55)
+        if "A-Za-zÄÖÜäöüß0-9 ,./'-" in raw_msg and "{2,55}" in raw_msg:
+            nice = (
+                "may contain letters (A–Z, a–z, ÄÖÜäöüß), digits, spaces and . , / ' - ; "
+                "length 2–55 characters"
+            )
+
+        # Phone pattern: ^\+?\d{8,20}$
+        elif "+?\\d{8,20}" in raw_msg or "\\d{8,20}" in raw_msg:
+            nice = "digits only, optional leading '+', length 8–20"
+
+        # Name pattern: ^[A-Za-zÄÖÜäöüß' -]{2,55}$
+        elif "A-Za-zÄÖÜäöüß' -" in raw_msg and "{2,55}" in raw_msg:
+            nice = (
+                "letters only (A–Z, a–z, ÄÖÜäöüß), spaces, apostrophe or hyphen; "
+                "length 2–55 characters"
+            )
+
+        # Company number: ^\d{5,15}$
+        elif "\\d{5,15}" in raw_msg:
+            nice = "digits only (length 5–15)"
+
+        # --- 2) Інші відомі повідомлення – словник 1:1 ---
+        else:
+            replacements = {
+                "value is not a valid email address":
+                    "invalid email address (format: name@domain.com)",
+                "Input should be a valid date or datetime, input is too short":
+                    "invalid date (format: YYYY-MM-DD)",
+                "Input should be a valid date or datetime":
+                    "invalid date (format: YYYY-MM-DD)",
+                "Input should be 'private' or 'company'":
+                    "must be 'private' or 'company'",
+            }
+            nice = replacements.get(raw_msg, raw_msg)
+
+        # --- 3) Викидаємо вже «красивий» ValueError ---
+        raise ValueError(f"{field_label}: {nice}") from None
 
     @staticmethod
     def validate_email(v: EmailStr | str) -> str:
