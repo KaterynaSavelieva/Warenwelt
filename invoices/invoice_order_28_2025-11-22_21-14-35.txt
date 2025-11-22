@@ -1,0 +1,26 @@
+INVOICE #28
+
+Customer
+--------
+  Name   : Lisa Baum
+  ID     : 7
+  Type   : PRIVATE
+  Address: Villach, Gartenweg 9
+  Email  : lisa.baum@example.com
+  Phone  : +436751234567
+
+Order date : 22.11.2025 21:14
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+11   Sommerkleid                        1      49.99      49.99
+1    Laptop Lenovo IdeaPad              1     899.99     899.99
+19   Fachbuch "Python Basics"           1      35.00      35.00
+20   Roman "Schatten der Zeit"          1      18.50      18.50
+16   Monitor Dell 24"                   1     189.99     189.99
+15   Smartwatch Apple SE                1     349.00     349.00
+
+                                            Subtotal:    1542.47
+                                               Total:    1542.47

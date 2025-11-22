@@ -1,0 +1,24 @@
+INVOICE #26
+
+Customer
+--------
+  Name   : BookPlanet GmbH
+  ID     : 10
+  Type   : COMPANY
+  Address: Salzburg, Buchweg 8
+  Email  : service@bookplanet.at
+  Phone  : +43662888888
+
+Order date : 22.11.2025 15:20
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+1    Laptop Lenovo IdeaPad              1     899.99     899.99
+2    Smartphone Samsung S24             1     999.00     999.00
+3    Bluetooth Kopfhörer Sony           1     149.99     149.99
+
+                                            Subtotal:    2048.98
+                              Company discount (5 %): -   102.45
+                                               Total:    1946.53

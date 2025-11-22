@@ -1,0 +1,53 @@
+/* ===== GLOBAL COLOR TOKENS – PALETTE #1 (SOFT ECO-PASTEL) ===== */
+
+:root {
+  /* ---------- BACKGROUNDS ---------- */
+  --bg-main: #FAF4EA;           /* світлий кремово-пісочний фон */
+  --bg-card: #FFF8F1;           /* дуже м'який крем для карток/таблиць */
+  --bg-order-box: #FFFFFF;      /* чистий білий для важливих боксів */
+
+  /* ---------- TEXT COLORS ---------- */
+  --text-main: #3E342F;         /* теплий темно-коричневий */
+  --text-muted: #7A6F68;        /* приглушений taupe-сірий */
+  --text-dark: #2C2421;         /* насичений темно-коричневий для заголовків */
+  --text-light: #FFFAF5;        /* світлий текст */
+  --text-grey: #736963;         /* нейтральний для readonly */
+  --text-link: #C06C3D;         /* теплий “коричнево-теракотовий” лінк */
+  --text-price: #B84A34;        /* теракотовий/brick для цін */
+  --white: #FFFFFF;
+
+  /* ---------- ORANGE / TERRACOTTA PILLS ---------- */
+  --pill-bg: #D9976E;           /* світлий теплий теракотовий */
+  --pill-bg-hover: #E6A882;     /* світліший ховер */
+  --pill-text: #FFF7EF;         /* світлий текст на піллюльках */
+  --user-badge-bg: #F2BE7F;     /* колір меду */
+
+  /* ---------- PRIMARY ACTIONS (тепло-зелені) ---------- */
+  --primary: #7FA886;           /* м'який “sage green” */
+  --primary-hover: #6A9271;     /* темніший зелений */
+
+  /* ---------- DANGER ---------- */
+  --danger: #C65C47;            /* теракото-червоний */
+  --danger-hover: #A54838;      /* темніший для hover */
+
+  /* ---------- FORMS / INPUTS ---------- */
+  --input-border: #E5D9CC;      /* м'який кремово-сірий */
+  --border-light: #E9DFD3;      /* світлий бордер для таблиць */
+  --readonly-bg: #F5ECE2;       /* теплий світлий фон */
+
+  /* ---------- FLASH MESSAGES ---------- */
+  --flash-success-bg: #E9F7E9;      /* м'який зелений */
+  --flash-success-text: #3F6B39;    /* глибокий зелений */
+  --flash-error-bg: #FAE6E2;        /* теплий кораловий */
+  --flash-error-text: #8A3B2E;      /* коричнево-червоний */
+  --profile-success-text: #426F44;  /* зелений текст */
+
+  /* ---------- TABLES ---------- */
+  --table-header-bg: #3E342F;       /* темно-коричнева шапка */
+  --table-header-text: #FFF8F1;     /* кремовий текст */
+  --table-row-alt: #FFFAF5;         /* світлий крем для зебри */
+  --table-row-hover: #F4E6D9;       /* світло-персиковий hover */
+
+  /* ---------- ICONS ---------- */
+  --icon-muted: #B29A8C;            /* теплий сірий */
+}

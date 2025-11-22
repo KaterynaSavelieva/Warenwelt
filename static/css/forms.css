@@ -1,7 +1,7 @@
 /* ================== GENERIC FORM CARD ================== */
 /* Білий прямокутник-картка для всіх форм (login, register, checkout) */
 .form-card {
-  background: #ffffff;
+  background: var(--bg-card);
   padding: 20px 24px;
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
@@ -26,7 +26,7 @@
   width: 100%;
   padding: 6px 8px;
   border-radius: 6px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--input-border);
   font-size: 16px;
 }
 
@@ -41,8 +41,8 @@ select.input-text {
 .card-btn {             /* щоб старі .card-btn теж виглядали так само */
   padding: 8px 14px;
   border-radius: 999px;
-  background-color: #1d4ed8;
-  color: #ffffff;
+  background-color: var(--primary);
+  color: var(--white);
   border: none;
   font-size: 14px;
   font-weight: 500;
@@ -51,7 +51,7 @@ select.input-text {
 
 .btn-primary:hover,
 .card-btn:hover {
-  background-color: #1e40af;
+  background-color: var(--primary-hover);
 }
 
 /* ================== PASSWORD EYE ================== */
@@ -67,7 +67,7 @@ select.input-text {
   transform: translateY(-50%);
   cursor: pointer;
   font-size: 20px;
-  color: #888;
+  color: var(--icon-muted);
 }
 
 /* Помилка логіну / реєстрації */
@@ -75,8 +75,8 @@ select.input-text {
   margin-bottom: 16px;
   padding: 10px 14px;
   border-radius: 8px;
-  background-color: #fee2e2;
-  color: #7f1d1d;
+  background-color: var(--flash-error-bg);
+  color: var(--flash-error-text);
   font-size: 14px;
 }
 
@@ -95,7 +95,7 @@ select.input-text {
 .filter-form select {
   padding: 4px 8px;
   border-radius: 6px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--input-border);
   font-size: 14px;
 }
 
@@ -103,4 +103,28 @@ select.input-text {
 .filter-btn {
   font-size: 13px;
   padding-inline: 14px;
+}
+
+/* Reviews page: small helper spacing */
+.reviews-filter-form {
+  margin-bottom: 10px;
+}
+
+/* Optional: allow textarea resize only vertically */
+.review-textarea {
+  resize: vertical;
+}
+
+/* ===== FIX CHROME AUTOFILL BACKGROUND ===== */
+
+input.input-text:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px var(--bg-card) inset !important;
+  box-shadow: 0 0 0px 1000px var(--bg-card) inset !important;
+  -webkit-text-fill-color: var(--text-main) !important;
+}
+
+input.input-text:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px var(--bg-card) inset !important;
+  box-shadow: 0 0 0px 1000px var(--bg-card) inset !important;
+  -webkit-text-fill-color: var(--text-main) !important;
 }

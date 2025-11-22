@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from products.product_methods import ProductMethods    # доступ до БД
+from products.product_methods import ProductMethods
 from collections import Counter
 from decimal import Decimal
 from orders.shopping_cart import ShoppingCart
@@ -11,15 +11,19 @@ from connection.storage import Storage
 from customers.validator import Validator
 from pydantic import ValidationError
 
+
 app = Flask(__name__)
 app.secret_key = "change_me_to_a_random_secret_key"
 
+
 def eur(value):
-    """Форматує число як 0 000,00 для відображення в EUR."""
+    """
+    Format number as European currency style "0 000,00".
+    Used as Jinja filter.
+    """
     if value is None:
         return "0,00"
     try:
-        # підтримка Decimal, float, int
         if isinstance(value, Decimal):
             value = float(value)
         else:
@@ -27,31 +31,46 @@ def eur(value):
     except (TypeError, ValueError):
         return "0,00"
 
-    s = f"{value:,.2f}"        # напр. '16,199.82'
-    s = s.replace(",", " ")    # '16 199.82'
-    s = s.replace(".", ",")    # '16 199,82'
+    s = f"{value:,.2f}"        # e.g. "16,199.82"
+    s = s.replace(",", " ")    # "16 199.82"
+    s = s.replace(".", ",")    # "16 199,82"
     return s
+
 
 app.jinja_env.filters["eur"] = eur
 
-pm = ProductMethods()                    # один екземпляр для всіх запитів
+# Single shared instances for this process
+pm = ProductMethods()
 cm = CustomerMethods()
 rm = ReviewMethods()
 
-# ---------- helper-функції для кошика в сесії ----------
+
+# ====================== CART HELPERS (SESSION) ======================
 
 def get_cart_ids() -> list[int]:
-    """Читає з сесії список cart. Якщо там нічого немає — повертає порожній список."""
+    """
+    Read 'cart' list from session.
+    Returns empty list if no cart is present.
+    """
     return session.get("cart", [])
 
+
 def add_to_cart(product_id: int) -> None:
-    """Бере наявний список, додає новий product_id і зберігає назад у session['cart']."""
+    """
+    Append product_id to the cart list in session.
+    Cart is stored as a simple list of product_ids (may contain duplicates).
+    """
     cart = session.get("cart", [])
     cart.append(product_id)
     session["cart"] = cart
 
+
 def calculate_cart_total(products, counts: Counter) -> float:
-    #Рахує загальну суму кошика на основі products + Counter(product_id).
+    """
+    Calculate total cart sum based on:
+      - products: list of rows (must contain product_id and price)
+      - counts: Counter(product_id -> quantity)
+    """
     total = 0.0
     for p in products:
         pid = p["product_id"]
@@ -61,7 +80,13 @@ def calculate_cart_total(products, counts: Counter) -> float:
             total += qty * price_each
     return total
 
-def check_password (user_row: dict, plain_password: str) -> bool: #password check: compares plain text from form with the value from database.
+
+def check_password(user_row: dict, plain_password: str) -> bool:
+    """
+    Very simple password check:
+    compares plain text from form with plain text stored in the database.
+    (In a real project you would use hashed passwords!)
+    """
     if not user_row:
         return False
     db_password = user_row.get("password")
@@ -69,7 +94,9 @@ def check_password (user_row: dict, plain_password: str) -> bool: #password chec
         return False
     return db_password == plain_password
 
-# ---------- маршрути ----------
+
+# =========================== ROUTES ===========================
+
 @app.route("/")
 def home():
     return render_template("home.html")
@@ -80,29 +107,41 @@ def product_list():
     if view not in ("table", "cards"):
         view = "table"
 
-    # ---- параметри фільтра та сортування ----
-    search    = request.args.get("search", "").strip()
-    category  = request.args.get("category", "").strip()
-    brand     = request.args.get("brand", "").strip()
-    author    = request.args.get("author", "").strip()
-    size      = request.args.get("size", "").strip()
-    sort      = request.args.get("sort", "id")
+    search = request.args.get("search", "").strip()
+    category = request.args.get("category", "").strip()
+    brand = request.args.get("brand", "").strip()
+    author = request.args.get("author", "").strip()
+    size = request.args.get("size", "").strip()
+    sort = request.args.get("sort", "id")
     direction = request.args.get("dir", "asc")
 
-    # ---- Всі продукти (для фільтрів + суми кошика) ----
-    all_products = pm.get_all_products()          # без фільтрів!
+    # --- DEBUG (можеш увімкнути на час тестів) ---
+    # print("DEBUG FILTERS:", search, category, brand, author, size, sort, direction)
+
+    # Якщо обрана категорія, чистимо неактуальні фільтри,
+    # щоб не було «перетину» brand+author+size
+    if category == "electronics":
+        author = ""
+        size = ""
+    elif category == "books":
+        brand = ""
+        size = ""
+    elif category == "clothing":
+        brand = ""
+        author = ""
+    # якщо category == "" – усе дозволено
+
+    all_products = pm.get_all_products()
 
     cart_ids = get_cart_ids()
     counts = Counter(cart_ids)
     cart_total = calculate_cart_total(all_products, counts)
 
-    # списки для випадаючих меню
     categories = sorted({p["category"] for p in all_products})
-    brands     = sorted({p["brand"]   for p in all_products if p.get("brand")})
-    authors    = sorted({p["author"]  for p in all_products if p.get("author")})
+    brands = sorted({p["brand"] for p in all_products if p.get("brand")})
+    authors = sorted({p["author"] for p in all_products if p.get("author")})
     sizes = sorted({p["size"] for p in all_products if p.get("size")})
 
-    # ---- Список товарів з фільтрами з БД ----
     products = pm.get_products_filtered(
         search=search,
         category=category,
@@ -111,7 +150,6 @@ def product_list():
         size=size,
     )
 
-    # ---- Сортування в Python (додаємо rating) ----
     def total_for(p):
         return counts.get(p["product_id"], 0) * float(p["price"])
 
@@ -121,7 +159,7 @@ def product_list():
         "category": lambda p: p["category"],
         "price":    lambda p: float(p["price"]),
         "total":    total_for,
-        "rating":   lambda p: float(p["avg_rating"] or 0.0),   # НОВЕ
+        "rating":   lambda p: float(p["avg_rating"] or 0.0),
     }
     key_func = key_map.get(sort, key_map["id"])
     reverse = (direction == "desc")
@@ -140,28 +178,42 @@ def product_list():
         direction=direction,
         cart_total=cart_total,
         counts=counts,
-        categories=categories,   # для select
+        categories=categories,
         brands=brands,
         authors=authors,
         sizes=sizes,
     )
 
 
+
 @app.route("/add_to_cart/<int:product_id>", methods=["POST"])
 def add_to_cart_route(product_id: int):
-    """Обробник кліку на кнопку 'In den Warenkorb'."""
-    add_to_cart(product_id)                           # додаємо товар у кошик
+    """
+    Handler for "Add to cart" button on products page.
+    After adding, redirect back to the same place (row anchor),
+    if return_url is provided.
+    """
+    add_to_cart(product_id)
 
-    # зберігаємо поточний режим відображення (table/cards), якщо він був у query params
+    # спробуємо повернутися туди, звідки прийшов запит
+    return_url = request.form.get("return_url")
+    if return_url:
+        return redirect(return_url)
+
+    # fallback – як і було раніше
     view = request.args.get("view", "table")
     if view not in ("table", "cards"):
         view = "table"
 
-    # повертаємося на головну сторінку
     return redirect(url_for("product_list", view=view))
+
 
 @app.route("/set_cart_quantity/<int:product_id>", methods=["POST"])
 def set_cart_quantity(product_id: int):
+    """
+    Set exact quantity for given product_id in session cart.
+    Quantity is set by replacing all previous occurrences of this product_id.
+    """
     cart = get_cart_ids()
     try:
         qty = int(request.form.get("qty", "0"))
@@ -171,22 +223,28 @@ def set_cart_quantity(product_id: int):
     if qty < 0:
         qty = 0
 
-    # видаляємо всі старі входження
+    # remove all old occurrences of this product_id
     cart = [pid for pid in cart if pid != product_id]
-    # додаємо стільки разів, скільки треба
+    # add product_id qty times
     cart.extend([product_id] * qty)
     session["cart"] = cart
 
-    # повертаємось туди ж, де були (з якорем)
+    # redirect back to the same page (with anchor)
     return_url = request.form.get("return_url")
     if return_url:
         return redirect(return_url)
 
     return redirect(request.referrer or url_for("product_list"))
 
+
 @app.route("/cart")
 def cart_view():
-    """Сторінка кошика з кількістю, сумою по рядку та загальною сумою."""
+    """
+    Shows the shopping cart with:
+      - quantities per product,
+      - line totals,
+      - global total.
+    """
     cart_ids = get_cart_ids()
     counts = Counter(cart_ids)
 
@@ -205,14 +263,16 @@ def cart_view():
         line_total = qty * price_each
         cart_total += line_total
 
-        cart_products.append({
-            "product_id": pid,
-            "product": p["product"],
-            "category": p["category"],
-            "price": price_each,
-            "quantity": qty,
-            "line_total": line_total,
-        })
+        cart_products.append(
+            {
+                "product_id": pid,
+                "product": p["product"],
+                "category": p["category"],
+                "price": price_each,
+                "quantity": qty,
+                "line_total": line_total,
+            }
+        )
 
     return render_template(
         "cart.html",
@@ -220,13 +280,23 @@ def cart_view():
         total=cart_total,
     )
 
-@app.route("/clear_cart", methods=["POST"]) #маршрут для очищення кошика
+
+@app.route("/clear_cart", methods=["POST"])
 def clear_cart():
+    """
+    Clear current cart in session.
+    """
     session["cart"] = []
     return redirect(url_for("cart_view"))
 
+
 @app.route("/checkout", methods=["GET", "POST"])
 def checkout():
+    """
+    Checkout page:
+      - GET: show order summary and shipping method.
+      - POST: save order to DB, create invoice, clear cart and redirect to success page.
+    """
     cart_ids = get_cart_ids()
     if not cart_ids:
         return redirect(url_for("cart_view"))
@@ -251,19 +321,20 @@ def checkout():
         price = float(p["price"])
         line_total = price * qty
         total += line_total
-        items.append({
-            "product_id": pid,
-            "product": p["product"],
-            "category": p["category"],
-            "price": price,
-            "quantity": qty,
-            "line_total": line_total,
-        })
+        items.append(
+            {
+                "product_id": pid,
+                "product": p["product"],
+                "category": p["category"],
+                "price": price,
+                "quantity": qty,
+                "line_total": line_total,
+            }
+        )
 
     discount_factor = 0.95 if is_company else 1.0
     total_with_discount = total * discount_factor
 
-    # ВАЖЛИВО: створюємо тут
     om = OrderMethods()
 
     if request.method == "GET":
@@ -274,7 +345,7 @@ def checkout():
             is_company=is_company,
         )
 
-    # POST
+    # POST: save order and create invoice
     shipping_method = request.form.get("shipping_method", "standard")
     session["shipping_method"] = shipping_method
 
@@ -289,17 +360,23 @@ def checkout():
         flash("An error occurred while saving the order.", "error")
         return redirect(url_for("cart_view"))
 
-    # створюємо інвойс
+    # create invoice (only here, NOT in order_success)
     order = Order(cart, is_company=is_company)
     order.set_order_id(order_id)
     order.create_invoice()
 
+    # clear session cart
     session["cart"] = []
     return redirect(url_for("order_success", order_id=order_id))
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    """
+    Registration page:
+      - GET: show empty form
+      - POST: validate, save customer, handle errors with flash messages.
+    """
     if request.method == "POST":
         form = request.form.to_dict()
 
@@ -314,11 +391,11 @@ def register():
         company_number = form.get("company_number") or None
 
         try:
-            # 1) Перевірка збігу паролів
+            # 1) Check if passwords match
             if password != password2:
                 raise ValueError("Passwords do not match.")
 
-            # 2) Спроба зберегти клієнта
+            # 2) Try to save customer using CustomerMethods (with Pydantic inside)
             try:
                 new_id = cm.save_customer(
                     name=name,
@@ -331,7 +408,7 @@ def register():
                     company_number=company_number,
                 )
             except ValidationError as err:
-                # дізнаємося, яке саме поле впало в Pydantic
+                # extract field name from Pydantic error
                 field = err.errors()[0].get("loc", ["?"])[0]
                 field_map = {
                     "name": "Name",
@@ -344,26 +421,26 @@ def register():
                     "kind": "Kind",
                 }
                 label = field_map.get(field, str(field).capitalize())
-                # це підніме ValueError з красивим текстом
+                # raise ValueError with short readable message
                 Validator.f_short_err(err, label)
 
-            # 3) Якщо збереження повернуло None
+            # 3) If save_customer returned None → generic failure
             if not new_id:
                 flash("Registration failed. Please try again later.", "error")
                 return render_template("register.html", form=form)
 
-            # 4) Успіх
+            # 4) Success
             flash(
                 f"Registration successful, {name}!\n"
-                f"Your customer number is {new_id}. \n"
-                "Please save your customer number and password. \n"
+                f"Your customer number is {new_id}.\n"
+                "Please save your customer number and password.\n"
                 "You can now log in.",
                 "success",
             )
             return redirect(url_for("login"))
 
         except ValueError as e:
-            # Сюди прилітають ВСІ наші «красиві» помилки
+            # All our "nice" messages arrive here
             flash(str(e), "error")
             return render_template("register.html", form=form)
 
@@ -377,6 +454,11 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    """
+    Login page:
+      - GET: show form
+      - POST: check email/password, set session and redirect to products.
+    """
     error = None
 
     if request.method == "POST":
@@ -384,38 +466,37 @@ def login():
         password = request.form.get("password", "")
 
         # 1) Simple check for empty fields
-        #   проста перевірка, що поля не порожні
         if not email or not password:
-            error = "Please enter your email address and password.."
+            error = "Please enter your email address and password."
         else:
-            # 2) Load user from database
-            #  шукаємо користувача в БД
+            # 2) Load user from DB
             user = cm.get_customer_by_email(email)
 
-            # 3)  Validate user and password
-            #  якщо немає юзера або пароль не збігається → помилка
+            # 3) Validate user and password
             if not user or not check_password(user, password):
                 error = "Incorrect email or password."
-
             else:
-                # 4) Login successful → store user session
-                # логін успішний → зберігаємо дані в сесії
-                session.clear() # optional: очистити старі дані
+                # 4) Login successful → store session data
+                session.clear()
 
-                session["customer_id"]= user ["customer_id"]
+                session["customer_id"] = user["customer_id"]
                 session["user_email"] = user["email"]
                 session["user_name"] = user["name"]
                 session["customer_name"] = user["name"]
-                session["customer_kind"] = user["kind"]     # 'private' or 'company'
-                session["is_company"] = (user["kind"]=="company") #is_company – True для kind == 'company', інакше False.
+                session["customer_kind"] = user["kind"]          # 'private' or 'company'
+                session["is_company"] = (user["kind"] == "company")
 
-                flash("Logged in as {}.".format(user["name"]), "success")
+                flash(f"Logged in as {user['name']}.", "success")
                 return redirect(url_for("product_list"))
 
     return render_template("login.html", error=error)
 
+
 @app.route("/logout")
 def logout():
+    """
+    Clear all user-related session keys and redirect to products page.
+    """
     session.pop("user_email", None)
     session.pop("customer_id", None)
     session.pop("user_name", None)
@@ -424,24 +505,32 @@ def logout():
     flash("You have been logged out.", "success")
     return redirect(url_for("product_list"))
 
+
 @app.route("/order_success/<int:order_id>")
 def order_success(order_id: int):
-    om = OrderMethods()          # новий інстанс на КОЖЕН запит
+    """
+    Order success page:
+      - loads order header and items from DB,
+      - calculates subtotal / discount / total (based on company flag),
+      - shows summary and shipping method.
+    Invoice is already created during checkout, not here.
+    """
+    om = OrderMethods()
     try:
-        # 1) Заголовок замовлення + дані клієнта
+        # 1) Order header + basic customer data
         order_row = om.storage.fetch_one(
             """
-            SELECT b.order_id,
-                   b.customer_id,
-                   b.order_date,
-                   b.total,
+            SELECT o.order_id,
+                   o.customer_id,
+                   o.order_date,
+                   o.total,
                    c.name,
                    c.email,
                    c.address,
-                   c.kind AS customer_kind
-            FROM orders b
-            JOIN customers c ON c.customer_id = b.customer_id
-            WHERE b.order_id = %s
+                   c.kind AS kind
+            FROM orders o
+            JOIN customers c ON c.customer_id = o.customer_id
+            WHERE o.order_id = %s
             """,
             (order_id,),
         )
@@ -449,29 +538,29 @@ def order_success(order_id: int):
         if not order_row:
             return redirect(url_for("cart_view"))
 
-        # 2) Рядки замовлення
+        # 2) Order items
         items = om.storage.fetch_all(
             """
-            SELECT d.product_id,
+            SELECT oi.product_id,
                    p.product,
                    p.category,
-                   d.quantity,
-                   d.price
-            FROM order_items d
-            JOIN product p ON p.product_id = d.product_id
-            WHERE d.order_id = %s
+                   oi.quantity,
+                   oi.price
+            FROM order_items oi
+            JOIN product p ON p.product_id = oi.product_id
+            WHERE oi.order_id = %s
             """,
             (order_id,),
         )
 
-        # ... твій код підрахунку subtotal / discount / total ...
+        # 3) Calculate subtotal and line totals
         subtotal = 0.0
         for row in items:
             line_total = float(row["price"]) * row["quantity"]
             row["line_total"] = line_total
             subtotal += line_total
 
-        is_company = (order_row["customer_kind"] == "company")
+        is_company = (order_row["kind"] == "company")
         total_db = float(order_row["total"])
 
         if is_company:
@@ -481,48 +570,45 @@ def order_success(order_id: int):
             discount_amount = 0.0
             total = subtotal
 
-        # ShoppingCart + invoice як було
-        cart = ShoppingCart(customer_id=order_row["customer_id"])
-        for row in items:
-            cart.add_product(row["product_id"], row["quantity"])
-        cart.total_sum = subtotal
-
-        order_obj = Order(cart, is_company=is_company)
-        order_obj.set_order_id(order_id)
-        invoice_path = order_obj.create_invoice()
-
+        # 4) Shipping method stored in session during checkout
         shipping_method = session.get("shipping_method", "standard")
 
         return render_template(
             "order_success.html",
             order=order_row,
+            customer=order_row,      # for template convenience (customer.name, customer.kind, ...)
             items=items,
             subtotal=subtotal,
             discount=discount_amount,
             total=total,
             is_company=is_company,
-            invoice_path=invoice_path,
             shipping_method=shipping_method,
         )
     finally:
-        om.close()   # закриваємо з’єднання
+        om.close()
+
 
 @app.route("/reviews", methods=["GET", "POST"])
 def reviews_view():
+    """
+    Reviews page:
+      - GET: show filter form and list of all reviews (+ average rating per product).
+      - POST: create a new review for a product the current customer has bought.
+    """
     storage = Storage()
     storage.connect()
 
     customer_id = session.get("customer_id")
     error = None
 
-    # -------- параметри фільтра / сортування з URL --------
+    # ----- filter / sort parameters from URL -----
     search = (request.args.get("search") or "").strip()
     category_filter = request.args.get("category", "")
     rating_filter = request.args.get("rating", "")
     sort = request.args.get("sort", "date")
     direction = request.args.get("dir", "desc")
 
-    # дозволені поля сортування
+    # allowed sort fields
     sort_map = {
         "date": "r.created_at",
         "product": "p.product",
@@ -536,7 +622,7 @@ def reviews_view():
     dir_sql = "ASC" if direction == "asc" else "DESC"
     order_clause = f"{sort_column} {dir_sql}"
 
-    # -------- якщо POST: додаємо новий відгук --------
+    # ----- POST: create new review -----
     if request.method == "POST":
         if not customer_id:
             flash("Please log in to write a review.", "error")
@@ -555,7 +641,7 @@ def reviews_view():
 
         comment = (request.form.get("comment") or "").strip()
 
-        # перевіряємо, чи клієнт дійсно купував цей товар
+        # check if customer really bought this product
         allowed = storage.fetch_one(
             """
             SELECT 1
@@ -583,7 +669,7 @@ def reviews_view():
             storage.connection.commit()
             flash("Thank you for your review!", "success")
             storage.disconnect()
-            # після успішного запису – повертаємось на GET з тими ж фільтрами
+            # after successful insert, redirect back to GET with same filters
             return redirect(
                 url_for(
                     "reviews_view",
@@ -595,7 +681,7 @@ def reviews_view():
                 )
             )
 
-    # -------- 1) всі відгуки з фільтрацією/сортуванням --------
+    # ----- 1) load all reviews with filters and sorting -----
     where_clauses = []
     params: list = []
 
@@ -617,7 +703,6 @@ def reviews_view():
     where_sql = ""
     if where_clauses:
         where_sql = "WHERE " + " AND ".join(where_clauses)
-
 
     sql = f"""
         SELECT
@@ -648,7 +733,7 @@ def reviews_view():
 
     all_reviews = storage.fetch_all(sql, tuple(params))
 
-    # -------- 2) продукти, які поточний клієнт може оцінити --------
+    # ----- 2) products that current customer can still review -----
     purchasable_products = []
     if customer_id:
         purchasable_products = storage.fetch_all(
@@ -669,7 +754,7 @@ def reviews_view():
             (customer_id,),
         )
 
-    # -------- 3) список категорій для випадаючого списку --------
+    # ----- 3) list of categories for filter dropdown -----
     categories = storage.fetch_all(
         "SELECT DISTINCT category FROM product ORDER BY category"
     )
@@ -682,7 +767,6 @@ def reviews_view():
         purchasable_products=purchasable_products,
         categories=categories,
         error=error,
-        # параметри для шаблону
         search=search,
         category_filter=category_filter,
         rating_filter=rating_filter,
@@ -693,6 +777,11 @@ def reviews_view():
 
 @app.route("/my_orders")
 def my_orders():
+    """
+    "My orders" page:
+      - loads all orders for current customer,
+      - calculates subtotal/discount/total for each order and global sums.
+    """
     customer_id = session.get("customer_id")
     if not customer_id:
         return redirect(url_for("login"))
@@ -700,9 +789,9 @@ def my_orders():
     om = OrderMethods()
     orders = om.get_orders_with_items_for_customer(customer_id)
 
-    total_subtotal = 0
-    total_discount = 0
-    total_final = 0
+    total_subtotal = 0.0
+    total_discount = 0.0
+    total_final = 0.0
 
     for order in orders:
         subtotal = sum(item["price"] * item["quantity"] for item in order["items"])
@@ -726,15 +815,19 @@ def my_orders():
     )
 
 
-
 @app.route("/profile", methods=["GET", "POST"])
 def profile():
+    """
+    Profile page:
+      - GET: show user data
+      - POST: update name, email, address, phone using Validator and CustomerMethods.
+    """
     customer_id = session.get("customer_id")
     if not customer_id:
         flash("Please log in to access your profile.", "error")
         return redirect(url_for("login"))
 
-    # завантажуємо поточного користувача
+    # load current customer from DB
     user = cm.get_customer_by_id(customer_id)
     if not user:
         flash("Customer not found.", "error")
@@ -749,9 +842,8 @@ def profile():
         address = request.form.get("address", "").strip()
         phone = request.form.get("phone", "").strip()
 
-        # якщо хочеш – підключи свій Validator
         try:
-            # приклад – адаптуй під свої методи
+            # example validation via your Validator class
             name = Validator.validate_name(name)
             email = Validator.validate_email(email)
             address = Validator.validate_address(address)
@@ -768,12 +860,12 @@ def profile():
             if not ok:
                 error = "Could not update profile. Please try again."
             else:
-                # оновлюємо дані в session, щоб у шапці показувалось нове ім’я/емейл
+                # update session so navbar shows new name/email
                 session["user_name"] = name
                 session["user_email"] = email
                 success = "Profile updated successfully."
 
-                # перезавантажимо user, щоб у формі були свіжі дані
+                # reload user from DB to show fresh data in the form
                 user = cm.get_customer_by_id(customer_id)
 
         except ValueError as e:

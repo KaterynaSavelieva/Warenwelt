@@ -24,25 +24,36 @@ body.home-page::before {
   z-index: -1;
 }
 
-/* Wrapper for the welcome card in the center of the home page */
+
+/* Wrapper for the welcome card */
 .home-hero {
   min-height: calc(100vh - 80px);
   display: flex;
-  align-items: center;
-  justify-content: center;
+
+  /* ставимо блок у верхній лівий кут */
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  /* додаємо відступи, щоб виглядало красиво */
+  padding-top: 120px;
+  padding-left: 120px;
 }
 
-/* Glassmorphism card with title, text and button */
+/* Glassmorphism card */
 .home-hero-inner {
   max-width: 420px;
   padding: 24px 28px;
   border-radius: 18px;
-  background: rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(10px);
-  color: #ffffff;
+  background: rgba(0, 0, 0, 0.30);
+  backdrop-filter: blur(12px);
+  color: var(--white);
   text-align: left;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  /* додаткове легке зміщення, якщо треба */
+  transform: translateY(-40px);
 }
+
 
 .home-hero-inner h1 {
   margin: 0 0 8px 0;
@@ -54,4 +65,10 @@ body.home-page::before {
   margin: 4px 0 16px 0;
 }
 
-
+/* Subtitle text under the hero card */
+.home-subtitle {
+  color: var(--white);
+  text-align: center;
+  margin-bottom: 20px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}

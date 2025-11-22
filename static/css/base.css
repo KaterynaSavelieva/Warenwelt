@@ -6,8 +6,8 @@ body {
   margin: 0;
   line-height: 1.8;
   font-size: 18px;
-  background-color: #F7EBD4;
-  color: #313409;
+  background-color: var(--bg-main);
+  color: var(--text-main);
 }
 
 /* Link around logo: looks like plain text */
@@ -26,7 +26,7 @@ body {
 /* Simple text navigation links (not the orange pills) */
 .nav-link {
   font-size: 18px;
-  color: #007bff;
+  color: var(--text-link);
   text-decoration: none;
   font-weight: 500;
 }
@@ -38,9 +38,9 @@ body {
 /* User info “bubble” in the top-right corner */
 .user-info {
   padding: 6px 14px;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--user-badge-bg);
   backdrop-filter: blur(4px);
-  color: #fff;
+  color: var(--white);
   border-radius: 12px;
   font-size: 15px;
   font-weight: 500;
@@ -53,8 +53,8 @@ body {
   display: inline-block;
   padding: 10px 22px;
   border-radius: 999px;
-  background-color: #E9967A;
-  color: #D4F7EC;
+  background-color: var(--pill-bg);
+  color: var(--pill-text);
   text-decoration: none;
   font-size: 15px;
   font-weight: 500;
@@ -69,18 +69,18 @@ body {
 
 .btn-pill:hover,
 .nav-btn:hover {
-  background-color: #FFA07A;
+  background-color: var(--pill-bg-hover);
   transform: translateY(-1px);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
 }
 
 /* Red “Logout” pill */
 .logout {
-  background-color: #d9534f;
+  background-color: var(--danger);
 }
 
 .logout:hover {
-  background-color: #b52f29;
+  background-color: var(--danger-hover);
 }
 
 /* ========== HEADINGS & DIVIDERS ========== */
@@ -97,13 +97,13 @@ body {
   font-size: 18px;
   font-weight: 400;
   margin-top: 0;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 /* Horizontal divider line between sections */
 .divider {
   height: 1px;
-  background-color: #e5e7eb;
+  background-color: var(--border-light);
   margin: 20px 0;
 }
 
@@ -112,7 +112,7 @@ body {
   margin-top: 8px;
   font-size: 16px;
   font-weight: 500;
-  color: #111827;
+  color: var(--text-dark);
 }
 
 /* Wrapper around cart total text and view switcher */
@@ -139,12 +139,14 @@ body {
 
 /* Success message */
 .flash-success {
-  background-color: #dcfce7;
-  color: #14532d;
+  background-color: var(--flash-success-bg);
+  color: var(--flash-success-text);
 }
 
 /* Error / other message */
 .flash-error {
-  background-color: #fee2e2;
-  color: #7f1d1d;
+  background-color: var(--flash-error-bg);
+  color: var(--flash-error-text);
 }
+
+

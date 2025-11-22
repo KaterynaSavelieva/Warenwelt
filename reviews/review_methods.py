@@ -34,18 +34,17 @@ class ReviewMethods:
     def get_purchased_products(self, customer_id: int) -> list[dict]:
         """
         Return DISTINCT products that this customer has bought.
-        Використовуємо для списку в формі.
-        !!! Якщо ти перейменуєш 'bestellung'/'bestellung_details' на 'orders' –
-        тут треба буде змінити назви таблиць.
+        Can be used to build a dropdown list of products
+        the customer is allowed to review.
         """
         sql = """
             SELECT DISTINCT
                 p.product_id,
                 p.product
-            FROM bestellung b
-            JOIN bestellung_details d ON d.order_id = b.order_id
-            JOIN product p            ON p.product_id = d.product_id
-            WHERE b.customer_id = %s
+            FROM orders o
+            JOIN order_items oi ON oi.order_id = o.order_id
+            JOIN product p      ON p.product_id = oi.product_id
+            WHERE o.customer_id = %s
             ORDER BY p.product
         """
         try:
@@ -73,10 +72,10 @@ class ReviewMethods:
             # 1) Check that customer really bought this product
             sql_check = """
                 SELECT 1
-                FROM bestellung b
-                JOIN bestellung_details d ON d.order_id = b.order_id
-                WHERE b.customer_id = %s
-                  AND d.product_id  = %s
+                FROM orders o
+                JOIN order_items oi ON oi.order_id = o.order_id
+                WHERE o.customer_id = %s
+                  AND oi.product_id  = %s
                 LIMIT 1
             """
             row = self.storage.fetch_one(sql_check, (customer_id, product_id))
@@ -84,7 +83,7 @@ class ReviewMethods:
                 print("create_review: customer has not purchased this product.")
                 return False
 
-            # (опційно) заборонити другий review на той самий товар
+            # (optional) forbid a second review for the same product
             sql_exists = """
                 SELECT 1
                 FROM review

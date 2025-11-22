@@ -13,8 +13,8 @@ class OrderMethods:
     def save_order(self, cart: ShoppingCart, is_company: bool = False) -> int | None:
         """
         Saves an order into two tables:
-        - 'bestellung' (order header)
-        - 'bestellung_details' (order items)
+        - order
+        - order_items
         """
         try:
             # 1) basic checks

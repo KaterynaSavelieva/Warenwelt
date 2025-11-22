@@ -8,32 +8,32 @@
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  background-color: #FFFAF0;
+  background-color: var(--bg-card);
 }
 
 /* Cells inside the product table */
 .product-table th,
 .product-table td {
   padding: 8px 10px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-light);
   text-align: left;
   font-size: 16px;
 }
 
 /* Dark header row */
 .product-table thead {
-  background-color: #111827;
-  color: #f9fafb;
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
 }
 
 /* Light zebra stripes */
 .product-table tbody tr:nth-child(even) {
-  background-color: #f9fafb;
+  background-color: var(--table-row-alt);
 }
 
 /* Hover highlight for rows */
 .product-table tbody tr:hover {
-  background-color: #f0f4ff;
+  background-color: var(--table-row-hover);
   cursor: pointer;
 }
 
@@ -55,8 +55,8 @@
   width: 42px;
   height: 32px;
   border-radius: 999px;
-  background-color: #1d4ed8;
-  color: #ffffff;
+  background-color: var(--primary);
+  color: var(--white);
   border: none;
   cursor: pointer;
   display: flex;
@@ -65,7 +65,7 @@
 }
 
 .cart-icon-btn:hover {
-  background-color: #1e40af;
+  background-color: var(--primary-hover);
 }
 
 .cart-icon-btn span {
@@ -84,7 +84,7 @@
 
 /* Single product card container */
 .product-card {
-  background-color: #FFFAF0;
+  background-color: var(--bg-card);
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   min-height: 200px;
@@ -104,7 +104,7 @@
 /* Additional info (category, brand, size, etc.) in card */
 .product-card-category {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--text-muted);
   margin-bottom: 8px;
 }
 
@@ -112,7 +112,7 @@
 .product-card-price {
   font-size: 18px;
   font-weight: 600;
-  color: #800000;
+  color: var(--text-price);
   margin-top: 10px;
 }
 
@@ -129,7 +129,7 @@
   margin-top: 10px;
   padding: 12px 18px;
   width: 300px;
-  background: white;
+  background: var(--order-box-bg);
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
@@ -141,7 +141,7 @@
 
 /* Global summary box with total over all orders */
 .order-summary-global {
-  background: #fff;
+  background: var(--order-box-bg);
   padding: 15px 20px;
   width: 350px;
   border-radius: 10px;
@@ -174,7 +174,7 @@
 /* Checkout page: company discount info */
 .company-discount-info {
   text-align: center;
-  color: #1d4ed8;
+  color: var(--primary);
   padding-top: 10px;
 }
 

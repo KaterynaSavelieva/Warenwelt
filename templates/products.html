@@ -15,6 +15,9 @@
                           view='table',
                           search=search,
                           category=category,
+                          brand=brand,
+                          author=author,
+                          size=size,
                           sort=sort,
                           dir=direction) }}"
          class="toggle-link {% if view == 'table' %}toggle-link-active{% endif %}">
@@ -25,6 +28,9 @@
                           view='cards',
                           search=search,
                           category=category,
+                          brand=brand,
+                          author=author,
+                          size=size,
                           sort=sort,
                           dir=direction) }}"
          class="toggle-link {% if view == 'cards' %}toggle-link-active{% endif %}">
@@ -37,60 +43,60 @@
 
   <!-- ================= FILTER + SEARCH ================= -->
 
-    <form method="get" class="filter-form">
-      <input type="hidden" name="view" value="{{ view }}">
-      <input type="hidden" name="sort" value="{{ sort }}">
-      <input type="hidden" name="dir"  value="{{ direction }}">
+  <form method="get" class="filter-form">
+    <input type="hidden" name="view" value="{{ view }}">
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <input type="hidden" name="dir"  value="{{ direction }}">
 
-      <input type="text"
-             name="search"
-             placeholder="Search by name"
-             value="{{ search }}">
+    <input type="text"
+           name="search"
+           placeholder="Search by name"
+           value="{{ search }}">
 
-      <select name="category">
-        <option value="">All categories</option>
-        {% for cat in categories %}
-          <option value="{{ cat }}"
-                  {{ 'selected' if category == cat else '' }}>
-            {{ cat }}
-          </option>
-        {% endfor %}
-      </select>
+    <select name="category">
+      <option value="">All categories</option>
+      {% for cat in categories %}
+        <option value="{{ cat }}"
+                {{ 'selected' if category == cat else '' }}>
+          {{ cat }}
+        </option>
+      {% endfor %}
+    </select>
 
-      <select name="brand">
-        <option value="">Brand</option>
-        {% for b in brands %}
-          <option value="{{ b }}"
-                  {{ 'selected' if brand == b else '' }}>
-            {{ b }}
-          </option>
-        {% endfor %}
-      </select>
+    <select name="brand">
+      <option value="">Brand</option>
+      {% for b in brands %}
+        <option value="{{ b }}"
+                {{ 'selected' if brand == b else '' }}>
+          {{ b }}
+        </option>
+      {% endfor %}
+    </select>
 
-      <select name="author">
-        <option value="">Author</option>
-        {% for a in authors %}
-          <option value="{{ a }}"
-                  {{ 'selected' if author == a else '' }}>
-            {{ a }}
-          </option>
-        {% endfor %}
-      </select>
+    <select name="author">
+      <option value="">Author</option>
+      {% for a in authors %}
+        <option value="{{ a }}"
+                {{ 'selected' if author == a else '' }}>
+          {{ a }}
+        </option>
+      {% endfor %}
+    </select>
 
-      <select name="size">
-        <option value="">Size</option>
-        {% for a in sizes %}
-          <option value="{{ a }}"
-                  {{ 'selected' if size == a else '' }}>
-            {{ a }}
-          </option>
-        {% endfor %}
-      </select>
+    <select name="size">
+      <option value="">Size</option>
+      {% for a in sizes %}
+        <option value="{{ a }}"
+                {{ 'selected' if size == a else '' }}>
+          {{ a }}
+        </option>
+      {% endfor %}
+    </select>
 
-      <button type="submit" class="card-btn filter-btn">
-        Filter
-      </button>
-    </form>
+    <button type="submit" class="card-btn filter-btn">
+      Filter
+    </button>
+  </form>
 
   <div class="divider"></div>
 
@@ -104,6 +110,9 @@
                                 view=view,
                                 search=search,
                                 category=category,
+                                brand=brand,
+                                author=author,
+                                size=size,
                                 sort='id',
                                 dir='desc' if sort=='id' and direction=='asc' else 'asc') }}"
                class="table-sort-link">
@@ -116,6 +125,9 @@
                                 view=view,
                                 search=search,
                                 category=category,
+                                brand=brand,
+                                author=author,
+                                size=size,
                                 sort='name',
                                 dir='desc' if sort=='name' and direction=='asc' else 'asc') }}"
                class="table-sort-link">
@@ -128,6 +140,9 @@
                                 view=view,
                                 search=search,
                                 category=category,
+                                brand=brand,
+                                author=author,
+                                size=size,
                                 sort='category',
                                 dir='desc' if sort=='category' and direction=='asc' else 'asc') }}"
                class="table-sort-link">
@@ -155,6 +170,9 @@
                                 view=view,
                                 search=search,
                                 category=category,
+                                brand=brand,
+                                author=author,
+                                size=size,
                                 sort='price',
                                 dir='desc' if sort=='price' and direction=='asc' else 'asc') }}"
                class="table-sort-link">
@@ -171,6 +189,9 @@
                                 view=view,
                                 search=search,
                                 category=category,
+                                brand=brand,
+                                author=author,
+                                size=size,
                                 sort='total',
                                 dir='desc' if sort=='total' and direction=='asc' else 'asc') }}"
                class="table-sort-link">
@@ -259,13 +280,16 @@
 
           <!-- Add to cart button -->
           <td class="num">
-            <form method="post"
-                  action="{{ url_for('add_to_cart_route', product_id=p.product_id, view=view) }}">
-              <button type="submit" class="cart-icon-btn" title="Add to cart">
-                <span>🛒</span>
-              </button>
-            </form>
-          </td>
+              <form method="post"
+                    action="{{ url_for('add_to_cart_route', product_id=p.product_id, view=view) }}">
+                <input type="hidden"
+                       name="return_url"
+                       value="{{ request.full_path }}#row-{{ p.product_id }}">
+                <button type="submit" class="cart-icon-btn" title="Add to cart">
+                  <span>🛒</span>
+                </button>
+              </form>
+           </td>
         </tr>
         {% endfor %}
       </tbody>
@@ -357,10 +381,14 @@
 
             <form method="post"
                   action="{{ url_for('add_to_cart_route', product_id=p.product_id, view=view) }}">
+              <input type="hidden"
+                     name="return_url"
+                     value="{{ request.full_path }}#row-{{ p.product_id }}">
               <button type="submit" class="cart-icon-btn" title="Add to cart">
                 <span>🛒</span>
               </button>
             </form>
+
           </div>
 
         </div>
@@ -369,4 +397,8 @@
   {% endif %}
 
 </div>
+{% endblock %}   {# кінець block content #}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/product_filters.js') }}"></script>
 {% endblock %}

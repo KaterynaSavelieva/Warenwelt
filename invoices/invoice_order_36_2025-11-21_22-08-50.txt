@@ -1,0 +1,22 @@
+INVOICE #36
+
+Customer
+--------
+  Name   : KATERYNA SAVELIEVAzhgzhhgh
+  ID     : 24
+  Type   : PRIVATE
+  Address: dfgdfgfd
+  Email  : aa1a@12ggg3.as
+  Phone  : 0504434632
+
+Order date : 21.11.2025 22:08
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+2    Smartphone Samsung S24             1     999.00     999.00
+3    Bluetooth Kopfhörer Sony           1     149.99     149.99
+
+                                            Subtotal:    1148.99
+                                               Total:    1148.99

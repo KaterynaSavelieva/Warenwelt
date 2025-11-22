@@ -7,6 +7,12 @@ class ProductMethods:
         self.storage = Storage()
         self.storage.connect()
 
+        # IMPORTANT: always see latest committed data
+        try:
+            self.storage.connection.autocommit(True)
+        except Exception as e:
+            print("Could not enable autocommit for ProductMethods:", e)
+
     def get_product(self, product_id: int):
         try:
             sql = "SELECT * FROM v_prod WHERE product_id = %s"
@@ -19,7 +25,7 @@ class ProductMethods:
         except MySQLError as e:
             print("Error loading product:", e)
 
-    def get_all_products(self):
+    def get_all_products1(self):
         try:
             sql = """
                 SELECT
@@ -53,6 +59,65 @@ class ProductMethods:
                 print("No products found.")
             return results
         except MySQLError as e:
+            print("Error loading all products:", e)
+            return []
+
+    def get_all_products2(self) -> list[dict]:
+        """
+        Load all products with category-specific fields and aggregated rating.
+        """
+        sql = """
+            SELECT
+                product_id,
+                product,
+                price,
+                weight,
+                category,
+                brand,
+                warranty_years,
+                size,
+                author,
+                page_count,
+                avg_rating,
+                review_count
+            FROM v_prod
+            ORDER BY product_id
+        """
+        try:
+            rows = self.storage.fetch_all(sql)
+            # Якщо потрібно красиве виведення в консолі:
+            # if rows:
+            #     print(tabulate(rows, headers="keys", tablefmt="rounded_grid"))
+            return rows
+        except Exception as e:
+            print("Error loading all products:", e)
+            return []
+
+    def get_all_products(self) -> list[dict]:
+        """
+        Load all products with category-specific fields and aggregated rating.
+        """
+        sql = """
+            SELECT
+                product_id,
+                product,
+                price,
+                weight,
+                category,
+                brand,
+                warranty_years,
+                size,
+                author,
+                page_count,
+                avg_rating,
+                review_count
+            FROM v_prod
+            ORDER BY product_id
+        """
+        try:
+            rows = self.storage.fetch_all(sql)
+            return rows
+        except Exception as e:
             print("Error loading all products:", e)
             return []
 
@@ -213,7 +278,7 @@ class ProductMethods:
             print("No products under this price.")
         return rows or []
 
-    def get_products_filtered(
+    def get_products_filtered1(
         self,
         *,
         search: str = "",
@@ -298,6 +363,65 @@ class ProductMethods:
         # але якщо хочеш – можна додати просте сортування по id:
         # sql += " ORDER BY p.product_id ASC"
 
+        rows = self.storage.fetch_all(sql, params)
+        return rows
+
+    def get_products_filtered(
+            self,
+            *,
+            search: str = "",
+            category: str = "",
+            brand: str = "",
+            author: str = "",
+            size: str = "",
+            sort: str = "id",
+            direction: str = "asc",
+    ) -> list[dict]:
+        """
+        Load products from v_prod with optional filters.
+        All rows already contain avg_rating and review_count.
+        """
+        sql = """
+            SELECT
+                product_id,
+                product,
+                price,
+                weight,
+                category,
+                brand,
+                warranty_years,
+                size,
+                author,
+                page_count,
+                avg_rating,
+                review_count
+            FROM v_prod
+            WHERE 1 = 1
+        """
+
+        params: list = []
+
+        if category:
+            sql += " AND category = %s"
+            params.append(category)
+
+        if search:
+            sql += " AND LOWER(product) LIKE %s"
+            params.append("%" + search.lower() + "%")
+
+        if brand:
+            sql += " AND brand = %s"
+            params.append(brand)
+
+        if author:
+            sql += " AND author = %s"
+            params.append(author)
+
+        if size:
+            sql += " AND size = %s"
+            params.append(size)
+
+        # сортування залишаємо в Python (product_list), тут ORDER BY не потрібен
         rows = self.storage.fetch_all(sql, params)
         return rows
 

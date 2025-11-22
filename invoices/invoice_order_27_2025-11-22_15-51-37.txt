@@ -1,0 +1,22 @@
+INVOICE #27
+
+Customer
+--------
+  Name   : Lisa Baum
+  ID     : 7
+  Type   : PRIVATE
+  Address: Villach, Gartenweg 9
+  Email  : lisa.baum@example.com
+  Phone  : +436751234567
+
+Order date : 22.11.2025 15:51
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+9    Notebook Acer Aspire               2     699.99    1399.98
+6    Kinder T-Shirt                     1      19.99      19.99
+
+                                            Subtotal:    1419.97
+                                               Total:    1419.97
