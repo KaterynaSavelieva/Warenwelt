@@ -36,7 +36,7 @@ def run_review_management() -> None:
                 rating = get_float_input("Rating (1–5): ")
                 comment = optional_input("Comment (blank = no comment): ") or ""
 
-                rm.save_review(
+                rm.create_review(
                     customer_id=customer_id,
                     product_id=product_id,
                     rating=rating,

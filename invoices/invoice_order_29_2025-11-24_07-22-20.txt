@@ -1,0 +1,23 @@
+INVOICE #29
+
+Customer
+--------
+  Name   : Johann Bauer
+  ID     : 8
+  Type   : PRIVATE
+  Address: Graz, Feldgasse 10
+  Email  : johann.bauer@example.com
+  Phone  : +436609999999
+
+Order date : 24.11.2025 07:22
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+2    Smartphone Samsung S24             1     999.00     999.00
+4    Winterjacke Damen                  1     129.90     129.90
+7    Roman "Der Fluss"                  2      14.99      29.98
+
+                                            Subtotal:    1158.88
+                                               Total:    1158.88

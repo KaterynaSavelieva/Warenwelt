@@ -1,4 +1,4 @@
-DROP DATABASE onlineshop;
+-- DROP DATABASE onlineshop;
 CREATE DATABASE IF NOT EXISTS onlineshop CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE onlineshop;
 
