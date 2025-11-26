@@ -1,0 +1,21 @@
+INVOICE #30
+
+Customer
+--------
+  Name   : Johann Bauer
+  ID     : 8
+  Type   : PRIVATE
+  Address: Graz, Feldgasse 10
+  Email  : johann.bauer@example.com
+  Phone  : +436609999999
+
+Order date : 24.11.2025 15:28
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+2    Smartphone Samsung S24             1     999.00     999.00
+
+                                            Subtotal:     999.00
+                                               Total:     999.00

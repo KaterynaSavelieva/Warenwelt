@@ -1,0 +1,22 @@
+INVOICE #32
+
+Customer
+--------
+  Name   : BookPlanet GmbH
+  ID     : 10
+  Type   : COMPANY
+  Address: Salzburg, Buchweg 8
+  Email  : service@bookplanet.at
+  Phone  : +43662888888
+
+Order date : 26.11.2025 08:33
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+8    Kochbuch Vegan Life                1      24.50      24.50
+
+                                            Subtotal:      24.50
+                              Company discount (5 %): -     1.23
+                                               Total:      23.27

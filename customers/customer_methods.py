@@ -106,7 +106,7 @@ class CustomerMethods:
         # НІЯКОГО `except Exception` тут – інакше ми знову з’їмо ValueError!
 
     def get_customer(self, customer_id: int) -> dict | None:
-        """Load one customers by id from the view v_cust."""
+        """Load one customers by id from the cli v_cust."""
         try:
             sql = "SELECT * FROM v_customers WHERE customer_id = %s"
             row = self.storage.fetch_one(sql, (customer_id,))
@@ -147,7 +147,7 @@ class CustomerMethods:
         return row
 
     def get_all_customers(self) -> list[dict]:
-        """Load all customers from the view v_customers."""
+        """Load all customers from the cli v_customers."""
         try:
             sql = "SELECT * FROM v_customers ORDER BY customer_id DESC"
             rows = self.storage.fetch_all(sql)

@@ -62,41 +62,7 @@ class ProductMethods:
             print("Error loading all products:", e)
             return []
 
-    def get_all_products2(self) -> list[dict]:
-        """
-        Load all products with category-specific fields and aggregated rating.
-        """
-        sql = """
-            SELECT
-                product_id,
-                product,
-                price,
-                weight,
-                category,
-                brand,
-                warranty_years,
-                size,
-                author,
-                page_count,
-                avg_rating,
-                review_count
-            FROM v_prod
-            ORDER BY product_id
-        """
-        try:
-            rows = self.storage.fetch_all(sql)
-            # Якщо потрібно красиве виведення в консолі:
-            # if rows:
-            #     print(tabulate(rows, headers="keys", tablefmt="rounded_grid"))
-            return rows
-        except Exception as e:
-            print("Error loading all products:", e)
-            return []
-
     def get_all_products(self) -> list[dict]:
-        """
-        Load all products with category-specific fields and aggregated rating.
-        """
         sql = """
             SELECT
                 product_id,
@@ -116,6 +82,10 @@ class ProductMethods:
         """
         try:
             rows = self.storage.fetch_all(sql)
+            if rows:
+                print(tabulate(rows, headers="keys", tablefmt="rounded_grid"))
+            else:
+                print("No products found.")
             return rows
         except Exception as e:
             print("Error loading all products:", e)
@@ -124,7 +94,7 @@ class ProductMethods:
     def save_product(self, *, product_new: str, price: float, weight: float, category: str,  author: str | None = None, page_count: int | None = None, brand: str | None = None, warranty_years: int | None = None, size: str | None = None) -> int | None:
         try:
             # 1️ Мінімальна перевірка
-            product_new = (product_new or "").strip()
+            product_new = (product_new or "").strip().title()
             if not product_new:
                 print("Product name required.");
                 return None

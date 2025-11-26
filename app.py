@@ -103,7 +103,7 @@ def home():
 
 @app.route("/products")
 def product_list():
-    view = request.args.get("view", "table")
+    view = request.args.get("cli", "table")
     if view not in ("table", "cards"):
         view = "table"
 
@@ -201,7 +201,7 @@ def add_to_cart_route(product_id: int):
         return redirect(return_url)
 
     # fallback – як і було раніше
-    view = request.args.get("view", "table")
+    view = request.args.get("cli", "table")
     if view not in ("table", "cards"):
         view = "table"
 

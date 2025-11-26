@@ -2,7 +2,7 @@ from products.product_methods import ProductMethods
 from utils.input_helpers import (
     optional_input,
     get_int_input,
-    pause,
+    pause, get_optional_int_input,
 )
 
 
@@ -53,6 +53,7 @@ def run_product_management() -> None:
 
                 category = input("Category (electronics/clothing/books): ").strip().lower()
 
+
                 author = None
                 page_count = None
                 brand = None
@@ -60,8 +61,8 @@ def run_product_management() -> None:
                 size = None
 
                 if category == "books":
-                    author = input("Author: ").strip()
-                    page_count = get_int_input("Page count: ")
+                    author = optional_input("Author (blank = skip): ").strip().title()
+                    page_count = get_optional_int_input("Page count (blank = skip): ")
 
                 elif category == "electronics":
                     brand = input("Brand: ").strip()

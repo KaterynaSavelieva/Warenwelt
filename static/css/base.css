@@ -1,6 +1,7 @@
-/* ========== GLOBAL BASE STYLES ========== */
+/* =========================================================
+   GLOBAL BASE STYLES
+   ========================================================= */
 
-/* Base font, background color and text color for the whole site */
 body {
   font-family: "Inter", sans-serif;
   margin: 0;
@@ -10,20 +11,39 @@ body {
   color: var(--text-main);
 }
 
-/* Link around logo: looks like plain text */
-.logo-link {
-  text-decoration: none;
-  color: inherit;
+/* Optional site header */
+.site-header {
+  background-color: var(--bg-main);
+  padding: 16px 28px;
 }
 
-/* Main logo text style */
+/* "World of goods" text logo */
 .logo {
   margin: 0;
-  font-size: 32px;
+  font-size: 100px;
   font-weight: 600;
+  font-family: "Lobster", Brush Script MT, "Comic Sans MS", cursive;
+  color: var(--text-main);
+  line-height: 1;
+  transform: scaleX(1.25);   /* трішки розтягуємо по ширині */
+  display: inline-block;
+  text-align: center;
 }
 
-/* Simple text navigation links (not the orange pills) */
+/* Logo link: центр у своїй grid-комірці, без підкреслення */
+.logo-link,
+.logo-link:visited,
+.logo-link:hover,
+.logo-link:active {
+  justify-self: center;
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+/* =========================================================
+   NAVIGATION LINKS
+   ========================================================= */
+
 .nav-link {
   font-size: 18px;
   color: var(--text-link);
@@ -35,18 +55,9 @@ body {
   text-decoration: underline;
 }
 
-/* User info “bubble” in the top-right corner */
-.user-info {
-  padding: 6px 14px;
-  background: var(--user-badge-bg);
-  backdrop-filter: blur(4px);
-  color: var(--white);
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 500;
-}
-
-/* ========== MAIN BUTTONS (PILLS) ========== */
+/* =========================================================
+   MAIN BUTTONS (terracotta pill buttons)
+   ========================================================= */
 
 .btn-pill,
 .nav-btn {
@@ -58,9 +69,10 @@ body {
   text-decoration: none;
   font-size: 15px;
   font-weight: 500;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
   border: none;
   cursor: pointer;
+
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
   transition:
     background-color 0.15s ease,
     transform 0.15s ease,
@@ -74,25 +86,25 @@ body {
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
 }
 
-/* Red “Logout” pill */
-.logout {
+/* Login button uses danger color */
+.login {
   background-color: var(--danger);
 }
 
-.logout:hover {
+.login:hover {
   background-color: var(--danger-hover);
 }
 
-/* ========== HEADINGS & DIVIDERS ========== */
+/* =========================================================
+   HEADINGS & DIVIDERS
+   ========================================================= */
 
-/* Page title above the content */
 .page-title {
   font-size: 30px;
   font-weight: 600;
   margin-bottom: 4px;
 }
 
-/* Short description text under the title */
 .page-subtitle {
   font-size: 18px;
   font-weight: 400;
@@ -100,14 +112,13 @@ body {
   color: var(--text-muted);
 }
 
-/* Horizontal divider line between sections */
 .divider {
   height: 1px;
   background-color: var(--border-light);
   margin: 20px 0;
 }
 
-/* Short text with total amount of items in the cart (top of products page) */
+/* Small summary text (e.g. cart total on top of products page) */
 .cart-summary {
   margin-top: 8px;
   font-size: 16px;
@@ -115,7 +126,7 @@ body {
   color: var(--text-dark);
 }
 
-/* Wrapper around cart total text and view switcher */
+/* Wrapper for cart total and view switcher row */
 .view-bar {
   display: flex;
   align-items: center;
@@ -123,30 +134,67 @@ body {
   gap: 16px;
 }
 
-/* ========== FLASH MESSAGES ========== */
+/* Simple flex wrapper for view switcher buttons */
+.view-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+/* =========================================================
+   FLASH MESSAGES
+   ========================================================= */
 
 .flash-container {
   max-width: 1100px;
   margin: 0 auto 16px auto;
 }
 
-/* Base flash message style */
 .flash-message {
   padding: 10px 14px;
   border-radius: 8px;
   font-size: 14px;
 }
 
-/* Success message */
 .flash-success {
   background-color: var(--flash-success-bg);
   color: var(--flash-success-text);
 }
 
-/* Error / other message */
 .flash-error {
   background-color: var(--flash-error-bg);
   color: var(--flash-error-text);
 }
 
+/* =========================================================
+   VIEW SWITCHER (Table view / Cards view)
+   ========================================================= */
 
+.view-switch {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background-color: var(--pill-bg);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.view-switch:hover {
+  background-color: var(--pill-bg-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* Current view is slightly darker */
+.view-switch.active {
+  background-color: #C57C53;
+}
+
+/* Helper class for hiding things via JS */
+.hidden {
+  display: none;
+}

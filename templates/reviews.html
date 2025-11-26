@@ -1,18 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Reviews{% endblock %}
+{% block body_class %}reviews-page{% endblock %}
 
 {% block content %}
 <div class="page-container">
 
+  {# ===================== PAGE HEADER ===================== #}
   <h1 class="page-title">Customer reviews</h1>
   <p class="page-subtitle">
-    Read what our customers say.
+    Read what other customers think about our products and share your own experience.
   </p>
 
   <div class="divider"></div>
 
-  {# ---- Write review block ---- #}
-  <h2 class="page-subtitle">Write a review You can review only products you have bought.</h2>
+  {# ===================== WRITE A NEW REVIEW ===================== #}
 
   {% if error %}
     <div class="flash-message flash-error">
@@ -22,53 +23,63 @@
 
   {% if not session.get("customer_id") %}
     <p>You need to log in to write a review.</p>
+
   {% elif purchasable_products %}
-    <form method="post" class="form-card">
+    <button id="toggleReviewBtn" class="btn-primary review-toggle-btn">
+      Write a review
+    </button>
 
-      <div class="form-field">
-        <label class="form-label">Product:</label>
-        <select name="product_id"
-                required
-                class="input-text">
-          {% for p in purchasable_products %}
-            <option value="{{ p.product_id }}">{{ p.product_name }}</option>
-          {% endfor %}
-        </select>
-      </div>
+    <div id="reviewFormBox"
+         class="form-card review-form-box {% if not error %}hidden{% endif %}">
 
-      <div class="form-field">
-        <label class="form-label">Rating (1–5):</label>
-        <select name="rating"
-                required
-                class="input-text">
-          {% for r in range(1, 6) %}
-            <option value="{{ r }}">{{ r }}</option>
-          {% endfor %}
-        </select>
-      </div>
+      <form method="post">
+        <h2 class="page-subtitle">
+          You can only review products you have already bought.
+        </h2>
 
-      <div class="form-field">
-        <label class="form-label">Comment:</label>
-        <textarea name="comment"
-                  rows="4"
-                  class="input-text review-textarea"></textarea>
-      </div>
+        <div class="form-field">
+          <label class="form-label" for="product_id">Product</label>
+          <select id="product_id" name="product_id" required class="input-text">
+            {% for p in purchasable_products %}
+              <option value="{{ p.product_id }}">{{ p.product_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
 
-      <button type="submit" class="btn-primary">
-        Send review
-      </button>
-    </form>
+        <div class="form-field">
+          <label class="form-label" for="rating">Rating (1–5)</label>
+          <select id="rating" name="rating" required class="input-text">
+            {% for r in range(1, 6) %}
+              <option value="{{ r }}">{{ r }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="comment">Comment</label>
+          <textarea id="comment"
+                    name="comment"
+                    rows="4"
+                    class="input-text review-textarea"
+                    placeholder="Share what you liked or what could be improved..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary">Send review</button>
+      </form>
+    </div>
+
   {% else %}
     <p>
       You can only write reviews for products you have bought.
-      At the moment there are no completed orders for your account
-      (or you already reviewed all purchased products).
+      At the moment there are no completed orders for your account,
+      or you have already reviewed all purchased products.
     </p>
   {% endif %}
 
   <div class="divider"></div>
 
-  {# ---- Filter + search for all reviews ---- #}
+  {# ===================== FILTERS ===================== #}
+
   <h2 class="page-subtitle">All reviews</h2>
 
   <form method="get" class="filter-form reviews-filter-form">
@@ -77,7 +88,7 @@
 
     <input type="text"
            name="search"
-           placeholder="Search in product / customer / comment"
+           placeholder="Search in product, customer or comment"
            value="{{ search }}">
 
     <select name="category">
@@ -99,120 +110,127 @@
       {% endfor %}
     </select>
 
-    <button type="submit" class="card-btn filter-btn">
-      Filter
-    </button>
+    <button type="submit" class="card-btn filter-btn">Filter</button>
   </form>
 
   <div class="divider"></div>
 
+  {# ===================== REVIEWS TABLE WITH INTERNAL SCROLL ===================== #}
+
   {% if not reviews %}
     <p>No reviews yet.</p>
+
   {% else %}
-    <table class="product-table">
-      <thead>
-        <tr>
-          <th>
-            <a href="{{ url_for('reviews_view',
-                                sort='date',
-                                dir='desc' if sort=='date' and direction=='asc' else 'asc',
-                                search=search,
-                                category=category_filter,
-                                rating=rating_filter) }}"
-               class="table-sort-link">
-              Date
-            </a>
-          </th>
-          <th>
-            <a href="{{ url_for('reviews_view',
-                                sort='product',
-                                dir='desc' if sort=='product' and direction=='asc' else 'asc',
-                                search=search,
-                                category=category_filter,
-                                rating=rating_filter) }}"
-               class="table-sort-link">
-              Product
-            </a>
-          </th>
-          <th>
-            <a href="{{ url_for('reviews_view',
-                                sort='category',
-                                dir='desc' if sort=='category' and direction=='asc' else 'asc',
-                                search=search,
-                                category=category_filter,
-                                rating=rating_filter) }}"
-               class="table-sort-link">
-              Category
-            </a>
-          </th>
-          <th>
-            <a href="{{ url_for('reviews_view',
-                                sort='customer',
-                                dir='desc' if sort=='customer' and direction=='asc' else 'asc',
-                                search=search,
-                                category=category_filter,
-                                rating=rating_filter) }}"
-               class="table-sort-link">
-              Customer
-            </a>
-          </th>
-          <th>
-            <a href="{{ url_for('reviews_view',
-                                sort='rating',
-                                dir='desc' if sort=='rating' and direction=='asc' else 'asc',
-                                search=search,
-                                category=category_filter,
-                                rating=rating_filter) }}"
-               class="table-sort-link">
-              Rating (max. 5)
-            </a>
-          </th>
-          <th>
-            <a href="{{ url_for('reviews_view',
-                                sort='avg_rating',
-                                dir='desc' if sort=='avg_rating' and direction=='asc' else 'asc',
-                                search=search,
-                                category=category_filter,
-                                rating=rating_filter) }}"
-               class="table-sort-link">
-              Avg. rating
-            </a>
-          </th>
-          <th>
-            <a href="{{ url_for('reviews_view',
-                                sort='comment',
-                                dir='desc' if sort=='comment' and direction=='asc' else 'asc',
-                                search=search,
-                                category=category_filter,
-                                rating=rating_filter) }}"
-               class="table-sort-link">
-              Comment
-            </a>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for r in reviews %}
+    <div class="table-scroll">
+      <table class="product-table">
+        <thead>
           <tr>
-            <td>{{ r.created_at.strftime("%d.%m.%Y") if r.created_at else "-" }}</td>
-            <td>{{ r.product_name }}</td>
-            <td>{{ r.category|capitalize }}</td>
-            <td>{{ r.customer_name }}</td>
-            <td>{{ r.rating }}</td>
-            <td>
-              {% if r.avg_rating is not none %}
-                {{ "%.1f"|format(r.avg_rating) }}
-                ({{ r.review_count }})
-              {% else %}
-                –
-              {% endif %}
-            </td>
-            <td>{{ r.comment }}</td>
+            <th>
+              <a href="{{ url_for('reviews_view',
+                                  sort='date',
+                                  dir='desc' if sort=='date' and direction=='asc' else 'asc',
+                                  search=search,
+                                  category=category_filter,
+                                  rating=rating_filter) }}"
+                 class="table-sort-link">
+                Date
+              </a>
+            </th>
+            <th>
+              <a href="{{ url_for('reviews_view',
+                                  sort='product',
+                                  dir='desc' if sort=='product' and direction=='asc' else 'asc',
+                                  search=search,
+                                  category=category_filter,
+                                  rating=rating_filter) }}"
+                 class="table-sort-link">
+                Product
+              </a>
+            </th>
+            <th>
+              <a href="{{ url_for('reviews_view',
+                                  sort='category',
+                                  dir='desc' if sort=='category' and direction=='asc' else 'asc',
+                                  search=search,
+                                  category=category_filter,
+                                  rating=rating_filter) }}"
+                 class="table-sort-link">
+                Category
+              </a>
+            </th>
+            <th>
+              <a href="{{ url_for('reviews_view',
+                                  sort='customer',
+                                  dir='desc' if sort=='customer' and direction=='asc' else 'asc',
+                                  search=search,
+                                  category=category_filter,
+                                  rating=rating_filter) }}"
+                 class="table-sort-link">
+                Customer
+              </a>
+            </th>
+            <th>
+              <a href="{{ url_for('reviews_view',
+                                  sort='rating',
+                                  dir='desc' if sort=='rating' and direction=='asc' else 'asc',
+                                  search=search,
+                                  category=category_filter,
+                                  rating=rating_filter) }}"
+                 class="table-sort-link">
+                Rating (max. 5)
+              </a>
+            </th>
+            <th>
+              <a href="{{ url_for('reviews_view',
+                                  sort='avg_rating',
+                                  dir='desc' if sort=='avg_rating' and direction=='asc' else 'asc',
+                                  search=search,
+                                  category=category_filter,
+                                  rating=rating_filter) }}"
+                 class="table-sort-link">
+                Avg. rating
+              </a>
+            </th>
+            <th>
+              <a href="{{ url_for('reviews_view',
+                                  sort='comment',
+                                  dir='desc' if sort=='comment' and direction=='asc' else 'asc',
+                                  search=search,
+                                  category=category_filter,
+                                  rating=rating_filter) }}"
+                 class="table-sort-link">
+                Comment
+              </a>
+            </th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+
+        <tbody>
+          {% for r in reviews %}
+            <tr>
+              <td>{{ r.created_at.strftime("%d.%m.%Y") if r.created_at else "-" }}</td>
+              <td>{{ r.product_name }}</td>
+              <td>{{ r.category|capitalize }}</td>
+              <td>{{ r.customer_name }}</td>
+              <td>{{ r.rating }}</td>
+              <td>
+                {% if r.avg_rating is not none %}
+                  {{ "%.1f"|format(r.avg_rating) }} ({{ r.review_count }})
+                {% else %}
+                  –
+                {% endif %}
+              </td>
+              <td>{{ r.comment }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% endif %}
 
 </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/reviews.js') }}"></script>
 {% endblock %}

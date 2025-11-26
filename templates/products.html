@@ -1,403 +1,416 @@
 {% extends "base.html" %}
 {% block title %}Products{% endblock %}
+{% block body_class %}products-page{% endblock %}
 
 {% block content %}
 <div class="page-container">
 
-  <!-- Top bar: cart total (left) + view switcher (right) -->
-  <div class="view-bar">
-    <p class="cart-summary">
-      Shopping cart total: {{ cart_total|eur }} €
-    </p>
+  <!-- ============== STICKY TOOLBAR (cart total + cli + filters) ============== -->
+  <div class="products-toolbar">
 
-    <div class="view-toggle">
-      <a href="{{ url_for('product_list',
-                          view='table',
-                          search=search,
-                          category=category,
-                          brand=brand,
-                          author=author,
-                          size=size,
-                          sort=sort,
-                          dir=direction) }}"
-         class="toggle-link {% if view == 'table' %}toggle-link-active{% endif %}">
-        Table view
-      </a>
+    <!-- Top bar: cart total (left) + cli switcher (right) -->
+    <div class="view-bar">
+      <p class="cart-summary">
+        Shopping cart total: {{ cart_total|eur }} €
+      </p>
 
-      <a href="{{ url_for('product_list',
-                          view='cards',
-                          search=search,
-                          category=category,
-                          brand=brand,
-                          author=author,
-                          size=size,
-                          sort=sort,
-                          dir=direction) }}"
-         class="toggle-link {% if view == 'cards' %}toggle-link-active{% endif %}">
-        Cards view
-      </a>
+      <div class="view-toggle">
+        <a href="{{ url_for('product_list',
+                            view='table',
+                            search=search,
+                            category=category,
+                            brand=brand,
+                            author=author,
+                            size=size,
+                            sort=sort,
+                            dir=direction) }}"
+           class="view-switch {% if view == 'table' %}active{% endif %}">
+          Table view
+        </a>
+
+        <a href="{{ url_for('product_list',
+                            view='cards',
+                            search=search,
+                            category=category,
+                            brand=brand,
+                            author=author,
+                            size=size,
+                            sort=sort,
+                            dir=direction) }}"
+           class="view-switch {% if view == 'cards' %}active{% endif %}">
+          Cards view
+        </a>
+      </div>
     </div>
+
+    <div class="divider toolbar-divider"></div>
+
+    <!-- ================= FILTER + SEARCH ================= -->
+    <form method="get" class="filter-form">
+      <input type="hidden" name="view" value="{{ view }}">
+      <input type="hidden" name="sort" value="{{ sort }}">
+      <input type="hidden" name="dir"  value="{{ direction }}">
+
+      <input type="text"
+             name="search"
+             placeholder="Search by name"
+             value="{{ search }}">
+
+      <select name="category">
+        <option value="">All categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat }}"
+                  {{ 'selected' if category == cat else '' }}>
+            {{ cat }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <select name="brand">
+        <option value="">Brand</option>
+        {% for b in brands %}
+          <option value="{{ b }}"
+                  {{ 'selected' if brand == b else '' }}>
+            {{ b }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <select name="author">
+        <option value="">Author</option>
+        {% for a in authors %}
+          <option value="{{ a }}"
+                  {{ 'selected' if author == a else '' }}>
+            {{ a }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <select name="size">
+        <option value="">Size</option>
+        {% for a in sizes %}
+          <option value="{{ a }}"
+                  {{ 'selected' if size == a else '' }}>
+            {{ a }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="card-btn filter-btn">
+        Filter
+      </button>
+    </form>
+
+    <div class="divider toolbar-divider"></div>
   </div>
-
-  <div class="divider"></div>
-
-  <!-- ================= FILTER + SEARCH ================= -->
-
-  <form method="get" class="filter-form">
-    <input type="hidden" name="view" value="{{ view }}">
-    <input type="hidden" name="sort" value="{{ sort }}">
-    <input type="hidden" name="dir"  value="{{ direction }}">
-
-    <input type="text"
-           name="search"
-           placeholder="Search by name"
-           value="{{ search }}">
-
-    <select name="category">
-      <option value="">All categories</option>
-      {% for cat in categories %}
-        <option value="{{ cat }}"
-                {{ 'selected' if category == cat else '' }}>
-          {{ cat }}
-        </option>
-      {% endfor %}
-    </select>
-
-    <select name="brand">
-      <option value="">Brand</option>
-      {% for b in brands %}
-        <option value="{{ b }}"
-                {{ 'selected' if brand == b else '' }}>
-          {{ b }}
-        </option>
-      {% endfor %}
-    </select>
-
-    <select name="author">
-      <option value="">Author</option>
-      {% for a in authors %}
-        <option value="{{ a }}"
-                {{ 'selected' if author == a else '' }}>
-          {{ a }}
-        </option>
-      {% endfor %}
-    </select>
-
-    <select name="size">
-      <option value="">Size</option>
-      {% for a in sizes %}
-        <option value="{{ a }}"
-                {{ 'selected' if size == a else '' }}>
-          {{ a }}
-        </option>
-      {% endfor %}
-    </select>
-
-    <button type="submit" class="card-btn filter-btn">
-      Filter
-    </button>
-  </form>
-
-  <div class="divider"></div>
+  <!-- ================= END STICKY TOOLBAR ================= -->
 
   <!-- ================= TABLE VIEW ================= -->
   {% if view == 'table' %}
-    <table class="product-table">
-      <thead>
-        <tr>
-          <th>
-            <a href="{{ url_for('product_list',
-                                view=view,
-                                search=search,
-                                category=category,
-                                brand=brand,
-                                author=author,
-                                size=size,
-                                sort='id',
-                                dir='desc' if sort=='id' and direction=='asc' else 'asc') }}"
-               class="table-sort-link">
-              ID
-            </a>
-          </th>
+    <div class="table-scroll">          {# <-- нова обгортка з прокруткою #}
+      <table class="product-table">
+        <thead>
+          <tr>
+            <th>
+              <a href="{{ url_for('product_list',
+                                  view=view,
+                                  search=search,
+                                  category=category,
+                                  brand=brand,
+                                  author=author,
+                                  size=size,
+                                  sort='id',
+                                  dir='desc' if sort=='id' and direction=='asc' else 'asc') }}"
+                 class="table-sort-link">
+                ID
+              </a>
+            </th>
 
-          <th>
-            <a href="{{ url_for('product_list',
-                                view=view,
-                                search=search,
-                                category=category,
-                                brand=brand,
-                                author=author,
-                                size=size,
-                                sort='name',
-                                dir='desc' if sort=='name' and direction=='asc' else 'asc') }}"
-               class="table-sort-link">
-              Name
-            </a>
-          </th>
+            <th>
+              <a href="{{ url_for('product_list',
+                                  view=view,
+                                  search=search,
+                                  category=category,
+                                  brand=brand,
+                                  author=author,
+                                  size=size,
+                                  sort='name',
+                                  dir='desc' if sort=='name' and direction=='asc' else 'asc') }}"
+                 class="table-sort-link">
+                Name
+              </a>
+            </th>
 
-          <th>
-            <a href="{{ url_for('product_list',
-                                view=view,
-                                search=search,
-                                category=category,
-                                brand=brand,
-                                author=author,
-                                size=size,
-                                sort='category',
-                                dir='desc' if sort=='category' and direction=='asc' else 'asc') }}"
-               class="table-sort-link">
-              Category
-            </a>
-          </th>
+            <th>
+              <a href="{{ url_for('product_list',
+                                  view=view,
+                                  search=search,
+                                  category=category,
+                                  brand=brand,
+                                  author=author,
+                                  size=size,
+                                  sort='category',
+                                  dir='desc' if sort=='category' and direction=='asc' else 'asc') }}"
+                 class="table-sort-link">
+                Category
+              </a>
+            </th>
 
-          <th>
-            <a href="{{ url_for('product_list',
-                                view=view,
-                                search=search,
-                                category=category,
-                                brand=brand,
-                                author=author,
-                                size=size,
-                                sort='rating',
-                                dir='desc' if sort=='rating' and direction=='asc' else 'asc') }}"
-               class="table-sort-link">
-              Rating
-            </a>
-          </th>
+            <th>
+              <a href="{{ url_for('product_list',
+                                  view=view,
+                                  search=search,
+                                  category=category,
+                                  brand=brand,
+                                  author=author,
+                                  size=size,
+                                  sort='rating',
+                                  dir='desc' if sort=='rating' and direction=='asc' else 'asc') }}"
+                 class="table-sort-link">
+                Rating
+              </a>
+            </th>
 
-          <th class="num">
-            <a href="{{ url_for('product_list',
-                                view=view,
-                                search=search,
-                                category=category,
-                                brand=brand,
-                                author=author,
-                                size=size,
-                                sort='price',
-                                dir='desc' if sort=='price' and direction=='asc' else 'asc') }}"
-               class="table-sort-link">
-              Price
-            </a>
-          </th>
+            <th class="num">
+              <a href="{{ url_for('product_list',
+                                  view=view,
+                                  search=search,
+                                  category=category,
+                                  brand=brand,
+                                  author=author,
+                                  size=size,
+                                  sort='price',
+                                  dir='desc' if sort=='price' and direction=='asc' else 'asc') }}"
+                 class="table-sort-link">
+                Price
+              </a>
+            </th>
 
-          <th>Details</th>
+            <th>Details</th>
 
-          <th class="num">Quantity</th>
+            <th class="num">Quantity</th>
 
-          <th class="num">
-            <a href="{{ url_for('product_list',
-                                view=view,
-                                search=search,
-                                category=category,
-                                brand=brand,
-                                author=author,
-                                size=size,
-                                sort='total',
-                                dir='desc' if sort=='total' and direction=='asc' else 'asc') }}"
-               class="table-sort-link">
-              Total
-            </a>
-          </th>
+            <th class="num">
+              <a href="{{ url_for('product_list',
+                                  view=view,
+                                  search=search,
+                                  category=category,
+                                  brand=brand,
+                                  author=author,
+                                  size=size,
+                                  sort='total',
+                                  dir='desc' if sort=='total' and direction=='asc' else 'asc') }}"
+                 class="table-sort-link">
+                Total
+              </a>
+            </th>
 
-          <th class="num">Action</th>
-        </tr>
-      </thead>
+            <th class="num">Action</th>
+          </tr>
+        </thead>
 
-      <tbody>
-        {% for p in products %}
-        <tr id="row-{{ p.product_id }}">
-          <td>{{ p.product_id }}</td>
-          <td>{{ p.product }}</td>
-          <td>{{ p.category }}</td>
+        <tbody>
+          {% for p in products %}
+          <tr id="row-{{ p.product_id }}">
+            <td>{{ p.product_id }}</td>
+            <td>{{ p.product }}</td>
+            <td>{{ p.category }}</td>
 
-          <!-- Average rating -->
-          <td class="num">
-            {% if p.avg_rating %}
-              {{ "%.1f"|format(p.avg_rating) }}
-            {% else %}
-              –
-            {% endif %}
-          </td>
+            <!-- Average rating -->
+            <td class="num">
+              {% if p.avg_rating %}
+                {{ "%.1f"|format(p.avg_rating) }}
+              {% else %}
+                –
+              {% endif %}
+            </td>
 
-          <!-- Price per unit -->
-          <td class="num">
-            {{ p.price|eur }} €
-          </td>
+            <!-- Price per unit -->
+            <td class="num">
+              {{ p.price|eur }} €
+            </td>
 
-          <!-- Additional details by category -->
-          <td>
-            {% if p.category == 'electronics' %}
-              <div>Brand: {{ p.brand }}</div>
-              <div>{{ p.warranty_years }} years warranty</div>
-            {% elif p.category == 'clothing' %}
-              <div>Size: {{ p.size }}</div>
-            {% elif p.category == 'books' %}
-              <div>Author: {{ p.author }}</div>
-              <div>{{ p.page_count }} pages</div>
-            {% else %}
-              <div>–</div>
-            {% endif %}
-          </td>
+            <!-- Additional details by category -->
+            <td>
+              {% if p.category == 'electronics' %}
+                <div>Brand: {{ p.brand }}</div>
+                <div>{{ p.warranty_years }} years warranty</div>
+              {% elif p.category == 'clothing' %}
+                <div>Size: {{ p.size }}</div>
+              {% elif p.category == 'books' %}
+                <div>Author: {{ p.author }}</div>
+                <div>{{ p.page_count }} pages</div>
+              {% else %}
+                <div>–</div>
+              {% endif %}
+            </td>
 
-          <!-- Quantity controls -->
-          <td class="num">
-            <form method="post"
-                  action="{{ url_for('set_cart_quantity', product_id=p.product_id) }}"
-                  class="qty-form">
-              <input type="hidden"
-                     name="return_url"
-                     value="{{ request.full_path }}#row-{{ p.product_id }}">
+            <!-- Quantity controls -->
+            <td class="num">
+              <form method="post"
+                    action="{{ url_for('set_cart_quantity', product_id=p.product_id) }}"
+                    class="qty-form">
+                <input type="hidden"
+                       name="return_url"
+                       value="{{ request.full_path }}#row-{{ p.product_id }}">
 
-              <button type="button"
-                      class="qty-btn"
-                      onclick="changeQty(this, -1)">
-                −
-              </button>
+                <button type="button"
+                        class="qty-btn"
+                        onclick="changeQty(this, -1)">
+                  −
+                </button>
 
-              <input type="number"
-                     name="qty"
-                     min="0"
-                     max="999999"
-                     class="qty-input"
-                     value="{{ counts[p.product_id] if p.product_id in counts else 0 }}">
+                <input type="number"
+                       name="qty"
+                       min="0"
+                       max="999999"
+                       class="qty-input"
+                       value="{{ counts[p.product_id] if p.product_id in counts else 0 }}">
 
-              <button type="button"
-                      class="qty-btn"
-                      onclick="changeQty(this, 1)">
-                +
-              </button>
-            </form>
-          </td>
+                <button type="button"
+                        class="qty-btn"
+                        onclick="changeQty(this, 1)">
+                  +
+                </button>
+              </form>
+            </td>
 
-          <!-- Line total -->
-          <td class="num">
-            {% if p.product_id in counts %}
-              {{ (counts[p.product_id] * p.price)|eur }} €
-            {% else %}
-              0,00 €
-            {% endif %}
-          </td>
+            <!-- Line total -->
+            <td class="num">
+              {% if p.product_id in counts %}
+                {{ (counts[p.product_id] * p.price)|eur }} €
+              {% else %}
+                0,00 €
+              {% endif %}
+            </td>
 
-          <!-- Add to cart button -->
-          <td class="num">
+            <!-- Add to cart button -->
+            <td class="num">
               <form method="post"
                     action="{{ url_for('add_to_cart_route', product_id=p.product_id, view=view) }}">
                 <input type="hidden"
                        name="return_url"
                        value="{{ request.full_path }}#row-{{ p.product_id }}">
+
                 <button type="submit" class="cart-icon-btn" title="Add to cart">
                   <span>🛒</span>
                 </button>
               </form>
-           </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>   {# <-- кінець .table-scroll #}
   {% endif %}
 
   <!-- ================= CARDS VIEW ================= -->
-  {% if view == 'cards' %}
-    <div class="divider"></div>
+    {% if view == 'cards' %}
+      <div class="divider"></div>
 
-    <div class="products-grid">
-      {% for p in products %}
-        <div class="product-card" id="row-{{ p.product_id }}">
-
-          <div>
-            <div class="product-card-title">
-              {{ p.product }}
-            </div>
-
-            <div class="product-card-category">
-              Category: {{ p.category }}
-            </div>
-
-            {% if p.avg_rating %}
-              <div class="product-card-category">
-                Rating: {{ "%.1f"|format(p.avg_rating) }}
-              </div>
-            {% endif %}
-
-            {% if p.category == 'electronics' %}
-              <div class="product-card-category">
-                Brand: {{ p.brand }}
-              </div>
-              <div class="product-card-category">
-                {{ p.warranty_years }} years warranty
-              </div>
-            {% elif p.category == 'clothing' %}
-              <div class="product-card-category">
-                Size: {{ p.size }}
-              </div>
-            {% elif p.category == 'books' %}
-              <div class="product-card-category">
-                Author: {{ p.author }}
-              </div>
-              <div class="product-card-category">
-                {{ p.page_count }} pages
-              </div>
-            {% endif %}
-
-            <div class="product-card-price">
-              {{ p.price|eur }} €
-            </div>
-
+      <div class="cards-scroll">          {# НОВА обгортка з прокруткою #}
+        <div class="products-grid">
+          {% for p in products %}
             {% set qty = counts.get(p.product_id, 0) %}
-            {% if qty > 0 %}
-              <div class="product-card-category">
-                In the shopping cart: {{ qty }} Stk. ({{ (qty * p.price)|eur }} €)
+            <div class="product-card" id="row-{{ p.product_id }}">
+
+              <div>
+                <div class="product-card-title">
+                  {{ p.product }}
+                </div>
+
+                <div class="product-card-category">
+                  Category: {{ p.category }}
+                </div>
+
+                {% if p.avg_rating %}
+                  <div class="product-card-category">
+                    Rating: {{ "%.1f"|format(p.avg_rating) }}
+                  </div>
+                {% endif %}
+
+                {% if p.category == 'electronics' %}
+                  <div class="product-card-category">
+                    Brand: {{ p.brand }}
+                  </div>
+                  <div class="product-card-category">
+                    {{ p.warranty_years }} years warranty
+                  </div>
+                {% elif p.category == 'clothing' %}
+                  <div class="product-card-category">
+                    Size: {{ p.size }}
+                  </div>
+                {% elif p.category == 'books' %}
+                  <div class="product-card-category">
+                    Author: {{ p.author }}
+                  </div>
+                  <div class="product-card-category">
+                    {{ p.page_count }} pages
+                  </div>
+                {% endif %}
+
+                <div class="product-card-price">
+                  {{ p.price|eur }} €
+                </div>
+
+                {% if qty > 0 %}
+                  <div class="product-card-category">
+                    In the shopping cart: {{ qty }} pcs ({{ (qty * p.price)|eur }} €)
+                  </div>
+                {% endif %}
               </div>
-            {% endif %}
-          </div>
 
-          <div class="card-footer">
-            <form method="post"
-                  action="{{ url_for('set_cart_quantity', product_id=p.product_id) }}"
-                  class="qty-form card-footer-qty">
-              <input type="hidden"
-                     name="return_url"
-                     value="{{ request.full_path }}#row-{{ p.product_id }}">
+              <div class="card-footer">
+                <form method="post"
+                      action="{{ url_for('set_cart_quantity', product_id=p.product_id) }}"
+                      class="qty-form card-footer-qty">
+                  <input type="hidden"
+                         name="return_url"
+                         value="{{ request.full_path }}#row-{{ p.product_id }}">
 
-              <button type="button"
-                      class="qty-btn"
-                      onclick="changeQty(this, -1)">
-                −
-              </button>
+                  <button type="button"
+                          class="qty-btn"
+                          onclick="changeQty(this, -1)">
+                    −
+                  </button>
 
-              <input type="number"
-                     name="qty"
-                     min="0"
-                     max="999999"
-                     class="qty-input"
-                     value="{{ qty }}">
+                  <input type="number"
+                         name="qty"
+                         min="0"
+                         max="999999"
+                         class="qty-input"
+                         value="{{ qty }}">
 
-              <button type="button"
-                      class="qty-btn"
-                      onclick="changeQty(this, 1)">
-                +
-              </button>
-            </form>
+                  <button type="button"
+                          class="qty-btn"
+                          onclick="changeQty(this, 1)">
+                    +
+                  </button>
+                </form>
 
-            <form method="post"
-                  action="{{ url_for('add_to_cart_route', product_id=p.product_id, view=view) }}">
-              <input type="hidden"
-                     name="return_url"
-                     value="{{ request.full_path }}#row-{{ p.product_id }}">
-              <button type="submit" class="cart-icon-btn" title="Add to cart">
-                <span>🛒</span>
-              </button>
-            </form>
+                <form method="post"
+                      action="{{ url_for('add_to_cart_route', product_id=p.product_id, view=view) }}">
+                  <input type="hidden"
+                         name="return_url"
+                         value="{{ request.full_path }}#row-{{ p.product_id }}">
 
-          </div>
+                  <button type="submit" class="cart-icon-btn" title="Add to cart">
+                    <span>🛒</span>
+                  </button>
+                </form>
 
+              </div>
+
+            </div>
+          {% endfor %}
         </div>
-      {% endfor %}
-    </div>
-  {% endif %}
+      </div>  {# кінець .cards-scroll #}
+    {% endif %}
+
+
 
 </div>
-{% endblock %}   {# кінець block content #}
+{% endblock %}
 
 {% block scripts %}
   <script src="{{ url_for('static', filename='js/product_filters.js') }}"></script>

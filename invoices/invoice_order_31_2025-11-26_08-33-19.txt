@@ -1,0 +1,22 @@
+INVOICE #31
+
+Customer
+--------
+  Name   : BookPlanet GmbH
+  ID     : 10
+  Type   : COMPANY
+  Address: Salzburg, Buchweg 8
+  Email  : service@bookplanet.at
+  Phone  : +43662888888
+
+Order date : 26.11.2025 08:33
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+2    Smartphone Samsung S24             1     999.00     999.00
+
+                                            Subtotal:     999.00
+                              Company discount (5 %): -    49.95
+                                               Total:     949.05

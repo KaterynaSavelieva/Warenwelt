@@ -1,11 +1,15 @@
-/* Read-only grey fields */
+/* =========================================================
+   PROFILE PAGE STYLES
+   ========================================================= */
+
+/* Read-only grey fields (customer type, birthdate, company number) */
 .readonly-field {
   background-color: var(--readonly-bg);
   border-color: var(--border-light);
   color: var(--text-grey);
 }
 
-/* Success box (аналог login-error) */
+/* Success box (similar look to login-error but green) */
 .login-success {
   margin-bottom: 16px;
   padding: 10px 14px;
@@ -15,7 +19,7 @@
   font-size: 14px;
 }
 
-/* Link block under the form */
+/* Link block under the profile form */
 .profile-links {
   margin-top: 20px;
 }

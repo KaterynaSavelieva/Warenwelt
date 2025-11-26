@@ -3,81 +3,88 @@
 <head>
     <meta charset="utf-8">
 
-    <!-- Load Google Font "Inter" -->
+    {# Favicon for browser tab #}
+    <link rel="icon" type="image/x-icon"
+          href="{{ url_for('static', filename='img/favicon.ico') }}">
+
+    {# Google Font "Inter" for clean UI text #}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap"
           rel="stylesheet">
 
-    <!-- Main CSS file -->
-    <link rel="stylesheet"
-      href="{{ url_for('static', filename='css/colors.css') }}">
+    {# NOTE: No Bootstrap CSS – we use our own design system #}
 
+    {# Global color tokens and base styles #}
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/colors.css') }}">
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/base.css') }}">
+
+    {# Layout, tables and forms #}
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/layout.css') }}">
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/tables.css') }}">
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/forms.css') }}">
+
+    {# Page-specific styles #}
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/pages_home.css') }}">
-        <link rel="stylesheet"
+    <link rel="stylesheet"
           href="{{ url_for('static', filename='css/pages_profile.css') }}">
 
-
-    <!-- JavaScript for quantity change in cart -->
+    {# Cart quantity logic (used on products & cart pages) #}
     <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
 
     <title>{% block title %}Products{% endblock %}</title>
+
 </head>
 
+{# Optional body_class block for per-page background / behaviour #}
 <body class="{% block body_class %}{% endblock %}">
 
     <!-- ========================= NAVIGATION BAR ========================= -->
     <div class="navbar">
 
-        <!-- -------- LEFT SIDE: Logo + navigation buttons -------- -->
-        <div class="nav-left">
+      <!-- -------- LEFT SIDE: main navigation buttons -------- -->
+      <div class="nav-left">
+        <a href="{{ url_for('product_list') }}" class="nav-btn">Products</a>
+        <a href="{{ url_for('cart_view') }}" class="nav-btn">Shopping cart</a>
+        <a href="{{ url_for('reviews_view') }}" class="nav-btn">Reviews</a>
 
-            <!-- Site logo -->
-            <a href="{{ url_for('home') }}" class="logo-link">
-                <h1 class="logo">World of goods</h1>
-            </a>
+      </div>
 
-            <!-- Navigation menu (blue buttons) -->
-            <a href="{{ url_for('product_list') }}" class="nav-btn">Products</a>
-            <a href="{{ url_for('cart_view') }}" class="nav-btn">Shopping cart</a>
-            <a href="{{ url_for('reviews_view') }}" class="nav-btn">Reviews</a>
+      <!-- -------- CENTER: logo linking to home -------- -->
+      <a href="{{ url_for('home') }}" class="logo-link">
+        <h1 class="logo">World of goods</h1>
+      </a>
+
+      <!-- -------- RIGHT SIDE: user info or Login/Register -------- -->
+      <div class="nav-right">
+        {% set cust_name = session.get("user_name") %}
+        {% set cust_id   = session.get("customer_id") or session.get("id") %}
+        {% set cust_kind = session.get("kind") or session.get("customer_kind") %}
+
+        {% if cust_id %}
             <a href="{{ url_for('my_orders') }}" class="nav-btn">My orders</a>
             <a href="{{ url_for('profile') }}" class="nav-btn">My profile</a>
-        </div>
+            <a href="{{ url_for('logout') }}" class="nav-btn">Logout</a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="nav-btn login">Login</a>
 
-        <!-- -------- RIGHT SIDE: User info or Login/Register -------- -->
-        <div class="nav-right">
-            <!-- Extract user-related fields from session -->
-            {% set cust_name = session.get("user_name") %}
-            {% set cust_id   = session.get("customer_id") or session.get("id") %}
-            {% set cust_kind = session.get("kind") or session.get("customer_kind") %}
+        {% endif %}
+      </div>
 
-            {% if cust_id %}
-                <!-- Logged-in user info -->
-                <span class="user-info">
-                    {{ cust_name }} (ID {{ cust_id }}, {{ cust_kind }})
-                </span>
-
-                <!-- Logout button -->
-                <a href="{{ url_for('logout') }}" class="nav-btn logout">Logout</a>
-
-            {% else %}
-                <!-- If user is not logged in -->
-                <a href="{{ url_for('login') }}" class="nav-btn">Login</a>
-                <a href="{{ url_for('register') }}" class="nav-btn">Register</a>
-            {% endif %}
-        </div>
+      {% if cust_id %}
+        <span class ="nav-user-info">
+            {{ cust_name}} (ID {{cust_id}}, {{cust_kind}})
+        </span>
+      {% endif %}
 
     </div>
+
 
     <!-- ======================== FLASH MESSAGES ========================= -->
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -100,6 +107,7 @@
     <!-- =========================== PAGE CONTENT =========================== -->
     {% block content %}{% endblock %}
 
+    {# Extra scripts injected per page (login.js, register.js, etc.) #}
     {% block scripts %}{% endblock %}
 </body>
 </html>

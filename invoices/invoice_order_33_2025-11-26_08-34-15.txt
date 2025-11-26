@@ -1,0 +1,22 @@
+INVOICE #33
+
+Customer
+--------
+  Name   : BookPlanet GmbH
+  ID     : 10
+  Type   : COMPANY
+  Address: Salzburg, Buchweg 8
+  Email  : service@bookplanet.at
+  Phone  : +43662888888
+
+Order date : 26.11.2025 08:34
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+22   1                                  2       2.00       4.00
+
+                                            Subtotal:       4.00
+                              Company discount (5 %): -     0.20
+                                               Total:       3.80

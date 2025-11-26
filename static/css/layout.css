@@ -1,26 +1,42 @@
-/* ========== GENERIC PAGE LAYOUT ========== */
+/* =========================================================
+   GENERIC PAGE LAYOUT
+   ========================================================= */
 
-/* Inner content area for normal pages (products, orders, etc.) */
 .page-container {
   max-width: 1100px;
-  margin: 10px auto 0;
-  padding-top: 20px;
+  margin: 0 auto;
+  padding-top: 8px 10 80px;  /* top 8, bottom 60 */
+}
+/* Додаємо відступ знизу спеціально для сторінки кошика */
+.cart-page .page-container {
+  padding-bottom: 80px;  /* можна 80px, якщо хочеш ще вище */
 }
 
-/* Top navigation layout: logo + nav buttons + user info */
+/* На цих сторінках зовнішня сторінка не крутиться */
+body.products-page,
+body.cart-page,
+body.reviews-page {
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   TOP NAVIGATION BAR
+   ========================================================= */
+
 .navbar {
   position: sticky;
   top: 0;
   z-index: 100;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;   /* left - center - right */
+  grid-template-rows: auto auto;
   align-items: center;
-  padding: 16px 30px;
+  padding: 4px 10px;
   background-color: var(--bg-main);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-/* Left and right navigation groups */
 .nav-left,
 .nav-right {
   display: flex;
@@ -28,19 +44,84 @@
   gap: 18px;
 }
 
-/* Container for bottom action buttons on cart page */
-.cart-actions {
-  margin-top: 20px;
-  display: flex;
-  gap: 18px;
+.nav-right {
+  justify-content: flex-end;
 }
 
-/* Paragraph with "Back to the shop" button on order success page */
+/* ім’я користувача в другому рядку, по правому краю */
+.nav-user-info {
+  grid-row: 2;
+  grid-column: 1 / 4;
+  justify-self: end;
+  margin-top: 4px;
+  font-size: 16px;
+  color: var(--text-muted);
+  font-family: cursive;
+}
+
+/* Cart page / bottom action buttons */
+.cart-actions {
+  margin-top: 20px;
+  margin-bottom: 30px; /* ДОДАТИ: відступ знизу під кнопками */
+  display: flex;
+  gap: 18px;
+  padding-top: 10px;  /* додатковий повітряний простір над кнопками */
+}
+
 .order-back-link {
   margin-top: 20px;
 }
 
-/* "Back to cart" link block under the checkout form */
 .checkout-back-link {
   margin-top: 20px;
+}
+
+/* =========================================================
+   PRODUCTS & CART PAGES – ВНУТРІШНЯ ПРОКРУТКА
+   ========================================================= */
+
+/* приблизна висота navbar; якщо трохи не співпаде – підкрути це значення */
+:root {
+  --navbar-height: 140px;
+}
+
+/* на цих сторінках не крутимо весь body, а тільки контент */
+body.products-page,
+body.cart-page {
+  overflow: hidden;
+}
+
+/* контент – колонка фіксованої висоти */
+.products-page .page-container,
+.cart-page .page-container {
+  height: calc(100vh - var(--navbar-height));
+  display: flex;
+  flex-direction: column;
+}
+
+/* верхній блок з total + view + filters – статичний, НЕ sticky */
+.products-toolbar {
+  flex: 0 0 auto;
+  background-color: var(--bg-main);
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.products-toolbar .toolbar-divider {
+  margin: 8px 0;
+}
+
+.products-toolbar .cart-summary {
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
+/* зона з таблицею / картками – саме вона крутиться */
+.products-page .table-scroll,
+.products-page .cards-scroll,
+.cart-page .table-scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 8px;  /* щоб низ не прилипав до краю */
 }

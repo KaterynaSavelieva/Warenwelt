@@ -1,53 +1,60 @@
-/* ===== GLOBAL COLOR TOKENS – PALETTE #1 (SOFT ECO-PASTEL) ===== */
+/* =========================================================
+   GLOBAL COLOR TOKENS – "World of goods" palette
+   ========================================================= */
 
 :root {
   /* ---------- BACKGROUNDS ---------- */
-  --bg-main: #FAF4EA;           /* світлий кремово-пісочний фон */
-  --bg-card: #FFF8F1;           /* дуже м'який крем для карток/таблиць */
-  --bg-order-box: #FFFFFF;      /* чистий білий для важливих боксів */
+  --bg-main: #FAF4EA;           /* main page background (warm cream) */
+  --bg-card: #FFF8F1;           /* cards/tables background (soft cream) */
+  --bg-order-box: #FFFFFF;      /* important boxes (pure white) */
+  --order-box-bg: #FFFFFF;      /* alias for order summary / global boxes */
 
   /* ---------- TEXT COLORS ---------- */
-  --text-main: #3E342F;         /* теплий темно-коричневий */
-  --text-muted: #7A6F68;        /* приглушений taupe-сірий */
-  --text-dark: #2C2421;         /* насичений темно-коричневий для заголовків */
-  --text-light: #FFFAF5;        /* світлий текст */
-  --text-grey: #736963;         /* нейтральний для readonly */
-  --text-link: #C06C3D;         /* теплий “коричнево-теракотовий” лінк */
-  --text-price: #B84A34;        /* теракотовий/brick для цін */
-  --white: #FFFFFF;
+  --text-main: #3E342F;         /* default body text (warm dark brown) */
+  --text-muted: #7A6F68;        /* secondary / muted text */
+  --text-dark: #2C2421;         /* headings / strong accents */
+  --text-light: #FFFAF5;        /* light text on dark backgrounds */
+  --text-grey: #736963;         /* neutral text for readonly fields */
+  --text-link: #C06C3D;         /* warm terracotta links */
+  --text-price: #B84A34;        /* price color (brick / terracotta) */
+  --white: #FFFFFF;             /* helper token for pure white */
 
   /* ---------- ORANGE / TERRACOTTA PILLS ---------- */
-  --pill-bg: #D9976E;           /* світлий теплий теракотовий */
-  --pill-bg-hover: #E6A882;     /* світліший ховер */
-  --pill-text: #FFF7EF;         /* світлий текст на піллюльках */
-  --user-badge-bg: #F2BE7F;     /* колір меду */
+  --pill-bg: #D9976E;
+  --pill-bg-hover: #E6A882;
+  --pill-text: #FFF7EF;
+  --user-badge-bg: #F2BE7F;
 
-  /* ---------- PRIMARY ACTIONS (тепло-зелені) ---------- */
-  --primary: #7FA886;           /* м'який “sage green” */
-  --primary-hover: #6A9271;     /* темніший зелений */
+  /* ---------- PRIMARY ACTIONS (SOFT GREEN) ---------- */
+  --primary: #7FA886;
+  --primary-hover: #6A9271;
 
   /* ---------- DANGER ---------- */
-  --danger: #C65C47;            /* теракото-червоний */
-  --danger-hover: #A54838;      /* темніший для hover */
+  --danger: #C65C47;
+  --danger-hover: #A54838;
 
   /* ---------- FORMS / INPUTS ---------- */
-  --input-border: #E5D9CC;      /* м'який кремово-сірий */
-  --border-light: #E9DFD3;      /* світлий бордер для таблиць */
-  --readonly-bg: #F5ECE2;       /* теплий світлий фон */
+  --input-border: #E5D9CC;
+  --border-light: #E9DFD3;
+  --readonly-bg: #F5ECE2;
 
   /* ---------- FLASH MESSAGES ---------- */
-  --flash-success-bg: #E9F7E9;      /* м'який зелений */
-  --flash-success-text: #3F6B39;    /* глибокий зелений */
-  --flash-error-bg: #FAE6E2;        /* теплий кораловий */
-  --flash-error-text: #8A3B2E;      /* коричнево-червоний */
-  --profile-success-text: #426F44;  /* зелений текст */
+  --flash-success-bg: #E9F7E9;
+  --flash-success-text: #3F6B39;
+  --flash-error-bg: #FAE6E2;
+  --flash-error-text: #8A3B2E;
+  --profile-success-text: #426F44;
 
   /* ---------- TABLES ---------- */
-  --table-header-bg: #3E342F;       /* темно-коричнева шапка */
-  --table-header-text: #FFF8F1;     /* кремовий текст */
-  --table-row-alt: #FFFAF5;         /* світлий крем для зебри */
-  --table-row-hover: #F4E6D9;       /* світло-персиковий hover */
+  --table-header-bg: #3E342F;
+  --table-header-text: #FFF8F1;
+  --table-row-alt: #FFFAF5;
+  --table-row-hover: #F4E6D9;
 
   /* ---------- ICONS ---------- */
-  --icon-muted: #B29A8C;            /* теплий сірий */
+  --icon-muted: #B29A8C;
+
+  /* ---------- LAYOUT HEIGHTS ---------- */
+  --navbar-height: 110px;    /* орієнтовна висота navbar */
+  --toolbar-height: 60px;    /* висота блока з total + фільтрами */
 }
