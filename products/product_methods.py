@@ -25,42 +25,6 @@ class ProductMethods:
         except MySQLError as e:
             print("Error loading product:", e)
 
-    def get_all_products1(self):
-        try:
-            sql = """
-                SELECT
-                    p.product_id,
-                    p.product,
-                    p.category,
-                    p.price,
-                    p.brand,
-                    p.warranty_years,
-                    p.size,
-                    p.author,
-                    p.page_count,
-                    ar.avg_rating,
-                    ar.review_count
-                FROM v_prod p
-                LEFT JOIN (
-                    SELECT
-                        product_id,
-                        AVG(rating) AS avg_rating,
-                        COUNT(*)    AS review_count
-                    FROM review
-                    GROUP BY product_id
-                ) ar ON ar.product_id = p.product_id
-                ORDER BY p.product_id
-            """
-            #sql = "SELECT * FROM v_prod ORDER BY product_id"
-            results = self.storage.fetch_all(sql)
-            if results:
-                print(tabulate(results, headers="keys", tablefmt="rounded_grid"))
-            else:
-                print("No products found.")
-            return results
-        except MySQLError as e:
-            print("Error loading all products:", e)
-            return []
 
     def get_all_products(self) -> list[dict]:
         sql = """
@@ -225,7 +189,39 @@ class ProductMethods:
             print("Unexpected error:", e)
             return False
 
-    def find_products_by_category(self, category: str) -> list[dict]:
+    def find_products_by_category(self, category: str):
+        rows = self.storage.fetch_all(
+            "SELECT * FROM v_prod_clean WHERE Category=%s ORDER BY ID",
+            (category,)
+        )
+
+        if not rows:
+            print("No products for this category.")
+            return []
+
+        # --- Вибираємо колонки залежно від категорії ---
+        if category == "books":
+            headers = ["ID", "Product", "Price", "Weight", "Author", "Pages", "AvgRating", "Reviews"]
+
+        elif category == "electronics":
+            headers = ["ID", "Product", "Price", "Weight", "Brand", "Warranty", "AvgRating", "Reviews"]
+
+        elif category == "clothing":
+            headers = ["ID", "Product", "Price", "Weight", "Size", "AvgRating", "Reviews"]
+
+        else:
+            print("Unknown category.")
+            return []
+
+        # --- Преобразуємо dict → list ---
+        table = [[row.get(h, "") for h in headers] for row in rows]
+
+        # --- Виводимо таблицю ---
+        print(tabulate(table, headers=headers, tablefmt="rounded_grid"))
+
+        return rows
+
+    def find_products_by_category1(self, category: str) -> list[dict]:
         if category not in ("electronics", "clothing", "books"):
             print("Category must be 'electronics' | 'clothing' | 'books'.");
             return []
@@ -247,94 +243,6 @@ class ProductMethods:
         else:
             print("No products under this price.")
         return rows or []
-
-    def get_products_filtered1(
-        self,
-        *,
-        search: str = "",
-        category: str = "",
-        brand: str = "",
-        author: str = "",
-        size: str = "",
-        sort: str = "id",        # можна ігнорувати, сортуємо у Python
-        direction: str = "asc",  # те саме
-    ) -> list[dict]:
-        """
-        Load products with optional filters and rating info.
-
-        Returns rows with:
-        product_id, product, category, price,
-        brand, warranty_years, size, author, page_count,
-        avg_rating, review_count
-        """
-
-        sql = """
-            SELECT
-                p.product_id,
-                p.product,
-                p.category,
-                p.price,
-
-                e.brand,
-                e.warranty_years,
-
-                cl.size,
-                b.author,
-                b.page_count,
-
-                r.avg_rating,
-                r.review_count
-            FROM product p
-            LEFT JOIN electronics e
-                ON e.product_id = p.product_id
-            LEFT JOIN clothing cl
-                ON cl.product_id = p.product_id
-            LEFT JOIN books b
-                ON b.product_id = p.product_id
-            LEFT JOIN (
-                SELECT
-                    product_id,
-                    ROUND(AVG(rating), 1) AS avg_rating,
-                    COUNT(*)              AS review_count
-                FROM review
-                GROUP BY product_id
-            ) r
-                ON r.product_id = p.product_id
-            WHERE 1 = 1
-        """
-
-        params: list = []
-
-        # ----- filters -----
-        if category:
-            sql += " AND p.category = %s"
-            params.append(category)
-
-        if search:
-            sql += " AND LOWER(p.product) LIKE %s"
-            params.append("%" + search.lower() + "%")
-
-        if brand:
-            # логічно використовується для electronics
-            sql += " AND e.brand = %s"
-            params.append(brand)
-
-        if author:
-            # логічно використовується для books
-            sql += " AND b.author = %s"
-            params.append(author)
-
-        if size:
-            # логічно використовується для clothing
-            sql += " AND cl.size = %s"
-            params.append(size)
-
-        # ORDER BY можна не робити (ми сортуємо у product_list),
-        # але якщо хочеш – можна додати просте сортування по id:
-        # sql += " ORDER BY p.product_id ASC"
-
-        rows = self.storage.fetch_all(sql, params)
-        return rows
 
     def get_products_filtered(
             self,

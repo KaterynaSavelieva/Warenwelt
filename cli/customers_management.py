@@ -4,7 +4,7 @@ from utils.input_helpers import (
     get_int_input,
     pause,
 )
-
+from customers.validator import _Rules
 
 def run_customer_management() -> None:
     cm = CustomerMethods()
@@ -36,11 +36,11 @@ def run_customer_management() -> None:
 
             case "3":
                 print("\n--- Create customer ---")
-                name = input("Name: ").strip()
+                name = _Rules.clean_text_fields(input("Name: ")).title()
                 email = input("Email: ").strip()
                 kind = input("Kind (private/company): ").strip().lower()
 
-                address = optional_input("Address (blank = skip): ")
+                address = _Rules.clean_text_fields(optional_input("Address (blank = skip): "))
                 phone = optional_input("Phone (blank = skip): ")
                 password = input("Password: ").strip()
 
@@ -53,7 +53,7 @@ def run_customer_management() -> None:
                     company_number = input("Company number: ").strip()
 
                 try:
-                    cm.save_customer(
+                    new_id=cm.save_customer(
                         name=name,
                         email=email,
                         kind=kind,
@@ -63,20 +63,22 @@ def run_customer_management() -> None:
                         birthdate=birthdate or None,
                         company_number=company_number or None,
                     )
+                    cm.get_customer(new_id)
+
                 except ValueError as e:
                     # коротке повідомлення з Validator / save_customer
                     print(f"Input error: {e}")
+
 
                 pause()
 
             case "4":
                 print("\n--- Update customer ---")
                 customer_id = get_int_input("Customer ID: ")
-
-                name = optional_input("New name (blank = skip): ")
-                address = optional_input("New address (blank = skip): ")
-                phone = optional_input("New phone (blank = skip): ")
-                password = optional_input("New password (blank = skip): ")
+                cm.get_customer(customer_id)
+                name = _Rules.clean_text_fields(optional_input("New name (blank = skip): ")).title()
+                address = _Rules.clean_text_fields(optional_input("New address (blank = skip): "))
+                phone = _Rules.clean_text_fields(optional_input("New phone (blank = skip): "))
 
                 try:
                     cm.update_customer(
@@ -84,11 +86,10 @@ def run_customer_management() -> None:
                         name=name or None,
                         address=address or None,
                         phone=phone or None,
-                        password=password or None,
                     )
+                    cm.get_customer(customer_id)
                 except ValueError as e:
                     print(f" Input error: {e}")
-
                 pause()
 
             case "5":

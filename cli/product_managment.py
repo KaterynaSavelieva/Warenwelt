@@ -2,18 +2,9 @@ from products.product_methods import ProductMethods
 from utils.input_helpers import (
     optional_input,
     get_int_input,
-    pause, get_optional_int_input,
+    pause, get_optional_int_input, get_float_input, get_optional_float_input
 )
-
-
-def get_float_input(prompt: str) -> float:
-    """Простий helper: запитати число з плаваючою комою."""
-    while True:
-        value_str = input(prompt).strip().replace(",", ".")
-        try:
-            return float(value_str)
-        except ValueError:
-            print("Value must be a number (e.g. 19.99). Try again.")
+from customers.validator import _Rules
 
 
 def run_product_management() -> None:
@@ -47,12 +38,11 @@ def run_product_management() -> None:
 
             case "3":
                 print("\n--- Create product ---")
-                product_name = input("Product name: ").strip()
+                product_name = _Rules.clean_text_fields(input("Product name: "))
                 price = get_float_input("Price: ")
                 weight = get_float_input("Weight: ")
 
-                category = input("Category (electronics/clothing/books): ").strip().lower()
-
+                category = _Rules.clean_text_fields(input("Category (electronics/clothing/books): ")).lower()
 
                 author = None
                 page_count = None
@@ -61,17 +51,17 @@ def run_product_management() -> None:
                 size = None
 
                 if category == "books":
-                    author = optional_input("Author (blank = skip): ").strip().title()
+                    author = _Rules.clean_text_fields(input("Author: ").title())
                     page_count = get_optional_int_input("Page count (blank = skip): ")
 
                 elif category == "electronics":
-                    brand = input("Brand: ").strip()
+                    brand = _Rules.clean_text_fields(input("Brand: ").title())
                     warranty_years = get_int_input("Warranty years: ")
 
                 elif category == "clothing":
                     size = input("Size (e.g. S, M, L, 38): ").strip()
 
-                pm.save_product(
+                new_id = pm.save_product(
                     product_new=product_name,
                     price=price,
                     weight=weight,
@@ -82,38 +72,83 @@ def run_product_management() -> None:
                     warranty_years=warranty_years,
                     size=size,
                 )
+                pm.get_product(new_id)
                 pause()
+
 
             case "4":
                 print("\n--- Update product ---")
                 product_id = get_int_input("Product ID to update: ")
 
-                name = optional_input("New product name (blank = skip): ")
-                price_str = optional_input("New price (blank = skip): ")
-                weight_str = optional_input("New weight (blank = skip): ")
-
-                price = float(price_str.replace(",", ".")) if price_str else None
-                weight = float(weight_str.replace(",", ".")) if weight_str else None
+                raw_name = optional_input("New product name (blank = skip): ")
+                name = raw_name.title() if raw_name else None
+                price = get_optional_float_input("New price (blank = skip): ")
+                weight = get_optional_float_input("New weight (blank = skip): ")
 
                 pm.update_product(
                     product_id=product_id,
-                    name=name or None,
+                    name=name,
                     price=price,
                     weight=weight,
                 )
+                pm.get_product(product_id)
                 pause()
+
 
             case "5":
                 print("\n--- Delete product ---")
                 product_id = get_int_input("Product ID to delete: ")
-                pm.delete_product(product_id)
+                row= pm.get_product(product_id)
+
+                if not row:
+                    print("\n--- No such product ---")
+                    pause()
+                    continue
+
+
+                name = row ["product"]
+
+                confirm = input(f"Do you really want to delete '{name}' (ID {product_id})? [Y/N]: ").strip().lower()
+
+                if confirm == "y":
+                    pm.delete_product(product_id)
+                else:
+                    print("Deletion cancelled.")
+
                 pause()
 
             case "6":
                 print("\n--- Find products by category ---")
-                category = input("Category (electronics/clothing/books): ").strip().lower()
-                pm.find_products_by_category(category)
-                pause()
+
+                while True:
+                    print("\n Choose category: ")
+                    print("1 - Electronics")
+                    print("2 - Clothing")
+                    print("3 - Books")
+                    print("0 - Back / Exit")
+
+                    choice = input("Select option: ").strip()
+
+                    if choice  == "0":
+                        print("Back...")
+                        pause()
+                        break
+
+                    categories = {
+                        "1": "electronics",
+                        "2": "clothing",
+                        "3": "books"
+                    }
+
+                    if choice not in categories:
+                        print("Invalid category. Enter 1–3 or 0 to exit.")
+                        continue
+
+                    category = categories[choice]
+
+                    pm.find_products_by_category(category)
+
+                    continue
 
             case "7":
                 print("\n--- Find products under max price ---")

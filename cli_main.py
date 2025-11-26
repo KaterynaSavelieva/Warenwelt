@@ -1,4 +1,4 @@
-from cli.management_functions import run_customer_management
+from cli.customers_management import run_customer_management
 from cli.product_managment import run_product_management
 from cli.reviews_main import run_review_management
 from utils.input_helpers import pause

@@ -34,3 +34,32 @@ def get_optional_int_input(prompt: str) -> int | None:
 
 def pause(message: str = "Press ENTER to continue..."):
     input(f"\n{message}")
+
+def get_optional_float_input(prompt: str) -> float | None:
+    """
+    Питає число з плаваючою комою, але дозволяє пустий ввід.
+    Якщо користувач просто натиснув Enter – повертає None.
+    Якщо ввів щось некоректне – виводимо повідомлення і теж повертаємо None.
+    """
+    value_str = input(prompt).strip().replace(",", ".")
+
+    if not value_str:
+        # користувач нічого не ввів → пропускаємо поле
+        return None
+
+    try:
+        return float(value_str)
+    except ValueError:
+        print("Value must be a number (e.g. 19.99). Skipping this field.")
+        return None
+
+
+def get_float_input(prompt: str) -> float:
+    """Простий helper: запитати число з плаваючою комою."""
+    while True:
+        value_str = input(prompt).strip().replace(",", ".")
+        try:
+            return float(value_str)
+        except ValueError:
+            print("Value must be a number (e.g. 19.99). Try again.")
+

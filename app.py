@@ -103,7 +103,7 @@ def home():
 
 @app.route("/products")
 def product_list():
-    view = request.args.get("cli", "table")
+    view = request.args.get("view", "table")
     if view not in ("table", "cards"):
         view = "table"
 
