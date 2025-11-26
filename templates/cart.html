@@ -46,7 +46,7 @@
                         <!-- Quantity with +/- buttons -->
                         <td class="num">
                             <form method="post"
-                                  action="{{ url_for('set_cart_quantity', product_id=p.product_id) }}"
+                                  action="{{ url_for('orders.set_cart_quantity', product_id=p.product_id) }}"
                                   class="qty-form">
 
                                 <input type="hidden"
@@ -101,18 +101,18 @@
     <!-- ===================== ACTION BUTTONS ===================== -->
     <div class="cart-actions">
 
-        <a href="{{ url_for('product_list') }}" class="nav-link">
+        <a href="{{ url_for('products.product_list') }}" class="nav-link">
             Back to products
         </a>
 
         {% if products %}
-            <form method="post" action="{{ url_for('clear_cart') }}">
+            <form method="post" action="{{ url_for('orders.clear_cart') }}">
                 <button type="submit" class="card-btn">
                     Empty shopping cart
                 </button>
             </form>
 
-            <form method="get" action="{{ url_for('checkout') }}">
+            <form method="get" action="{{ url_for('orders.checkout') }}">
                 <button type="submit" class="card-btn">
                     To the checkout
                 </button>

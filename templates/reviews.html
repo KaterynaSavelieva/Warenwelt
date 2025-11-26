@@ -126,7 +126,7 @@
         <thead>
           <tr>
             <th>
-              <a href="{{ url_for('reviews_view',
+              <a href="{{ url_for('reviews.reviews_view',
                                   sort='date',
                                   dir='desc' if sort=='date' and direction=='asc' else 'asc',
                                   search=search,
@@ -137,7 +137,7 @@
               </a>
             </th>
             <th>
-              <a href="{{ url_for('reviews_view',
+              <a href="{{ url_for('reviews.reviews_view',
                                   sort='product',
                                   dir='desc' if sort=='product' and direction=='asc' else 'asc',
                                   search=search,
@@ -148,7 +148,7 @@
               </a>
             </th>
             <th>
-              <a href="{{ url_for('reviews_view',
+              <a href="{{ url_for('reviews.reviews_view',
                                   sort='category',
                                   dir='desc' if sort=='category' and direction=='asc' else 'asc',
                                   search=search,
@@ -159,7 +159,7 @@
               </a>
             </th>
             <th>
-              <a href="{{ url_for('reviews_view',
+              <a href="{{ url_for('reviews.reviews_view',
                                   sort='customer',
                                   dir='desc' if sort=='customer' and direction=='asc' else 'asc',
                                   search=search,
@@ -170,7 +170,7 @@
               </a>
             </th>
             <th>
-              <a href="{{ url_for('reviews_view',
+              <a href="{{ url_for('reviews.reviews_view',
                                   sort='rating',
                                   dir='desc' if sort=='rating' and direction=='asc' else 'asc',
                                   search=search,
@@ -181,7 +181,7 @@
               </a>
             </th>
             <th>
-              <a href="{{ url_for('reviews_view',
+              <a href="{{ url_for('reviews.reviews_view',
                                   sort='avg_rating',
                                   dir='desc' if sort=='avg_rating' and direction=='asc' else 'asc',
                                   search=search,
@@ -192,7 +192,7 @@
               </a>
             </th>
             <th>
-              <a href="{{ url_for('reviews_view',
+              <a href="{{ url_for('reviews.reviews_view',
                                   sort='comment',
                                   dir='desc' if sort=='comment' and direction=='asc' else 'asc',
                                   search=search,

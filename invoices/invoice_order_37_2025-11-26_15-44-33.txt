@@ -1,0 +1,21 @@
+INVOICE #37
+
+Customer
+--------
+  Name   : Kateryna Savelieva
+  ID     : 32
+  Type   : PRIVATE
+  Address: Hauptplatz 6
+  Email  : Johann.Bauer1@example.comeee
+  Phone  : 067764753721
+
+Order date : 26.11.2025 15:44
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+3    Bluetooth Kopfhörer Sony           1     149.99     149.99
+
+                                            Subtotal:     149.99
+                                               Total:     149.99

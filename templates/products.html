@@ -15,7 +15,7 @@
       </p>
 
       <div class="view-toggle">
-        <a href="{{ url_for('product_list',
+        <a href="{{ url_for('products.product_list',
                             view='table',
                             search=search,
                             category=category,
@@ -28,7 +28,7 @@
           Table view
         </a>
 
-        <a href="{{ url_for('product_list',
+        <a href="{{ url_for('products.product_list',
                             view='cards',
                             search=search,
                             category=category,
@@ -112,7 +112,7 @@
         <thead>
           <tr>
             <th>
-              <a href="{{ url_for('product_list',
+              <a href="{{ url_for('products.product_list',
                                   view=view,
                                   search=search,
                                   category=category,
@@ -127,7 +127,7 @@
             </th>
 
             <th>
-              <a href="{{ url_for('product_list',
+              <a href="{{ url_for('products.product_list',
                                   view=view,
                                   search=search,
                                   category=category,
@@ -142,7 +142,7 @@
             </th>
 
             <th>
-              <a href="{{ url_for('product_list',
+              <a href="{{ url_for('products.product_list',
                                   view=view,
                                   search=search,
                                   category=category,
@@ -157,7 +157,7 @@
             </th>
 
             <th>
-              <a href="{{ url_for('product_list',
+              <a href="{{ url_for('products.product_list',
                                   view=view,
                                   search=search,
                                   category=category,
@@ -172,7 +172,7 @@
             </th>
 
             <th class="num">
-              <a href="{{ url_for('product_list',
+              <a href="{{ url_for('products.product_list',
                                   view=view,
                                   search=search,
                                   category=category,
@@ -191,7 +191,7 @@
             <th class="num">Quantity</th>
 
             <th class="num">
-              <a href="{{ url_for('product_list',
+              <a href="{{ url_for('products.product_list',
                                   view=view,
                                   search=search,
                                   category=category,
@@ -248,7 +248,7 @@
             <!-- Quantity controls -->
             <td class="num">
               <form method="post"
-                    action="{{ url_for('set_cart_quantity', product_id=p.product_id) }}"
+                    action="{{ url_for('orders.set_cart_quantity', product_id=p.product_id) }}"
                     class="qty-form">
                 <input type="hidden"
                        name="return_url"
@@ -287,7 +287,7 @@
             <!-- Add to cart button -->
             <td class="num">
               <form method="post"
-                    action="{{ url_for('add_to_cart_route', product_id=p.product_id, view=view) }}">
+                    action="{{ url_for('orders.add_to_cart_route', product_id=p.product_id, view=view) }}">
                 <input type="hidden"
                        name="return_url"
                        value="{{ request.full_path }}#row-{{ p.product_id }}">
@@ -362,7 +362,7 @@
 
               <div class="card-footer">
                 <form method="post"
-                      action="{{ url_for('set_cart_quantity', product_id=p.product_id) }}"
+                      action="{{ url_for('orders.set_cart_quantity', product_id=p.product_id) }}"
                       class="qty-form card-footer-qty">
                   <input type="hidden"
                          name="return_url"
@@ -389,7 +389,7 @@
                 </form>
 
                 <form method="post"
-                      action="{{ url_for('add_to_cart_route', product_id=p.product_id, view=view) }}">
+                      action="{{ url_for('orders.add_to_cart_route', product_id=p.product_id, view=view) }}">
                   <input type="hidden"
                          name="return_url"
                          value="{{ request.full_path }}#row-{{ p.product_id }}">

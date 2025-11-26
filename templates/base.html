@@ -50,9 +50,9 @@
 
       <!-- -------- LEFT SIDE: main navigation buttons -------- -->
       <div class="nav-left">
-        <a href="{{ url_for('product_list') }}" class="nav-btn">Products</a>
-        <a href="{{ url_for('cart_view') }}" class="nav-btn">Shopping cart</a>
-        <a href="{{ url_for('reviews_view') }}" class="nav-btn">Reviews</a>
+        <a href="{{ url_for('products.product_list') }}" class="nav-btn">Products</a>
+        <a href="{{ url_for('orders.cart_view') }}" class="nav-btn">Shopping cart</a>
+        <a href="{{ url_for('reviews.reviews_view') }}" class="nav-btn">Reviews</a>
 
       </div>
 
@@ -68,11 +68,11 @@
         {% set cust_kind = session.get("kind") or session.get("customer_kind") %}
 
         {% if cust_id %}
-            <a href="{{ url_for('my_orders') }}" class="nav-btn">My orders</a>
-            <a href="{{ url_for('profile') }}" class="nav-btn">My profile</a>
-            <a href="{{ url_for('logout') }}" class="nav-btn">Logout</a>
+            <a href="{{ url_for('orders.my_orders') }}" class="nav-btn">My orders</a>
+            <a href="{{ url_for('customers.profile') }}" class="nav-btn">My profile</a>
+            <a href="{{ url_for('customers.logout') }}" class="nav-btn">Logout</a>
         {% else %}
-          <a href="{{ url_for('login') }}" class="nav-btn login">Login</a>
+          <a href="{{ url_for('customers.login') }}" class="nav-btn login">Login</a>
 
         {% endif %}
       </div>

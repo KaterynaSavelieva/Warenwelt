@@ -1,0 +1,22 @@
+INVOICE #36
+
+Customer
+--------
+  Name   : Johann Bauer
+  ID     : 8
+  Type   : PRIVATE
+  Address: Graz, Feldgasse 10
+  Email  : johann.bauer@example.com
+  Phone  : +436609999999
+
+Order date : 26.11.2025 15:24
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+7    Roman "Der Fluss"                  1      14.99      14.99
+1    Laptop Lenovo IdeaPad              1     899.99     899.99
+
+                                            Subtotal:     914.98
+                                               Total:     914.98

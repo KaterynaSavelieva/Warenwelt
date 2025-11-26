@@ -61,7 +61,7 @@
 
   {# ---------------- SHIPPING METHOD + PLACE ORDER ---------------- #}
   <form method="post"
-        action="{{ url_for('checkout') }}"
+        action="{{ url_for('orders.checkout') }}"
         class="checkout-form">
 
     <p class="checkout-field">
@@ -82,7 +82,7 @@
   </form>
 
   <div class="checkout-back-link">
-    <a href="{{ url_for('cart_view') }}" class="nav-link">
+    <a href="{{ url_for('orders.cart_view') }}" class="nav-link">
       Back to cart
     </a>
   </div>

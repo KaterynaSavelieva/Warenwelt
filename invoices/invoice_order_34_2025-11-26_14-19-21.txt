@@ -1,0 +1,22 @@
+INVOICE #34
+
+Customer
+--------
+  Name   : Johann Bauerer
+  ID     : 8
+  Type   : PRIVATE
+  Address: Graz, Feldgasse 10
+  Email  : johann.bauer@example.com
+  Phone  : +436609999999
+
+Order date : 26.11.2025 14:19
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+3    Bluetooth Kopfhörer Sony           1     149.99     149.99
+8    Kochbuch Vegan Life                1      24.50      24.50
+
+                                            Subtotal:     174.49
+                                               Total:     174.49
