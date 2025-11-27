@@ -1,10 +1,10 @@
-from products.product_methods import ProductMethods
+from models.products.product_methods import ProductMethods
 from utils.input_helpers import (
     optional_input,
     get_int_input,
     pause, get_optional_int_input, get_float_input, get_optional_float_input
 )
-from customers.validator import _Rules
+from models.customers.validator import _Rules
 
 
 def run_product_management() -> None:

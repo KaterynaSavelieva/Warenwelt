@@ -1,10 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from products.product_methods import ProductMethods
-from utils.cart_helpers import get_cart_ids, add_to_cart, calculate_cart_total, check_password, eur
+from flask import Blueprint, render_template, request
+from models.products.product_methods import ProductMethods
+from utils.cart_helpers import get_cart_ids, calculate_cart_total
 from collections import Counter
 
 products_bp = Blueprint("products", __name__)
-
 pm = ProductMethods()
 
 @products_bp.route("/products")

@@ -1,7 +1,7 @@
 from connection.storage import Storage
 from pymysql import MySQLError
 from tabulate import tabulate
-from customers.validator import Validator
+from models.customers.validator import Validator
 import pymysql
 
 

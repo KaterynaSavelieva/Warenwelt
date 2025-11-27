@@ -1,182 +1,14 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from products.product_methods import ProductMethods
-from utils.cart_helpers import get_cart_ids, add_to_cart, calculate_cart_total, check_password, eur
 from collections import Counter
 
-from orders.shopping_cart import ShoppingCart
-from orders.order import Order
-from orders.order_methods import OrderMethods
-from customers.customer_methods import CustomerMethods
-from reviews.review_methods import ReviewMethods
+from models.orders.shopping_cart import ShoppingCart
+from models.orders.order import Order
+from models.orders.order_methods import OrderMethods
+from models.products.product_methods import ProductMethods
+from utils.cart_helpers import get_cart_ids, add_to_cart
 
 orders_bp = Blueprint("orders", __name__)
-
 pm = ProductMethods()
-cm = CustomerMethods()
-rm = ReviewMethods()
-
-
-@orders_bp.route("/my_orders")
-def my_orders():
-    """
-    "My orders" page:
-      - loads all orders for current customer,
-      - calculates subtotal/discount/total for each order and global sums.
-    """
-    customer_id = session.get("customer_id")
-    if not customer_id:
-        return redirect(url_for("login"))
-
-    om = OrderMethods()
-    orders = om.get_orders_with_items_for_customer(customer_id)
-
-    total_subtotal = 0.0
-    total_discount = 0.0
-    total_final = 0.0
-
-    for order in orders:
-        subtotal = sum(item["price"] * item["quantity"] for item in order["items"])
-        total = order["total"]
-        discount = subtotal - total
-
-        order["subtotal"] = subtotal
-        order["discount"] = discount
-        order["discount_percent"] = 5 if session.get("is_company") else 0
-
-        total_subtotal += subtotal
-        total_discount += discount
-        total_final += total
-
-    return render_template(
-        "orders_history.html",
-        orders=orders,
-        total_subtotal=total_subtotal,
-        total_discount=total_discount,
-        total_final=total_final,
-    )
-
-@orders_bp.route("/order_success/<int:order_id>")
-def order_success(order_id: int):
-    """
-    Order success page:
-      - loads order header and items from DB,
-      - calculates subtotal / discount / total (based on company flag),
-      - shows summary and shipping method.
-    Invoice is already created during checkout, not here.
-    """
-    om = OrderMethods()
-    try:
-        # 1) Order header + basic customer data
-        order_row = om.storage.fetch_one(
-            """
-            SELECT o.order_id,
-                   o.customer_id,
-                   o.order_date,
-                   o.total,
-                   c.name,
-                   c.email,
-                   c.address,
-                   c.kind AS kind
-            FROM orders o
-            JOIN customers c ON c.customer_id = o.customer_id
-            WHERE o.order_id = %s
-            """,
-            (order_id,),
-        )
-
-        if not order_row:
-            return redirect(url_for("cart_view"))
-
-        # 2) Order items
-        items = om.storage.fetch_all(
-            """
-            SELECT oi.product_id,
-                   p.product,
-                   p.category,
-                   oi.quantity,
-                   oi.price
-            FROM order_items oi
-            JOIN product p ON p.product_id = oi.product_id
-            WHERE oi.order_id = %s
-            """,
-            (order_id,),
-        )
-
-        # 3) Calculate subtotal and line totals
-        subtotal = 0.0
-        for row in items:
-            line_total = float(row["price"]) * row["quantity"]
-            row["line_total"] = line_total
-            subtotal += line_total
-
-        is_company = (order_row["kind"] == "company")
-        total_db = float(order_row["total"])
-
-        if is_company:
-            discount_amount = subtotal - total_db
-            total = total_db
-        else:
-            discount_amount = 0.0
-            total = subtotal
-
-        # 4) Shipping method stored in session during checkout
-        shipping_method = session.get("shipping_method", "standard")
-
-        return render_template(
-            "order_success.html",
-            order=order_row,
-            customer=order_row,      # for template convenience (customer.name, customer.kind, ...)
-            items=items,
-            subtotal=subtotal,
-            discount=discount_amount,
-            total=total,
-            is_company=is_company,
-            shipping_method=shipping_method,
-        )
-    finally:
-        om.close()
-
-@orders_bp.route("/add_to_cart/<int:product_id>", methods=["POST"])
-def add_to_cart_route(product_id: int):
-    add_to_cart(product_id)
-
-    return_url = request.form.get("return_url")
-    if return_url:
-        return redirect(return_url)
-
-    view = request.args.get("cli", "table")
-    if view not in ("table", "cards"):
-        view = "table"
-
-    return redirect(url_for("products.product_list", view=view))
-
-@orders_bp.route("/set_cart_quantity/<int:product_id>", methods=["POST"])
-def set_cart_quantity(product_id: int):
-    """
-    Set exact quantity for given product_id in session cart.
-    Quantity is set by replacing all previous occurrences of this product_id.
-    """
-    cart = get_cart_ids()
-    try:
-        qty = int(request.form.get("qty", "0"))
-    except ValueError:
-        qty = 0
-
-    if qty < 0:
-        qty = 0
-
-    # remove all old occurrences of this product_id
-    cart = [pid for pid in cart if pid != product_id]
-    # add product_id qty times
-    cart.extend([product_id] * qty)
-    session["cart"] = cart
-
-    # redirect back to the same page (with anchor)
-    return_url = request.form.get("return_url")
-    if return_url:
-        return redirect(return_url)
-
-    return redirect(request.referrer or url_for("product_list"))
 
 @orders_bp.route("/cart")
 def cart_view():
@@ -220,6 +52,48 @@ def cart_view():
         products=cart_products,
         total=cart_total,
     )
+
+@orders_bp.route("/add_to_cart/<int:product_id>", methods=["POST"])
+def add_to_cart_route(product_id: int):
+    add_to_cart(product_id)
+
+    return_url = request.form.get("return_url")
+    if return_url:
+        return redirect(return_url)
+
+    view = request.args.get("cli", "table")
+    if view not in ("table", "cards"):
+        view = "table"
+
+    return redirect(url_for("products.product_list", view=view))
+
+@orders_bp.route("/set_cart_quantity/<int:product_id>", methods=["POST"])
+def set_cart_quantity(product_id: int):
+    """
+    Set exact quantity for given product_id in session cart.
+    Quantity is set by replacing all previous occurrences of this product_id.
+    """
+    cart = get_cart_ids()
+    try:
+        qty = int(request.form.get("qty", "0"))
+    except ValueError:
+        qty = 0
+
+    if qty < 0:
+        qty = 0
+
+    # remove all old occurrences of this product_id
+    cart = [pid for pid in cart if pid != product_id]
+    # add product_id qty times
+    cart.extend([product_id] * qty)
+    session["cart"] = cart
+
+    # redirect back to the same page (with anchor)
+    return_url = request.form.get("return_url")
+    if return_url:
+        return redirect(return_url)
+
+    return redirect(request.referrer or url_for("product_list"))
 
 @orders_bp.route("/clear_cart", methods=["POST"])
 def clear_cart():
@@ -307,3 +181,123 @@ def checkout():
     # clear session cart
     session["cart"] = []
     return redirect(url_for("orders.order_success", order_id=order_id))
+
+@orders_bp.route("/order_success/<int:order_id>")
+def order_success(order_id: int):
+    """
+    Order success page:
+      - loads order header and items from DB,
+      - calculates subtotal / discount / total (based on company flag),
+      - shows summary and shipping method.
+    Invoice is already created during checkout, not here.
+    """
+    om = OrderMethods()
+    try:
+        # 1) Order header + basic customer data
+        order_row = om.storage.fetch_one(
+            """
+            SELECT o.order_id,
+                   o.customer_id,
+                   o.order_date,
+                   o.total,
+                   c.name,
+                   c.email,
+                   c.address,
+                   c.kind AS kind
+            FROM orders o
+            JOIN customers c ON c.customer_id = o.customer_id
+            WHERE o.order_id = %s
+            """,
+            (order_id,),
+        )
+
+        if not order_row:
+            return redirect(url_for("cart_view"))
+
+        # 2) Order items
+        items = om.storage.fetch_all(
+            """
+            SELECT oi.product_id,
+                   p.product,
+                   p.category,
+                   oi.quantity,
+                   oi.price
+            FROM order_items oi
+            JOIN product p ON p.product_id = oi.product_id
+            WHERE oi.order_id = %s
+            """,
+            (order_id,),
+        )
+
+        # 3) Calculate subtotal and line totals
+        subtotal = 0.0
+        for row in items:
+            line_total = float(row["price"]) * row["quantity"]
+            row["line_total"] = line_total
+            subtotal += line_total
+
+        is_company = (order_row["kind"] == "company")
+        total_db = float(order_row["total"])
+
+        if is_company:
+            discount_amount = subtotal - total_db
+            total = total_db
+        else:
+            discount_amount = 0.0
+            total = subtotal
+
+        # 4) Shipping method stored in session during checkout
+        shipping_method = session.get("shipping_method", "standard")
+
+        return render_template(
+            "order_success.html",
+            order=order_row,
+            customer=order_row,      # for template convenience (customer.name, customer.kind, ...)
+            items=items,
+            subtotal=subtotal,
+            discount=discount_amount,
+            total=total,
+            is_company=is_company,
+            shipping_method=shipping_method,
+        )
+    finally:
+        om.close()
+
+@orders_bp.route("/my_orders")
+def my_orders():
+    """
+    "My orders" page:
+      - loads all orders for current customer,
+      - calculates subtotal/discount/total for each order and global sums.
+    """
+    customer_id = session.get("customer_id")
+    if not customer_id:
+        return redirect(url_for("login"))
+
+    om = OrderMethods()
+    orders = om.get_orders_with_items_for_customer(customer_id)
+
+    total_subtotal = 0.0
+    total_discount = 0.0
+    total_final = 0.0
+
+    for order in orders:
+        subtotal = sum(item["price"] * item["quantity"] for item in order["items"])
+        total = order["total"]
+        discount = subtotal - total
+
+        order["subtotal"] = subtotal
+        order["discount"] = discount
+        order["discount_percent"] = 5 if session.get("is_company") else 0
+
+        total_subtotal += subtotal
+        total_discount += discount
+        total_final += total
+
+    return render_template(
+        "orders_history.html",
+        orders=orders,
+        total_subtotal=total_subtotal,
+        total_discount=total_discount,
+        total_final=total_final,
+    )

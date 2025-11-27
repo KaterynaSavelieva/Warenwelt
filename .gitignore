@@ -38,7 +38,7 @@ dist/
 *.spec
 
 # --- Ignore optional test/output folders ---
-/tests/__pycache__/
+/utils/tests/__pycache__/
 /notebooks/
 __MACOSX/
 

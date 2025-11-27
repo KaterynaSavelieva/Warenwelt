@@ -1,4 +1,4 @@
-from reviews.review_methods import ReviewMethods
+from models.reviews.review_methods import ReviewMethods
 from utils.input_helpers import get_int_input, optional_input, pause
 
 
@@ -72,7 +72,15 @@ def run_review_management() -> None:
                 print("\n--- Delete review ---")
                 review_id = get_int_input("Review ID: ")
                 rm.delete_review(review_id)
-                pause()
+                rm.get_reviews_for_product(review_id)
+                print(f"Do you really want to delete {review_id}?")
+                choice=input("y/n)").lower()
+                if choice == "y":
+                    rm.delete_review(review_id)
+                    print(f"Deleted review {review_id}")
+                else:
+                    pause()
+
 
             case "0":
                 print("Back to main menu...")

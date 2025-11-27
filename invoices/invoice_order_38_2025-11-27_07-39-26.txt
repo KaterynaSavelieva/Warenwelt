@@ -1,0 +1,22 @@
+INVOICE #38
+
+Customer
+--------
+  Name   : Kateryna Savelieva
+  ID     : 32
+  Type   : PRIVATE
+  Address: Hauptplatz 6
+  Email  : Johann.Bauer1@example.comeee
+  Phone  : 067764753721
+
+Order date : 27.11.2025 07:39
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+2    Smartphone Samsung S24             1     999.00     999.00
+4    Winterjacke Damen                  2     129.90     259.80
+
+                                            Subtotal:    1258.80
+                                               Total:    1258.80

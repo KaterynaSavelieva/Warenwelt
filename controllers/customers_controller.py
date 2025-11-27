@@ -1,14 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 
 from utils.cart_helpers import  check_password
-
-from customers.customer_methods import CustomerMethods
-
-from customers.validator import Validator
+from models.customers.customer_methods import CustomerMethods
+from models.customers.validator import Validator
 from pydantic import ValidationError
 
 customers_bp = Blueprint("customers", __name__)
-
 cm = CustomerMethods()
 
 @customers_bp.route("/register", methods=["GET", "POST"])
@@ -143,7 +140,7 @@ def logout():
     session.pop("customer_kind", None)
     session.pop("is_company", None)
     flash("You have been logged out.", "success")
-    return redirect(url_for("products.product_list"))
+    return redirect(url_for("home"))
 
 @customers_bp.route("/profile", methods=["GET", "POST"])
 def profile():

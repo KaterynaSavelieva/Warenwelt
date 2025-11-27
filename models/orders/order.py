@@ -1,5 +1,5 @@
 from collections import Counter
-from orders.shopping_cart import ShoppingCart
+from models.orders.shopping_cart import ShoppingCart
 
 import os
 from connection.storage import Storage

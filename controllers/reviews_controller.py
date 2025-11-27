@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 
-from reviews.review_methods import ReviewMethods
+from models.reviews.review_methods import ReviewMethods
 from connection.storage import Storage
 
 reviews_bp = Blueprint("reviews", __name__)

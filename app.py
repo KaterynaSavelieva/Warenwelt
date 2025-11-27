@@ -7,8 +7,10 @@ from controllers.orders_controller import orders_bp
 
 from utils.cart_helpers import eur
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="views/templates", static_folder="static")
+
 app.secret_key = "change_me_to_a_random_secret_key"
+
 app.register_blueprint(products_bp)
 app.register_blueprint(customers_bp)
 app.register_blueprint(reviews_bp)

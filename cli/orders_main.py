@@ -1,6 +1,6 @@
-from orders.shopping_cart import ShoppingCart
-from orders.order_methods import OrderMethods
-from products.product_methods import ProductMethods
+from models.orders.shopping_cart import ShoppingCart
+from models.orders.order_methods import OrderMethods
+from models.products.product_methods import ProductMethods
 from utils.input_helpers import get_int_input, pause
 
 def run_order_management():

@@ -1,0 +1,21 @@
+INVOICE #39
+
+Customer
+--------
+  Name   : Kateryna Savelieva
+  ID     : 32
+  Type   : PRIVATE
+  Address: Hauptplatz 6
+  Email  : Johann.Bauer1@example.comeee
+  Phone  : 067764753721
+
+Order date : 27.11.2025 15:46
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+9    Notebook Acer Aspire               1     699.99     699.99
+
+                                            Subtotal:     699.99
+                                               Total:     699.99

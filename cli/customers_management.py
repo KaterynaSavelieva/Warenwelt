@@ -1,10 +1,10 @@
-from customers.customer_methods import CustomerMethods
+from models.customers.customer_methods import CustomerMethods
 from utils.input_helpers import (
     optional_input,
     get_int_input,
     pause,
 )
-from customers.validator import _Rules
+from models.customers.validator import _Rules
 
 def run_customer_management() -> None:
     cm = CustomerMethods()

@@ -1,5 +1,5 @@
 from connection.storage import Storage
-from orders.shopping_cart import ShoppingCart
+from models.orders.shopping_cart import ShoppingCart
 import pymysql
 from collections import defaultdict
 from typing import List, Dict, Any
