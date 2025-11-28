@@ -1,0 +1,24 @@
+INVOICE #43
+
+Customer
+--------
+  Name   : Svetlana Bielova
+  ID     : 33
+  Type   : COMPANY
+  Address: Hauptplatz 6
+  Email  : Johann.Bauer123@example.comeee
+  Phone  : 067764753721
+
+Order date : 28.11.2025 11:26
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+5    Jeans Herren Slim Fit              1      79.50      79.50
+10   Tastatur Logitech                  1      59.99      59.99
+14   Kinderbuch "Tiere"                 1      12.99      12.99
+
+                                            Subtotal:     152.48
+                              Company discount (5 %): -     7.62
+                                               Total:     144.86

@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS customers (
     password VARCHAR(100) NOT NULL          
 );
 
-CREATE TABLE IF NOT EXISTS private_customer (cd
+CREATE TABLE IF NOT EXISTS private_customer (
     customer_id INT PRIMARY KEY,
     birthdate DATE NOT NULL,
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE

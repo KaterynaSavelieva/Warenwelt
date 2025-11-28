@@ -1,0 +1,20 @@
+INVOICE #None
+
+Customer
+--------
+  Name   : Anna Müller
+  ID     : 1
+  Type   : PRIVATE
+  Address: Wien, Hauptstr. 12
+  Email  : anna.mueller@example.com
+  Phone  : +436601234567
+
+Order date : 28.11.2025 10:59
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+
+                                            Subtotal:       0.00
+                                               Total:       0.00

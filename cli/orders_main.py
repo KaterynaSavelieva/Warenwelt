@@ -1,123 +1,145 @@
 from models.orders.shopping_cart import ShoppingCart
 from models.orders.order_methods import OrderMethods
+from models.customers.customer_methods import CustomerMethods
 from models.orders.order import Order
 from models.products.product_methods import ProductMethods
 from utils.input_helpers import get_int_input, pause
 
 
 def run_order_management() -> None:
-    """
-    Simple console menu for working with shopping cart and orders.
-    One temporary cart for the whole session.
-    """
-
     pm = ProductMethods()
     om = OrderMethods()
+    cm = CustomerMethods()
 
-    # temporary cart for one console session
+
     cart = ShoppingCart(customer_id=0)
-    cart.is_company = False   # remember last choice for invoice
 
-    print("\n--- Shopping cart / Order management ---")
+    print("\n--- ORDER MANAGEMENT ---")
 
     while True:
         print("\n====================")
-        print(" SHOPPING CART / ORDER MANAGEMENT ")
-        print("1) Set customer ID")
-        print("2) Add product to cart")
-        print("3) Remove product from cart")
-        print("4) Show cart")
-        print("5) Calculate total")
-        print("6) Save order")
-        print("7) Create invoice")
+        print(" ORDER MANAGEMENT ")
+        print("1) Create new order")
+        print("2) Edit current order")
+        print("3) Show cart")
+        print("4) Calculate total")gi
+        print("5) Save order")
+        print("6) Create invoice")
         print("0) Back to main menu")
 
         choice = input("Select option: ").strip()
 
         match choice:
 
-            # 1) Set customer id
             case "1":
-                cart.customer_id = get_int_input("Customer ID: ")
+                print("\n--- CREATE NEW ORDER ---")
 
-            # 2) Add product
-            case "2":
-                pid = get_int_input("Product ID: ")
-                qty = get_int_input("Quantity: ")
-                if qty <= 0:
-                    print("Quantity must be greater than 0.")
-                else:
+                cart.clear_cart()
+
+                # Set customer ID
+                while True:
+                    customer_id = get_int_input("Customer ID: ")
+                    customer = cm.get_customer(customer_id)
+                    if customer:
+                        cart.customer_id = customer_id
+                        break
+                    print("Invalid customer ID. Try again.")
+
+                # Auto-detect company / private
+                cart.is_company = (customer["kind"] == "company")
+
+                print(f"Customer: {customer['name']} ({customer['kind']})")
+
+                # Fill cart
+                print("\nEnter products (0 = finish):")
+                while True:
+                    pid = get_int_input("Product ID: ")
+                    if pid == 0:
+                        break
+
+                    qty = get_int_input("Quantity: ")
                     cart.add_product(pid, qty)
 
-            # 3) Remove product
-            case "3":
-                pid = get_int_input("Product ID to remove: ")
-                cart.remove_product(pid)
-
-            # 4) Show cart
-            case "4":
-                cart.show_cart()
+                # Show result
+                cart.show_cart(pm)
                 pause()
 
-            # 5) Calculate total (no saving)
-            case "5":
+
+            case "2":
+                print("\n--- EDIT CURRENT ORDER ---")
+                print("a) Add product")
+                print("b) Remove product")
+                print("c) Clear cart")
+                print("x) Back")
+
+                sub = input("Select: ").strip().lower()
+
+                if sub == "a":
+                    pid = get_int_input("Product ID: ")
+                    qty = get_int_input("Quantity: ")
+                    cart.add_product(pid, qty)
+
+                elif sub == "b":
+                    pid = get_int_input("Product ID to remove: ")
+                    cart.remove_product(pid)
+
+                elif sub == "c":
+                    cart.clear_cart()
+
+                pause()
+
+
+            case "3":
+                cart.show_cart(pm)
+                pause()
+
+
+            case "4":
                 total = cart.calculate_total_price(pm)
                 print(f"Total = {total:.2f} EUR")
                 pause()
 
-            # 6) Save order to database
-            case "6":
-                # basic checks
-                if cart.customer_id == 0:
-                    print("Please set customer ID first (option 1).")
+
+            case "5":
+                if not cart.products:
+                    print("Cart is empty.")
                     pause()
                     continue
 
-                if not cart.items:
-                    print("Cart is empty. Add products first (option 2).")
+                total = cart.calculate_total_price(pm)
+                print(f"Calculated total: {total:.2f} EUR")
+
+                confirm = input("Save this order? (y/n): ").strip().lower()
+                if confirm != "y":
+                    print("Order cancelled.")
                     pause()
                     continue
-
-                cart.is_company = input("Company order? (y/n): ").strip().lower() == "y"
 
                 order_id = om.save_order(cart, cart.is_company)
                 if order_id:
-                    print(f"Order saved. ID = {order_id}")
-                    # optional: clear cart after successful order
-                    # cart.items.clear()
-                else:
-                    print("Order was not saved.")
+                    print(f"Order saved! ID = {order_id}")
 
                 pause()
 
-            # 7) Create invoice file for current cart
-            case "7":
-                if cart.customer_id == 0:
-                    print("Please set customer ID first (option 1).")
+
+            case "6":
+                if not cart.products:
+                    print("Cart is empty.")
                     pause()
                     continue
 
-                if not cart.items:
-                    print("Cart is empty. Add products first (option 2).")
-                    pause()
-                    continue
-
-                # use last chosen flag (from case "6"), default = False
-                is_company = getattr(cart, "is_company", False)
-
-                order = Order(cart, is_company=is_company)
-                filename = order.create_invoice()
-                print("Invoice file created:", filename)
+                order = Order(cart, is_company=cart.is_company)
+                fname = order.create_invoice()
+                print("Invoice created:", fname)
                 pause()
 
-            # 0) Exit submenu
+
             case "0":
-                print("Back to main menu...")
                 om.close()
                 pm.close()
+                print("Back to main menu...")
                 break
 
-            # wrong menu option
             case _:
-                print("Invalid option, try again.")
+                print("Invalid option. Try again.")
                 pause()

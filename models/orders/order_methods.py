@@ -1,7 +1,6 @@
 from connection.storage import Storage
 from models.orders.shopping_cart import ShoppingCart
 import pymysql
-from collections import defaultdict
 from typing import List, Dict, Any
 
 
@@ -13,7 +12,7 @@ class OrderMethods:
     def save_order(self, cart: ShoppingCart, is_company: bool = False) -> int | None:
         """
         Saves an order into two tables:
-        - order
+        - orders
         - order_items
         """
         try:
@@ -22,8 +21,8 @@ class OrderMethods:
                 print("SAVE_ORDER: Cart is empty.")
                 return None
 
-            if cart.customer_id is None:
-                print("SAVE_ORDER: customer_id is None.")
+            if not cart.customer_id:
+                print("SAVE_ORDER: customer_id is missing or invalid.")
                 return None
 
             total = 0.0
@@ -158,21 +157,21 @@ class OrderMethods:
         }
         """
         sql = """
-               SELECT
-                   o.order_id,
-                   o.order_date,
-                   o.total,
-                   oi.product_id,
-                   oi.quantity,
-                   oi.price,
-                   p.product,
-                   p.category
-               FROM orders o
-               JOIN order_items oi ON oi.order_id = o.order_id
-               JOIN product p      ON p.product_id = oi.product_id
-               WHERE o.customer_id = %s
-               ORDER BY o.order_date DESC, o.order_id DESC, oi.product_id
-           """
+            SELECT
+                o.order_id,
+                o.order_date,
+                o.total,
+                oi.product_id,
+                oi.quantity,
+                oi.price,
+                p.product,
+                p.category
+            FROM orders o
+            JOIN order_items oi ON oi.order_id = o.order_id
+            JOIN product p      ON p.product_id = oi.product_id
+            WHERE o.customer_id = %s
+            ORDER BY o.order_date DESC, o.order_id DESC, oi.product_id
+        """
         rows = self.storage.fetch_all(sql, (customer_id,))
 
         orders: Dict[int, Dict[str, Any]] = {}

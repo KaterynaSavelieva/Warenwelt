@@ -25,6 +25,22 @@ class ProductMethods:
         except MySQLError as e:
             print("Error loading product:", e)
 
+    def get_product_basic(self, product_id: int) -> dict | None:
+        sql = """
+            SELECT 
+                product_id,
+                product,
+                price,
+                category,
+                brand
+            FROM v_prod
+            WHERE product_id = %s
+        """
+        try:
+            return self.storage.fetch_one(sql, (product_id,))
+        except Exception as e:
+            print("Error loading basic product info:", e)
+            return None
 
     def get_all_products(self) -> list[dict]:
         sql = """
