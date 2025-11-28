@@ -53,13 +53,15 @@ def get_optional_float_input(prompt: str) -> float | None:
         print("Value must be a number (e.g. 19.99). Skipping this field.")
         return None
 
-
 def get_float_input(prompt: str) -> float:
-    """Простий helper: запитати число з плаваючою комою."""
+    """
+    Ask for a floating-point number (e.g. rating or max price).
+    Accepts both '3.5' and '3,5'.
+    """
     while True:
         value_str = input(prompt).strip().replace(",", ".")
         try:
             return float(value_str)
         except ValueError:
-            print("Value must be a number (e.g. 19.99). Try again.")
+            print("Value must be a number (e.g. 4.5). Try again.")
 

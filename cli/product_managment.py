@@ -105,7 +105,6 @@ def run_product_management() -> None:
                     pause()
                     continue
 
-
                 name = row ["product"]
 
                 confirm = input(f"Do you really want to delete '{name}' (ID {product_id})? [Y/N]: ").strip().lower()

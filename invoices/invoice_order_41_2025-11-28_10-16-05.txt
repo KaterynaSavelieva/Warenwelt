@@ -1,0 +1,25 @@
+INVOICE #41
+
+Customer
+--------
+  Name   : Svetlana Bielova
+  ID     : 33
+  Type   : COMPANY
+  Address: Hauptplatz 6
+  Email  : Johann.Bauer123@example.comeee
+  Phone  : 067764753721
+
+Order date : 28.11.2025 10:16
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+9    Notebook Acer Aspire               1     699.99     699.99
+23   T-Shirt                            1      12.00      12.00
+3    Bluetooth Kopfhörer Sony           2     149.99     299.98
+17   Sneakers Nike Air                  2     119.00     238.00
+
+                                            Subtotal:    1249.97
+                              Company discount (5 %): -    62.50
+                                               Total:    1187.47

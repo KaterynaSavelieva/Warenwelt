@@ -1,0 +1,21 @@
+INVOICE #40
+
+Customer
+--------
+  Name   : Kateryna Savelieva
+  ID     : 32
+  Type   : PRIVATE
+  Address: Hauptplatz 6
+  Email  : Johann.Bauer1@example.comeee
+  Phone  : 067764753721
+
+Order date : 28.11.2025 10:09
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+7    Roman "Der Fluss"                  2      14.99      29.98
+
+                                            Subtotal:      29.98
+                                               Total:      29.98

@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS customers (
     password VARCHAR(100) NOT NULL          
 );
 
-CREATE TABLE IF NOT EXISTS private_customer (
+CREATE TABLE IF NOT EXISTS private_customer (cd
     customer_id INT PRIMARY KEY,
     birthdate DATE NOT NULL,
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE
@@ -65,7 +65,6 @@ CREATE TABLE IF NOT EXISTS review (
     FOREIGN KEY (product_id) REFERENCES product(product_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- Головна таблиця замовлень
 CREATE TABLE IF NOT EXISTS orders (
     order_id INT AUTO_INCREMENT PRIMARY KEY,
     customer_id INT NOT NULL,
@@ -74,7 +73,6 @@ CREATE TABLE IF NOT EXISTS orders (
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE
 );
 
--- Підтаблиця для позицій (окремі продукти в замовленні)
 CREATE TABLE IF NOT EXISTS order_items (
     detail_id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,

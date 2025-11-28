@@ -7,6 +7,7 @@ reviews_bp = Blueprint("reviews", __name__)
 
 rm = ReviewMethods()
 
+
 @reviews_bp.route("/reviews", methods=["GET", "POST"])
 def reviews_view():
     """
@@ -27,17 +28,17 @@ def reviews_view():
     sort = request.args.get("sort", "date")
     direction = request.args.get("dir", "desc")
 
-    # allowed sort fields
+    # allowed sort fields (тепер по полях з v_rating)
     sort_map = {
-        "date": "r.created_at",
-        "product": "p.product",
-        "category": "p.category",
-        "customer": "c.name",
-        "rating": "r.rating",
-        "comment": "r.comment",
+        "date": "created_at",          # alias нижче в SELECT
+        "product": "product_name",
+        "category": "category",
+        "customer": "customer_name",
+        "rating": "rating",
+        "comment": "comment",
         "avg_rating": "avg_rating",
     }
-    sort_column = sort_map.get(sort, "r.created_at")
+    sort_column = sort_map.get(sort, "created_at")
     dir_sql = "ASC" if direction == "asc" else "DESC"
     order_clause = f"{sort_column} {dir_sql}"
 
@@ -100,23 +101,23 @@ def reviews_view():
                 )
             )
 
-    # ----- 1) load all reviews with filters and sorting -----
+    # ----- 1) load all reviews with filters and sorting (FROM v_rating) -----
     where_clauses = []
     params: list = []
 
     if search:
         where_clauses.append(
-            "(p.product LIKE %s OR c.name LIKE %s OR r.comment LIKE %s)"
+            "(product_name LIKE %s OR customer_name LIKE %s OR review_comment LIKE %s)"
         )
         like = f"%{search}%"
         params.extend([like, like, like])
 
     if category_filter:
-        where_clauses.append("p.category = %s")
+        where_clauses.append("category = %s")
         params.append(category_filter)
 
     if rating_filter:
-        where_clauses.append("r.rating = %s")
+        where_clauses.append("review_rating = %s")
         params.append(int(rating_filter))
 
     where_sql = ""
@@ -125,27 +126,18 @@ def reviews_view():
 
     sql = f"""
         SELECT
-            r.review_id,
-            r.rating,
-            r.comment,
-            r.created_at,
-            c.name       AS customer_name,
-            p.product_id,
-            p.product    AS product_name,
-            p.category   AS category,
-            ar.avg_rating,
-            ar.review_count
-        FROM review r
-        JOIN customers c ON c.customer_id = r.customer_id
-        JOIN product   p ON p.product_id   = r.product_id
-        LEFT JOIN (
-            SELECT
-                product_id,
-                AVG(rating) AS avg_rating,
-                COUNT(*)    AS review_count
-            FROM review
-            GROUP BY product_id
-        ) ar ON ar.product_id = p.product_id
+            review_id,
+            review_rating   AS rating,
+            review_comment  AS comment,
+            review_date     AS created_at,
+            customer_name,
+            customer_id,
+            product_id,
+            product_name,
+            category,
+            product_average_rating AS avg_rating,
+            product_total_reviews  AS review_count
+        FROM v_rating
         {where_sql}
         ORDER BY {order_clause}
     """
@@ -192,4 +184,3 @@ def reviews_view():
         sort=sort,
         direction=direction,
     )
-

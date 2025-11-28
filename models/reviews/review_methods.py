@@ -1,5 +1,3 @@
-from idlelib.multicall import r
-
 from connection.storage import Storage
 import pymysql
 from tabulate import tabulate
@@ -15,27 +13,17 @@ class ReviewMethods:
         self.storage = Storage()
         self.storage.connect()
 
-    @staticmethod
-    def _print_line():
-        print("-" * 60)
-
     def get_all_reviews(self) -> list[dict]:
-        """
-        Load all reviews with customer name and product name.
-        Visible for everyone (used mainly for debugging).
-        """
         sql = """
             SELECT
-                r.review_id,
-                r.rating,
-                r.comment,
-                r.created_at,
-                c.name    AS customer_name,
-                p.product AS product_name
-            FROM review r
-            JOIN customers c ON c.customer_id = r.customer_id
-            JOIN product   p ON p.product_id   = r.product_id
-            ORDER BY r.created_at DESC, r.review_id DESC
+                review_id,
+                review_rating,
+                review_comment,
+                review_date,
+                customer_name,
+                product_name
+            FROM v_rating
+            ORDER BY review_date DESC, review_id DESC
         """
         try:
             return self.storage.fetch_all(sql)
@@ -148,7 +136,7 @@ class ReviewMethods:
 
         table_rows = [
             {
-                "review_date": r["review_date"],
+                "date": r["review_date"],
                 "rating": r["review_rating"],
                 "comment": r["review_comment"],
             }
@@ -194,63 +182,51 @@ class ReviewMethods:
         return row
 
     def get_reviews_for_customer(self, customer_id: int) -> list[dict]:
-        sql = """
-            SELECT
-                r.review_id,
-                r.rating,
-                r.comment,
-                r.created_at,
-                c.name    AS customer_name,
-                p.product AS product_name
-            FROM review r
-            JOIN customers c ON c.customer_id = r.customer_id
-            JOIN product   p ON p.product_id   = r.product_id
-            WHERE c.customer_id = %s
-            ORDER BY r.created_at DESC, r.review_id DESC
-        """
+        sql = """SELECT 
+                      customer_total_reviews,
+                      customer_name,
+                      customer_average_rating,
+                      review_date,
+                      review_rating,
+                      review_comment,
+                      customer_min_rating,
+                      customer_max_rating
+                  FROM v_rating WHERE customer_id = %s ORDER BY review_date DESC"""
         try:
             rows = self.storage.fetch_all(sql, (customer_id,))
-            print(tabulate([row], headers="keys", tablefmt="rounded_grid"))
         except pymysql.MySQLError as e:
             print("Error loading reviews for customer:", e)
             return []
-
         if not rows:
             print(f"No reviews found for customer ID {customer_id}.")
             return []
 
+        total_reviews = rows[0]["customer_total_reviews"]
         customer_name = rows[0]["customer_name"]
-        self._print_line()
-        print(f"Reviews written by customer [{customer_id}] {customer_name}:")
-        self._print_line()
+        avg_rating = rows[0]["customer_average_rating"]
+        print(f"Total {total_reviews} reviews written by customer "
+              f"ID {customer_id} {customer_name}, average rating: {avg_rating}/5")
 
-        for r in rows:
-            comment = r["comment"] or "-"
-            date = r.get("review_date") or ""
-            print(
-                f"[{r['review_id']}] "
-                f"{date} | {r['rating']}/5 "
-                f"for {r['product_name']}: {comment}"
-            )
+        table_rows = [
+            {
+                "date": r["review_date"],
+                "rating": r["review_rating"],
+                "comment": r["review_comment"],
+            }
+            for r in rows
+        ]
+        print(tabulate(table_rows, headers="keys", tablefmt="rounded_grid"))
 
-        self._print_line()
-        print(f"Total: {len(rows)} review(s).")
         return rows
 
     def get_rating_summary_for_customer(self, customer_id: int) -> dict | None:
-        sql = """
-            SELECT
-                c.customer_id,
-                c.name AS customer_name,
-                COUNT(r.review_id) AS review_count,
-                AVG(r.rating)      AS avg_rating,
-                MIN(r.rating)      AS min_rating,
-                MAX(r.rating)      AS max_rating
-            FROM customers c
-            LEFT JOIN review r ON r.customer_id = c.customer_id
-            WHERE c.customer_id = %s
-            GROUP BY c.customer_id, c.name
-        """
+        sql = """SELECT 
+                      customer_total_reviews,
+                      customer_name,
+                      customer_average_rating,
+                      customer_min_rating,
+                      customer_max_rating
+                  FROM v_rating WHERE customer_id = %s"""
         try:
             row = self.storage.fetch_one(sql, (customer_id,))
         except pymysql.MySQLError as e:
@@ -258,19 +234,21 @@ class ReviewMethods:
             return None
 
         if not row:
-            print(f"Customer with ID {customer_id} not found.")
+            print(f"No reviews found for customer ID {customer_id}.")
             return None
 
-        self._print_line()
-        print(f"Rating summary for customer [{row['customer_id']}] {row['customer_name']}:")
-        if row["review_count"] == 0:
+        customer_name = row["customer_name"]
+
+        print(f"Rating summary for customer {customer_id} {customer_name}:")
+        if row["customer_total_reviews"] == 0:
             print("No reviews written yet.")
+            return None
         else:
-            print(f"Reviews: {row['review_count']}")
-            print(f"Average rating: {float(row['avg_rating']):.2f}/5")
-            print(f"Min rating: {float(row['min_rating']):.1f}")
-            print(f"Max rating: {float(row['max_rating']):.1f}")
-        self._print_line()
+            print(f"Reviews: {row['customer_total_reviews']}")
+            print(f"Average rating: {float(row['customer_average_rating']):.2f}/5")
+            print(f"Min rating: {float(row['customer_min_rating']):.1f}")
+            print(f"Max rating: {float(row['customer_max_rating']):.1f}")
+            print(tabulate([row],headers="keys", tablefmt="rounded_grid"))
 
         return row
 
@@ -310,6 +288,29 @@ class ReviewMethods:
             print("Error deleting review:", e)
             self.storage.connection.rollback()
             return False
+
+    def get_review(self, review_id: int) -> list[dict]:
+        sql = """
+                    SELECT
+                        review_id,
+                        review_rating,
+                        review_comment,
+                        review_date,
+                        customer_name,
+                        product_name
+                    FROM v_rating
+                   WHERE review_id = %s"""
+        try:
+            row = self.storage.fetch_one(sql, (review_id,))
+        except pymysql.MySQLError as e:
+            print("Error loading reviews for product:", e)
+            return []
+        if not row:
+            print(f"No reviews found with ID {review_id}.")
+            return []
+        print(tabulate([row], headers="keys", tablefmt="rounded_grid"))
+        return row
+
 
     def close(self):
         self.storage.disconnect()
