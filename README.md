@@ -1,6 +1,6 @@
 Warenwelt/
 │
-├── app.py                 # тільки створення Flask app + реєстрація blueprint'ів
+├── app.py                 #  Flask app +  blueprint'ів
 │
 ├── controllers/           # C = Controllers
 │   ├── __init__.py
@@ -9,7 +9,7 @@ Warenwelt/
 │   ├── orders_controller.py
 │   └── reviews_controller.py
 │
-├── models/                # M = Models (те, що зараз у customers/, products/, orders/, reviews/)
+├── models/              
 │   ├── __init__.py
 │   ├── customers/
 │   │   ├── customer.py
@@ -35,9 +35,9 @@ Warenwelt/
 │       ├── profile.html
 │       └── reviews.html
 │
-├── static/                # CSS / JS / images (можна лишити як є)
+├── static/                # CSS / JS / images 
 │
-├── database/              # колишній connection/
+├── database/              #  connection/
 │   ├── __init__.py
 │   ├── db.py
 │   └── storage.py
@@ -46,7 +46,7 @@ Warenwelt/
 │   ├── validator.py
 │   └── input_helpers.py
 │
-└── cli/                   # консольні меню (можна не чіпати)
+└── cli/                  
     ├── cli_main.py
     ├── product_management.py
     ├── customers_management.py
