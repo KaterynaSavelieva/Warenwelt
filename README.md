@@ -1,31 +1,41 @@
-# Warenwelt – Online Shop Project
+# 🛒 Warenwelt – Full-Stack Online Shop (Flask + MySQL)
 
-## 📌 About the project
+Warenwelt is a full-stack online shop application developed as a learning project to simulate a real-world e-commerce system.
 
-Warenwelt is a full-stack learning project of an online shop built with **Python, Flask, MySQL, HTML/CSS/JavaScript**, and **object-oriented programming (OOP)** principles.
+The goal of this project was not only to build a web application, but to understand how backend logic, database design, and user interaction work together in one system.
 
-The project combines two interfaces in one system:
+💡 This project combines:
+- a web interface for users (Flask + HTML/CSS/JS)
+- a CLI tool for administration and testing
+- a structured MySQL database
 
-- a **CLI application** for administration and testing
-- a **web application** for customer interaction
+---
 
-The shop supports:
-- product management
-- customer management
-- shopping cart logic
-- order processing
+## 🚀 What I built
+
+In this project, I designed and implemented:
+
+- a complete backend architecture using Flask
+- a relational database with normalized structure (MySQL)
+- business logic for orders, customers, and products
+- a session-based shopping cart system
+- product filtering and search functionality
+- user authentication (login/logout)
+- review system with validation rules
 - invoice generation
-- product reviews
 
-This project was created to practice:
+---
 
-- object-oriented design in Python
-- database design with MySQL
-- CRUD operations
-- Flask web development
-- session-based shopping cart logic
-- validation and user input handling
-- clean project structure with separation of concerns
+## 🧠 What I learned
+
+Through this project I gained practical experience in:
+
+- object-oriented programming in Python
+- designing relational databases
+- building REST-like structures in Flask
+- separating concerns (controllers, models, views)
+- handling user input and validation
+- connecting frontend and backend
 
 ---
 
