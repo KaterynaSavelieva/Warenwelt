@@ -1,0 +1,25 @@
+INVOICE #44
+
+Customer
+--------
+  Name   : Svetlana Bielova
+  ID     : 33
+  Type   : COMPANY
+  Address: Hauptplatz 6
+  Email  : Johann.Bauer123@example.comeee
+  Phone  : 067764753721
+
+Order date : 28.11.2025 11:37
+
+Items
+-----
+ID   Name                             Qty      Price      Total
+---------------------------------------------------------------
+2    Smartphone Samsung S24             1     999.00     999.00
+7    Roman "Der Fluss"                  1      14.99      14.99
+14   Kinderbuch "Tiere"                 1      12.99      12.99
+18   Hose Damen Elegant                 2      69.90     139.80
+
+                                            Subtotal:    1166.78
+                              Company discount (5 %): -    58.34
+                                               Total:    1108.44

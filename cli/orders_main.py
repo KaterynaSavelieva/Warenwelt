@@ -22,7 +22,7 @@ def run_order_management() -> None:
         print("1) Create new order")
         print("2) Edit current order")
         print("3) Show cart")
-        print("4) Calculate total")gi
+        print("4) Calculate total")
         print("5) Save order")
         print("6) Create invoice")
         print("0) Back to main menu")
